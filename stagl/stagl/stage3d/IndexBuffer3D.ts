@@ -15,11 +15,13 @@ module stagl
             //Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, this._glBuffer);
         }
 
-        get glBuffer(): WebGLBuffer {
+        get glBuffer(): WebGLBuffer
+        {
             return this._glBuffer;
         }
 
-        public uploadFromVector(data: number[] /* Vector.<uint> */, startOffset: number /* int */, count: number /* int */): void {
+        public uploadFromVector(data: number[] /* Vector.<uint> */, startOffset: number /* int */, count: number /* int */): void
+        {
 
             this._data = data;
 

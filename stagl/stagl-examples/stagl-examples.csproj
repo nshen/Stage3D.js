@@ -21,12 +21,14 @@
     <Content Include="test\drawSquare.js" />
     <Content Include="test\drawTriangle.html" />
     <Content Include="test\drawTriangle.js" />
+    <Content Include="test\renderingModes.html" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="definitions\WebGL.d.ts" />
     <TypeScriptCompile Include="test\drawSquare.ts" />
     <TypeScriptCompile Include="test\drawTriangle.ts" />
+    <TypeScriptCompile Include="test\renderingModes.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">

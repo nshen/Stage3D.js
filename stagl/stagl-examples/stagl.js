@@ -1202,13 +1202,6 @@ var stagl;
             Context3D.GL.clear(this._clearBit);
         };
 
-        Context3D.prototype.drawTriangles = function (indexBuffer, firstIndex, numTriangles) {
-            if (typeof firstIndex === "undefined") { firstIndex = 0; }
-            if (typeof numTriangles === "undefined") { numTriangles = -1; }
-            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
-            Context3D.GL.drawElements(Context3D.GL.TRIANGLES, numTriangles < 0 ? indexBuffer.numIndices : numTriangles * 3, Context3D.GL.UNSIGNED_SHORT, firstIndex);
-        };
-
         Context3D.prototype.setCulling = function (triangleFaceToCull) {
             Context3D.GL.frontFace(Context3D.GL.CW);
             switch (triangleFaceToCull) {
@@ -1263,6 +1256,51 @@ var stagl;
 
         Context3D.prototype.setBlendFactors = function (sourceFactor, destinationFactor) {
             Context3D.GL.blendFunc(sourceFactor, destinationFactor);
+        };
+
+        Context3D.prototype.drawTriangles = function (indexBuffer, firstIndex, numTriangles) {
+            if (typeof firstIndex === "undefined") { firstIndex = 0; }
+            if (typeof numTriangles === "undefined") { numTriangles = -1; }
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.TRIANGLES, numTriangles < 0 ? indexBuffer.numIndices : numTriangles * 3, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        };
+
+        Context3D.prototype.drawLines = function (indexBuffer, firstIndex, numLines) {
+            if (typeof firstIndex === "undefined") { firstIndex = 0; }
+            if (typeof numLines === "undefined") { numLines = -1; }
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.LINES, numLines < 0 ? indexBuffer.numIndices : numLines * 2, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        };
+
+        Context3D.prototype.drawPoints = function (indexBuffer, firstIndex, numPoints) {
+            if (typeof firstIndex === "undefined") { firstIndex = 0; }
+            if (typeof numPoints === "undefined") { numPoints = -1; }
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.POINTS, numPoints < 0 ? indexBuffer.numIndices : numPoints, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        };
+
+        Context3D.prototype.drawLineLoop = function (indexBuffer, firstIndex, numPoints) {
+            if (typeof firstIndex === "undefined") { firstIndex = 0; }
+            if (typeof numPoints === "undefined") { numPoints = -1; }
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.LINE_LOOP, numPoints < 0 ? indexBuffer.numIndices : numPoints, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        };
+
+        Context3D.prototype.drawLineStrip = function (indexBuffer, firstIndex, numPoints) {
+            if (typeof firstIndex === "undefined") { firstIndex = 0; }
+            if (typeof numPoints === "undefined") { numPoints = -1; }
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.LINE_STRIP, numPoints < 0 ? indexBuffer.numIndices : numPoints, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        };
+
+        Context3D.prototype.drawTriangleStrip = function (indexBuffer) {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.TRIANGLE_STRIP, indexBuffer.numIndices, Context3D.GL.UNSIGNED_SHORT, 0);
+        };
+
+        Context3D.prototype.drawTriangleFan = function (indexBuffer) {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.TRIANGLE_FAN, indexBuffer.numIndices, Context3D.GL.UNSIGNED_SHORT, 0);
         };
 
         Context3D.prototype.present = function () {

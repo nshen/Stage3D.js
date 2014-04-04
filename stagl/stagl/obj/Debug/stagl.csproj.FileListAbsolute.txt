@@ -3,3 +3,4 @@ E:\tsProgram\stagl\stagl\stagl\bin\stagl.dll
 E:\tsProgram\stagl\stagl\stagl\bin\stagl.pdb
 E:\tsProgram\stagl\stagl\stagl\obj\Debug\stagl.dll
 E:\tsProgram\stagl\stagl\stagl\obj\Debug\stagl.pdb
+E:\tsProgram\stagl\stagl\stagl\obj\Debug\stagl.csprojResolveAssemblyReference.cache

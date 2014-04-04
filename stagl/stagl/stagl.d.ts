@@ -211,10 +211,16 @@ declare module stagl {
         private _linkedProgram;
         public setProgram(program: stagl.Program3D): void;
         public clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): void;
-        public drawTriangles(indexBuffer: stagl.IndexBuffer3D, firstIndex?: number, numTriangles?: number): void;
         public setCulling(triangleFaceToCull: string): void;
         public setDepthTest(depthMask: boolean, passCompareMode: string): void;
         public setBlendFactors(sourceFactor: number, destinationFactor: number): void;
+        public drawTriangles(indexBuffer: stagl.IndexBuffer3D, firstIndex?: number, numTriangles?: number): void;
+        public drawLines(indexBuffer: stagl.IndexBuffer3D, firstIndex?: number, numLines?: number): void;
+        public drawPoints(indexBuffer: stagl.IndexBuffer3D, firstIndex?: number, numPoints?: number): void;
+        public drawLineLoop(indexBuffer: stagl.IndexBuffer3D, firstIndex?: number, numPoints?: number): void;
+        public drawLineStrip(indexBuffer: stagl.IndexBuffer3D, firstIndex?: number, numPoints?: number): void;
+        public drawTriangleStrip(indexBuffer: stagl.IndexBuffer3D): void;
+        public drawTriangleFan(indexBuffer: stagl.IndexBuffer3D): void;
         public present(): void;
     }
 }

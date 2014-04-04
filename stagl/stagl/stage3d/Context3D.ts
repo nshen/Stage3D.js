@@ -10,7 +10,7 @@ module stagl
         private _clearBit: number;
         constructor()
         {
-            Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend
+            Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend?
             Context3DBlendFactor.init();
         }
 
@@ -229,33 +229,9 @@ module stagl
             Context3D.GL.clear(this._clearBit);
         }
 
-        public drawTriangles(indexBuffer: IndexBuffer3D, firstIndex: number /* int */ = 0, numTriangles: number/* int */ = -1): void
+
+        public setCulling(triangleFaceToCull: string): void
         {
-            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
-            Context3D.GL.drawElements(Context3D.GL.TRIANGLES, numTriangles < 0 ? indexBuffer.numIndices : numTriangles * 3, Context3D.GL.UNSIGNED_SHORT, firstIndex);
-        }
-
-        /**
-          //stage3d 没有的绘图方式方式
-
-        public drawArray()
-        {
-            Context3D.GL.POINTS
-            Context3D.GL.LINES
-            Context3D.GL.LINE_STRIP
-            Context3D.GL.LINE_LOOP
-            Context3D.GL.TRIANGLES
-            Context3D.GL.TRIANGLE_STRIP
-            Context3D.GL.TRIANGLE_FAN
-         // gl.drawArrays(mode, first, count)    
-        }
-         */
-      
-
-
-
-
-        public setCulling(triangleFaceToCull: string): void {
             Context3D.GL.frontFace(Context3D.GL.CW);//顺时针为正面
             switch (triangleFaceToCull) {
                 case Context3DTriangleFace.NONE:
@@ -309,10 +285,80 @@ module stagl
             }
         }
 
-        public setBlendFactors(sourceFactor: number, destinationFactor: number): void {
+        public setBlendFactors(sourceFactor: number, destinationFactor: number): void
+        {
             Context3D.GL.blendFunc(sourceFactor, destinationFactor);
         }
 
+
+        public drawTriangles(indexBuffer: IndexBuffer3D, firstIndex: number /* int */ = 0, numTriangles: number/* int */ = -1): void
+        {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.TRIANGLES, numTriangles < 0 ? indexBuffer.numIndices : numTriangles * 3, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        }
+
+        /*
+         *  [Webgl only]
+         *   For instance indices = [1,3,0,4,1,2]; will draw 3 lines :
+         *   from vertex number 1 to vertex number 3, from vertex number 0 to vertex number 4, from vertex number 1 to vertex number 2
+         */
+        public drawLines(indexBuffer: IndexBuffer3D, firstIndex: number /* int */ = 0, numLines: number/* int */ = -1): void
+        {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.LINES, numLines < 0 ? indexBuffer.numIndices : numLines * 2, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        }
+
+        /*
+         * [Webgl only]
+         *  For instance indices = [1,2,3] ; will only render vertices number 1, number 2, and number 3 
+         */
+        public drawPoints(indexBuffer: IndexBuffer3D, firstIndex: number /* int */ = 0, numPoints: number/* int */ = -1): void
+        {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.POINTS, numPoints < 0 ? indexBuffer.numIndices : numPoints , Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        }
+
+        /**
+         * [Webgl only]
+         * draws a closed loop connecting the vertices defined in the indexBuffer to the next one
+         */
+        public drawLineLoop(indexBuffer: IndexBuffer3D, firstIndex: number /* int */ = 0, numPoints: number/* int */ = -1): void
+        {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.LINE_LOOP, numPoints < 0 ? indexBuffer.numIndices : numPoints, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        }
+
+        /**
+         * [Webgl only]
+         * It is similar to drawLineLoop(). The difference here is that WebGL does not connect the last vertex to the first one (not a closed loop).
+         */
+        public drawLineStrip(indexBuffer: IndexBuffer3D, firstIndex: number /* int */ = 0, numPoints: number/* int */ = -1): void
+        {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.LINE_STRIP, numPoints < 0 ? indexBuffer.numIndices : numPoints, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
+        }
+
+        /**
+        * [Webgl only]
+        *  indices = [0, 1, 2, 3, 4];, then we will generate the triangles:(0, 1, 2), (1, 2, 3), and(2, 3, 4).
+        */
+        public drawTriangleStrip(indexBuffer:IndexBuffer3D):void
+        {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.TRIANGLE_STRIP, indexBuffer.numIndices, Context3D.GL.UNSIGNED_SHORT, 0);
+        }
+
+        /**
+         * [Webgl only]
+         * creates triangles in a similar way to drawTriangleStrip(). 
+         * However, the first vertex defined in the indexBuffer is taken as the origin of the fan(the only shared vertex among consecutive triangles).
+         * In our example, indices = [0, 1, 2, 3, 4]; will create the triangles: (0, 1, 2) and(0, 3, 4).
+         */
+        public drawTriangleFan(indexBuffer:IndexBuffer3D): void
+        {
+            Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
+            Context3D.GL.drawElements(Context3D.GL.TRIANGLE_FAN, indexBuffer.numIndices, Context3D.GL.UNSIGNED_SHORT, 0);
+        }
 
         /**
         *   In webgl we dont need to call present , browser will do this for us.

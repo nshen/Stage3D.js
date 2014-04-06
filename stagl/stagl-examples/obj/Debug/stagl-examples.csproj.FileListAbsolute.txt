@@ -1,8 +1,0 @@
-E:\tsProgram\stagl\stagl\stagl-examples\bin\stagl-examples.dll.config
-E:\tsProgram\stagl\stagl\stagl-examples\bin\stagl-examples.dll
-E:\tsProgram\stagl\stagl\stagl-examples\bin\stagl-examples.pdb
-E:\tsProgram\stagl\stagl\stagl-examples\bin\stagl.dll
-E:\tsProgram\stagl\stagl\stagl-examples\bin\stagl.pdb
-E:\tsProgram\stagl\stagl\stagl-examples\obj\Debug\stagl-examples.csprojResolveAssemblyReference.cache
-E:\tsProgram\stagl\stagl\stagl-examples\obj\Debug\stagl-examples.dll
-E:\tsProgram\stagl\stagl\stagl-examples\obj\Debug\stagl-examples.pdb

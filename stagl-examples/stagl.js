@@ -1559,54 +1559,93 @@ var stagl;
 ///<reference path="_definitions.ts"/>
 var stagl;
 (function (stagl) {
-    var VertexBuffer3D = (function () {
-        function VertexBuffer3D(numVertices, data32PerVertex) {
-            this._numVertices = numVertices;
-            this._data32PerVertex = data32PerVertex;
+    stagl.VERSION = 0.001;
 
-            this._glBuffer = stagl.Context3D.GL.createBuffer();
-            if (!this._glBuffer)
-                throw new Error("Failed to create buffer");
-            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, this._glBuffer);
+    var Stage3D = (function (_super) {
+        __extends(Stage3D, _super);
+        function Stage3D(canvas) {
+            _super.call(this);
+            this._context3D = null;
+            this._stageWidth = 0;
+            this._stageHeight = 0;
+            this._canvas = canvas;
+            this._stageWidth = canvas.width;
+            this._stageHeight = canvas.height;
         }
-        Object.defineProperty(VertexBuffer3D.prototype, "glBuffer", {
+        Object.defineProperty(Stage3D.prototype, "context3D", {
+            /**
+            * [read-only] The Context3D object associated with this Stage3D instance.
+            */
             get: function () {
-                return this._glBuffer;
+                return this._context3D;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(VertexBuffer3D.prototype, "data32PerVertex", {
+        Object.defineProperty(Stage3D.prototype, "stageWidth", {
             get: function () {
-                return this._data32PerVertex;
+                return this._stageWidth;
             },
             enumerable: true,
             configurable: true
         });
 
-        VertexBuffer3D.prototype.uploadFromVector = function (data, startVertex /* int */ , numVertices /* int */ ) {
-            this._data = data;
+        Object.defineProperty(Stage3D.prototype, "stageHeight", {
+            get: function () {
+                return this._stageHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
 
-            if (startVertex != 0 || numVertices != this._numVertices) {
-                data = data.slice(startVertex, (numVertices * this._data32PerVertex));
+        Stage3D.prototype.requestContext3D = function () {
+            if (!this._canvas)
+                return;
+
+            if (this._context3D != null)
+                return this.onCreateSuccess();
+
+            if (this._canvas.addEventListener)
+                this._canvas.addEventListener("webglcontextcreationerror", this.onCreationError, false);
+
+            var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+            stagl.Context3D.GL = null;
+            for (var i = 0; i < names.length; i++) {
+                try  {
+                    stagl.Context3D.GL = this._canvas.getContext(names[i]);
+                } catch (e) {
+                }
+
+                if (stagl.Context3D.GL)
+                    break;
             }
 
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, this._glBuffer);
-            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ARRAY_BUFFER, new Float32Array(data), stagl.Context3D.GL.STATIC_DRAW);
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, null);
+            if (stagl.Context3D.GL == null)
+                return this.onCreationError(null);
+
+            this._context3D = new stagl.Context3D();
+            return this.onCreateSuccess();
         };
 
-        VertexBuffer3D.prototype.dispose = function () {
-            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
-            this._glBuffer = null;
-            this._data.length = 0;
-            this._numVertices = 0;
-            this._data32PerVertex = 0;
+        Stage3D.prototype.onCreationError = function (e) {
+            if (typeof e === "undefined") { e = null; }
+            if (e != null) {
+                if (this._canvas.removeEventListener)
+                    this._canvas.removeEventListener("webglcontextcreationerror", this.onCreationError, false);
+            }
+
+            this.dispatchEvent(new stagl.events.ErrorEvent()); //TODO: error message
         };
-        return VertexBuffer3D;
-    })();
-    stagl.VertexBuffer3D = VertexBuffer3D;
+
+        Stage3D.prototype.onCreateSuccess = function () {
+            var e = new stagl.events.Event(stagl.events.Event.CONTEXT3D_CREATE);
+            e.target = this;
+            this.dispatchEvent(e);
+        };
+        return Stage3D;
+    })(stagl.events.EventDispatcher);
+    stagl.Stage3D = Stage3D;
 })(stagl || (stagl = {}));
 ///<reference path="_definitions.ts" />
 var stagl;
@@ -1736,92 +1775,53 @@ var stagl;
 ///<reference path="_definitions.ts"/>
 var stagl;
 (function (stagl) {
-    stagl.VERSION = 0.001;
+    var VertexBuffer3D = (function () {
+        function VertexBuffer3D(numVertices, data32PerVertex) {
+            this._numVertices = numVertices;
+            this._data32PerVertex = data32PerVertex;
 
-    var Stage3D = (function (_super) {
-        __extends(Stage3D, _super);
-        function Stage3D(canvas) {
-            _super.call(this);
-            this._context3D = null;
-            this._stageWidth = 0;
-            this._stageHeight = 0;
-            this._canvas = canvas;
-            this._stageWidth = canvas.width;
-            this._stageHeight = canvas.height;
+            this._glBuffer = stagl.Context3D.GL.createBuffer();
+            if (!this._glBuffer)
+                throw new Error("Failed to create buffer");
+            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, this._glBuffer);
         }
-        Object.defineProperty(Stage3D.prototype, "context3D", {
-            /**
-            * [read-only] The Context3D object associated with this Stage3D instance.
-            */
+        Object.defineProperty(VertexBuffer3D.prototype, "glBuffer", {
             get: function () {
-                return this._context3D;
+                return this._glBuffer;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(Stage3D.prototype, "stageWidth", {
+        Object.defineProperty(VertexBuffer3D.prototype, "data32PerVertex", {
             get: function () {
-                return this._stageWidth;
+                return this._data32PerVertex;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(Stage3D.prototype, "stageHeight", {
-            get: function () {
-                return this._stageHeight;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        VertexBuffer3D.prototype.uploadFromVector = function (data, startVertex /* int */ , numVertices /* int */ ) {
+            this._data = data;
 
-        Stage3D.prototype.requestContext3D = function () {
-            if (!this._canvas)
-                return;
-
-            if (this._context3D != null)
-                return this.onCreateSuccess();
-
-            if (this._canvas.addEventListener)
-                this._canvas.addEventListener("webglcontextcreationerror", this.onCreationError, false);
-
-            var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-            stagl.Context3D.GL = null;
-            for (var i = 0; i < names.length; i++) {
-                try  {
-                    stagl.Context3D.GL = this._canvas.getContext(names[i]);
-                } catch (e) {
-                }
-
-                if (stagl.Context3D.GL)
-                    break;
+            if (startVertex != 0 || numVertices != this._numVertices) {
+                data = data.slice(startVertex * this._data32PerVertex, (numVertices * this._data32PerVertex));
             }
 
-            if (stagl.Context3D.GL == null)
-                return this.onCreationError(null);
-
-            this._context3D = new stagl.Context3D();
-            return this.onCreateSuccess();
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, this._glBuffer);
+            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ARRAY_BUFFER, new Float32Array(data), stagl.Context3D.GL.STATIC_DRAW);
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, null);
         };
 
-        Stage3D.prototype.onCreationError = function (e) {
-            if (typeof e === "undefined") { e = null; }
-            if (e != null) {
-                if (this._canvas.removeEventListener)
-                    this._canvas.removeEventListener("webglcontextcreationerror", this.onCreationError, false);
-            }
-
-            this.dispatchEvent(new stagl.events.ErrorEvent()); //TODO: error message
+        VertexBuffer3D.prototype.dispose = function () {
+            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
+            this._glBuffer = null;
+            this._data.length = 0;
+            this._numVertices = 0;
+            this._data32PerVertex = 0;
         };
-
-        Stage3D.prototype.onCreateSuccess = function () {
-            var e = new stagl.events.Event(stagl.events.Event.CONTEXT3D_CREATE);
-            e.target = this;
-            this.dispatchEvent(e);
-        };
-        return Stage3D;
-    })(stagl.events.EventDispatcher);
-    stagl.Stage3D = Stage3D;
+        return VertexBuffer3D;
+    })();
+    stagl.VertexBuffer3D = VertexBuffer3D;
 })(stagl || (stagl = {}));
 //# sourceMappingURL=stagl.js.map

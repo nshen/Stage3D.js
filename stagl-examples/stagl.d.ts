@@ -572,16 +572,22 @@ declare module stagl {
     }
 }
 declare module stagl {
-    class VertexBuffer3D {
-        private _numVertices;
-        private _data32PerVertex;
-        private _glBuffer;
-        private _data;
-        constructor(numVertices: number, data32PerVertex: number);
-        public glBuffer : WebGLBuffer;
-        public data32PerVertex : number;
-        public uploadFromVector(data: number[], startVertex: number, numVertices: number): void;
-        public dispose(): void;
+    var VERSION: number;
+    class Stage3D extends events.EventDispatcher {
+        private _context3D;
+        private _canvas;
+        private _stageWidth;
+        private _stageHeight;
+        constructor(canvas: HTMLCanvasElement);
+        /**
+        * [read-only] The Context3D object associated with this Stage3D instance.
+        */
+        public context3D : Context3D;
+        public stageWidth : number;
+        public stageHeight : number;
+        public requestContext3D(): void;
+        private onCreationError(e?);
+        private onCreateSuccess();
     }
 }
 declare module stagl {
@@ -625,21 +631,15 @@ declare module stagl {
     }
 }
 declare module stagl {
-    var VERSION: number;
-    class Stage3D extends events.EventDispatcher {
-        private _context3D;
-        private _canvas;
-        private _stageWidth;
-        private _stageHeight;
-        constructor(canvas: HTMLCanvasElement);
-        /**
-        * [read-only] The Context3D object associated with this Stage3D instance.
-        */
-        public context3D : Context3D;
-        public stageWidth : number;
-        public stageHeight : number;
-        public requestContext3D(): void;
-        private onCreationError(e?);
-        private onCreateSuccess();
+    class VertexBuffer3D {
+        private _numVertices;
+        private _data32PerVertex;
+        private _glBuffer;
+        private _data;
+        constructor(numVertices: number, data32PerVertex: number);
+        public glBuffer : WebGLBuffer;
+        public data32PerVertex : number;
+        public uploadFromVector(data: number[], startVertex: number, numVertices: number): void;
+        public dispose(): void;
     }
 }

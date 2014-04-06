@@ -38,7 +38,7 @@ module stagl
             this._data = data;
 
             if (startVertex != 0 || numVertices != this._numVertices) {
-                data = data.slice(startVertex, (numVertices * this._data32PerVertex));
+                data = data.slice(startVertex * this._data32PerVertex, (numVertices * this._data32PerVertex));
             }
 
             Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, this._glBuffer);

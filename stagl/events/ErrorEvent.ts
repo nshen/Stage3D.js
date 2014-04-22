@@ -1,3 +1,4 @@
+///<reference path="../_definitions.ts"/>
 module stagl.events {
 
     export class ErrorEvent extends stagl.events.Event
@@ -7,6 +8,8 @@ module stagl.events {
         constructor()
         {
             super(ErrorEvent.ERROR);
+
+
         }
     }
 

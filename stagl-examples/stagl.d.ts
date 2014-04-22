@@ -1,3 +1,22 @@
+/**
+* Base event class
+* @class stagl.events.Event
+*/
+declare module stagl.events {
+    class Event {
+        static CONTEXT3D_CREATE: string;
+        public type: string;
+        public target: Object;
+        constructor(type: string);
+        public clone(): Event;
+    }
+}
+declare module stagl.events {
+    class ErrorEvent extends Event {
+        static ERROR: string;
+        constructor();
+    }
+}
 declare module stagl.events {
     /**
     * copy from https://github.com/awayjs/awayjs-core-ts/blob/master/src/away/events/EventDispatcher.ts
@@ -47,164 +66,11 @@ declare module stagl.events {
         public hasEventListener(type: string, listener?: Function): boolean;
     }
 }
-/**
-* Base event class
-* @class stage3d.events.Event
-*/
-declare module stagl.events {
-    class Event {
-        static CONTEXT3D_CREATE: string;
-        /**
-        * Type of event
-        * @property type
-        * @type String
-        */
-        public type: string;
-        /**
-        * Reference to target object
-        * @property target
-        * @type Object
-        */
-        public target: Object;
-        constructor(type: string);
-        /**
-        * Clones the current event.
-        * @return An exact duplicate of the current event.
-        */
-        public clone(): Event;
-    }
-}
-declare module stagl.events {
-    class ErrorEvent extends Event {
-        static ERROR: string;
-        constructor();
-    }
-}
 declare module stagl.geom {
-    class Matrix3D {
-        /**
-        * [read-only] A Number that determines whether a matrix is invertible.
-        */
-        public determinant : number;
-        public position : Vector3D;
-        /**
-        * A Vector of 16 Numbers, where every four elements is a column of a 4x4 matrix.
-        *
-        * <p>An exception is thrown if the rawData property is set to a matrix that is not invertible. The Matrix3D
-        * object must be invertible. If a non-invertible matrix is needed, create a subclass of the Matrix3D object.</p>
-        */
-        public rawData: Float32Array;
-        /**
-        * Creates a Matrix3D object.
-        */
-        constructor(v?: number[]);
-        /**
-        * Appends the matrix by multiplying another Matrix3D object by the current Matrix3D object.
-        * Apply a transform after this transform
-        */
-        public append(lhs: Matrix3D): void;
-        /**
-        * Prepends a matrix by multiplying the current Matrix3D object by another Matrix3D object.
-        */
-        public prepend(rhs: Matrix3D): void;
-        /**
-        * Appends an incremental rotation to a Matrix3D object.
-        */
-        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
-        /**
-        * Appends an incremental scale change along the x, y, and z axes to a Matrix3D object.
-        */
-        public appendScale(xScale: number, yScale: number, zScale: number): void;
-        /**
-        * Appends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
-        */
-        public appendTranslation(x: number, y: number, z: number): void;
-        /**
-        * Prepends an incremental rotation to a Matrix3D object.
-        */
-        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
-        /**
-        * Prepends an incremental scale change along the x, y, and z axes to a Matrix3D object.
-        */
-        public prependScale(xScale: number, yScale: number, zScale: number): void;
-        /**
-        * Prepends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
-        */
-        public prependTranslation(x: number, y: number, z: number): void;
-        /**
-        * Returns a new Matrix3D object that is an exact copy of the current Matrix3D object.
-        */
-        public clone(): Matrix3D;
-        /**
-        *  Copies a Vector3D object into specific column of the calling Matrix3D object.
-        */
-        public copyColumnFrom(column: number, vector3D: Vector3D): void;
-        /**
-        * Copies specific column of the calling Matrix3D object into the Vector3D object.
-        */
-        public copyColumnTo(column: number, vector3D: Vector3D): void;
-        /**
-        * Copies all of the matrix data from the source Matrix3D object into the calling Matrix3D object.
-        */
-        public copyFrom(sourceMatrix3D: Matrix3D): void;
-        /**
-        * Copies all of the vector data from the source vector object into the calling Matrix3D object.
-        */
-        public copyRawDataFrom(vector: number[], index?: number, transpose?: boolean): void;
-        /**
-        * Copies all of the matrix data from the calling Matrix3D object into the provided vector.
-        */
-        public copyRawDataTo(vector: number[], index?: number, transpose?: boolean): void;
-        /**
-        * Copies a Vector3D object into specific row of the calling Matrix3D object.
-        */
-        public copyRowFrom(row: number, vector3D: Vector3D): void;
-        /**
-        * Copies specific row of the calling Matrix3D object into the Vector3D object.
-        */
-        public copyRowTo(row: number, vector3D: Vector3D): void;
-        public copyToMatrix3D(dest: Matrix3D): void;
-        /**
-        * Converts the current matrix to an identity or unit matrix.
-        */
-        public identity(): void;
-        /**
-        * [static] Interpolates the translation, rotation, and scale transformation of one matrix toward those of the target matrix.
-        */
-        static interpolate(thisMat: Matrix3D, toMat: Matrix3D, percent: number): Matrix3D;
-        /**
-        * Interpolates this matrix towards the translation, rotation, and scale transformations of the target matrix.
-        */
-        public interpolateTo(toMat: Matrix3D, percent: number): void;
-        /**
-        * Inverts the current matrix.
-        */
-        public invert(): boolean;
-        /**
-        * Rotates the display object so that it faces a specified position.
-        */
-        public pointAt(pos: Vector3D, at?: Vector3D, up?: Vector3D): void;
-        /**
-        * Sets the transformation matrix's translation, rotation, and scale settings.
-        */
-        public recompose(components: Vector3D[], orientationStyle?: String): boolean;
-        /**
-        * Uses the transformation matrix to transform a Vector3D object from one space coordinate to another.
-        */
-        public transformVector(v: Vector3D): Vector3D;
-        /**
-        * Uses the transformation matrix without its translation elements to transform a Vector3D object from one space coordinate to another.
-        */
-        public deltaTransformVector(v: Vector3D): Vector3D;
-        /**
-        * Uses the transformation matrix to transform a Vector of Numbers from one coordinate space to another.
-        */
-        public transformVectors(vin: number[], vout: number[]): void;
-        /**
-        * Converts the current Matrix3D object to a matrix where the rows and columns are swapped.
-        */
-        public transpose(): void;
-        private getRotateMatrix(axis, degrees);
+    class Orientation3D {
+        static AXIS_ANGLE: string;
+        static EULER_ANGLES: string;
+        static QUATERNION: string;
     }
 }
 declare module stagl.geom {
@@ -461,6 +327,177 @@ declare module stagl.geom {
         public toString(): string;
     }
 }
+declare module stagl.geom {
+    class Matrix3D {
+        private static DEG_2_RAD;
+        /**
+        * [read-only] A Number that determines whether a matrix is invertible.
+        */
+        public determinant : number;
+        public position : Vector3D;
+        /**
+        * A Vector of 16 Numbers, where every four elements is a column of a 4x4 matrix.
+        *
+        * <p>An exception is thrown if the rawData property is set to a matrix that is not invertible. The Matrix3D
+        * object must be invertible. If a non-invertible matrix is needed, create a subclass of the Matrix3D object.</p>
+        */
+        public rawData: Float32Array;
+        /**
+        * Creates a Matrix3D object.
+        */
+        constructor(v?: number[]);
+        /**
+        * Appends the matrix by multiplying another Matrix3D object by the current Matrix3D object.
+        * Apply a transform after this transform
+        */
+        public append(lhs: Matrix3D): void;
+        /**
+        * Prepends a matrix by multiplying the current Matrix3D object by another Matrix3D object.
+        */
+        public prepend(rhs: Matrix3D): void;
+        /**
+        * Appends an incremental rotation to a Matrix3D object.
+        */
+        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        /**
+        * Appends an incremental scale change along the x, y, and z axes to a Matrix3D object.
+        */
+        public appendScale(xScale: number, yScale: number, zScale: number): void;
+        /**
+        * Appends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
+        */
+        public appendTranslation(x: number, y: number, z: number): void;
+        /**
+        * Prepends an incremental rotation to a Matrix3D object.
+        */
+        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        /**
+        * Prepends an incremental scale change along the x, y, and z axes to a Matrix3D object.
+        */
+        public prependScale(xScale: number, yScale: number, zScale: number): void;
+        /**
+        * Prepends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
+        */
+        public prependTranslation(x: number, y: number, z: number): void;
+        /**
+        * Returns a new Matrix3D object that is an exact copy of the current Matrix3D object.
+        */
+        public clone(): Matrix3D;
+        /**
+        *  Copies a Vector3D object into specific column of the calling Matrix3D object.
+        */
+        public copyColumnFrom(column: number, vector3D: Vector3D): void;
+        /**
+        * Copies specific column of the calling Matrix3D object into the Vector3D object.
+        */
+        public copyColumnTo(column: number, vector3D: Vector3D): void;
+        /**
+        * Copies all of the matrix data from the source Matrix3D object into the calling Matrix3D object.
+        */
+        public copyFrom(sourceMatrix3D: Matrix3D): void;
+        /**
+        * Copies all of the vector data from the source vector object into the calling Matrix3D object.
+        */
+        public copyRawDataFrom(vector: number[], index?: number, transpose?: boolean): void;
+        /**
+        * Copies all of the matrix data from the calling Matrix3D object into the provided vector.
+        */
+        public copyRawDataTo(vector: number[], index?: number, transpose?: boolean): void;
+        /**
+        * Copies a Vector3D object into specific row of the calling Matrix3D object.
+        */
+        public copyRowFrom(row: number, vector3D: Vector3D): void;
+        /**
+        * Copies specific row of the calling Matrix3D object into the Vector3D object.
+        */
+        public copyRowTo(row: number, vector3D: Vector3D): void;
+        public copyToMatrix3D(dest: Matrix3D): void;
+        /**
+        * Returns the transformation matrix's translation, rotation, and scale settings as a Vector of three Vector3D objects.
+        */
+        public decompose(orientationStyle?: String): Vector3D[];
+        /**
+        * Converts the current matrix to an identity or unit matrix.
+        */
+        public identity(): void;
+        static interpolate(thisMat: Matrix3D, toMat: Matrix3D, percent: number): Matrix3D;
+        public interpolateTo(toMat: Matrix3D, percent: number): void;
+        /**
+        * Inverts the current matrix.
+        */
+        public invert(): boolean;
+        /**
+        * Rotates the display object so that it faces a specified position.
+        */
+        public pointAt(pos: Vector3D, at?: Vector3D, up?: Vector3D): void;
+        /**
+        * Sets the transformation matrix's translation, rotation, and scale settings.
+        */
+        public recompose(components: Vector3D[], orientationStyle?: String): boolean;
+        /**
+        * Uses the transformation matrix to transform a Vector3D object from one space coordinate to another.
+        */
+        public transformVector(v: Vector3D): Vector3D;
+        /**
+        * Uses the transformation matrix without its translation elements to transform a Vector3D object from one space coordinate to another.
+        */
+        public deltaTransformVector(v: Vector3D): Vector3D;
+        /**
+        * Uses the transformation matrix to transform a Vector of Numbers from one coordinate space to another.
+        */
+        public transformVectors(vin: number[], vout: number[]): void;
+        /**
+        * Converts the current Matrix3D object to a matrix where the rows and columns are swapped.
+        */
+        public transpose(): void;
+        public toString(): string;
+        private getRotateMatrix(axis, radians);
+    }
+}
+declare module stagl.geom {
+    class Quaternion {
+        public x: number;
+        public y: number;
+        public z: number;
+        public w: number;
+        constructor(x?: number, y?: number, z?: number, w?: number);
+        static lerp(qa: Quaternion, qb: Quaternion, percent: number): Quaternion;
+        public fromMatrix3D(m: Matrix3D): Quaternion;
+        public toMatrix3D(target?: Matrix3D): Matrix3D;
+        /**
+        * @param axis   must be a normalized vector
+        * @param angleInRadians
+        */
+        public fromAxisAngle(axis: Vector3D, angleInRadians: number): void;
+        public conjugate(): void;
+        public toString(): string;
+    }
+}
+declare module stagl.geom {
+    class PerspectiveMatrix3D extends Matrix3D {
+        public perspectiveFieldOfViewRH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+        public perspectiveFieldOfViewLH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+    }
+}
+declare module stagl {
+    var VERSION: number;
+    class Stage3D extends events.EventDispatcher {
+        private _context3D;
+        private _canvas;
+        private _stageWidth;
+        private _stageHeight;
+        constructor(canvas: HTMLCanvasElement);
+        /**
+        * [read-only] The Context3D object associated with this Stage3D instance.
+        */
+        public context3D : Context3D;
+        public stageWidth : number;
+        public stageHeight : number;
+        public requestContext3D(): void;
+        private onCreationError(e?);
+        private onCreateSuccess();
+    }
+}
 declare module stagl {
     class Context3D {
         static GL: WebGLRenderingContext;
@@ -532,6 +569,55 @@ declare module stagl {
     }
 }
 declare module stagl {
+    class Program3D {
+        private _glProgram;
+        private _vShader;
+        private _fShader;
+        constructor();
+        public glProgram : WebGLProgram;
+        public dispose(): void;
+        public upload(vertexProgramId?: string, fragmentProgramId?: string): void;
+        private loadShader(elementId, type);
+        /**
+        *   to delete .......
+        */
+        public getShader2(elementId: string): WebGLShader;
+    }
+}
+declare module stagl {
+    class VertexBuffer3D {
+        private _numVertices;
+        private _data32PerVertex;
+        private _glBuffer;
+        private _data;
+        constructor(numVertices: number, data32PerVertex: number);
+        public glBuffer : WebGLBuffer;
+        public data32PerVertex : number;
+        public uploadFromVector(data: number[], startVertex: number, numVertices: number): void;
+        public dispose(): void;
+    }
+}
+declare module stagl {
+    class IndexBuffer3D {
+        public numIndices: number;
+        private _data;
+        private _glBuffer;
+        constructor(numIndices: number);
+        public glBuffer : WebGLBuffer;
+        public uploadFromVector(data: number[], startOffset: number, count: number): void;
+        public dispose(): void;
+    }
+}
+declare module stagl {
+    class Texture {
+        private _glTexture;
+        private _streamingLevels;
+        constructor(streamingLevels: number);
+        public uploadFromBitmapData(source: HTMLImageElement, miplevel?: number): void;
+        public uploadFromImage(source: HTMLImageElement, miplevel?: number): void;
+    }
+}
+declare module stagl {
     class Context3DBlendFactor {
         static ONE: number;
         static ZERO: number;
@@ -556,61 +642,6 @@ declare module stagl {
     }
 }
 declare module stagl {
-    class Program3D {
-        private _glProgram;
-        private _vShader;
-        private _fShader;
-        constructor();
-        public glProgram : WebGLProgram;
-        public dispose(): void;
-        public upload(vertexProgramId?: string, fragmentProgramId?: string): void;
-        private loadShader(elementId, type);
-        /**
-        *   to delete .......
-        */
-        public getShader2(elementId: string): WebGLShader;
-    }
-}
-declare module stagl {
-    var VERSION: number;
-    class Stage3D extends events.EventDispatcher {
-        private _context3D;
-        private _canvas;
-        private _stageWidth;
-        private _stageHeight;
-        constructor(canvas: HTMLCanvasElement);
-        /**
-        * [read-only] The Context3D object associated with this Stage3D instance.
-        */
-        public context3D : Context3D;
-        public stageWidth : number;
-        public stageHeight : number;
-        public requestContext3D(): void;
-        private onCreationError(e?);
-        private onCreateSuccess();
-    }
-}
-declare module stagl {
-    class IndexBuffer3D {
-        public numIndices: number;
-        private _data;
-        private _glBuffer;
-        constructor(numIndices: number);
-        public glBuffer : WebGLBuffer;
-        public uploadFromVector(data: number[], startOffset: number, count: number): void;
-        public dispose(): void;
-    }
-}
-declare module stagl {
-    class Texture {
-        private _glTexture;
-        private _streamingLevels;
-        constructor(streamingLevels: number);
-        public uploadFromBitmapData(source: HTMLImageElement, miplevel?: number): void;
-        public uploadFromImage(source: HTMLImageElement, miplevel?: number): void;
-    }
-}
-declare module stagl {
     class Context3DCompareMode {
         static ALWAYS: string;
         static EQUAL: string;
@@ -628,18 +659,5 @@ declare module stagl {
         static FRONT: string;
         static FRONT_AND_BACK: string;
         static NONE: string;
-    }
-}
-declare module stagl {
-    class VertexBuffer3D {
-        private _numVertices;
-        private _data32PerVertex;
-        private _glBuffer;
-        private _data;
-        constructor(numVertices: number, data32PerVertex: number);
-        public glBuffer : WebGLBuffer;
-        public data32PerVertex : number;
-        public uploadFromVector(data: number[], startVertex: number, numVertices: number): void;
-        public dispose(): void;
     }
 }

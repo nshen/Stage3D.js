@@ -1,3 +1,4 @@
+///<reference path="_definitions.ts"/>
 module stagl
 {
     export class Context3DBlendFactor

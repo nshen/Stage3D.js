@@ -376,7 +376,7 @@ module stagl.geom
          */
         public toString(): string
         {
-            return "[Vector3D] (x:" + this.x + " ,y:" + this.y + ", z" + this.z + ", w:" + this.w + ")";
+            return "[Vector3D] (x:" + this.x + " ,y:" + this.y + ", z:" + this.z + ", w:" + this.w + ")";
         }
 
 

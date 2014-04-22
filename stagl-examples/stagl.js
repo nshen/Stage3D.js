@@ -1,5 +1,52 @@
 var stagl;
 (function (stagl) {
+    ///<reference path="../_definitions.ts"/>
+    /**
+    * Base event class
+    * @class stagl.events.Event
+    */
+    (function (events) {
+        var Event = (function () {
+            function Event(type) {
+                this.type = undefined;
+                this.target = undefined;
+                this.type = type;
+            }
+            Event.prototype.clone = function () {
+                return new Event(this.type);
+            };
+            Event.CONTEXT3D_CREATE = "CONTEXT3D_CREATE";
+            return Event;
+        })();
+        events.Event = Event;
+    })(stagl.events || (stagl.events = {}));
+    var events = stagl.events;
+})(stagl || (stagl = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var stagl;
+(function (stagl) {
+    ///<reference path="../_definitions.ts"/>
+    (function (events) {
+        var ErrorEvent = (function (_super) {
+            __extends(ErrorEvent, _super);
+            function ErrorEvent() {
+                _super.call(this, ErrorEvent.ERROR);
+            }
+            ErrorEvent.ERROR = "error";
+            return ErrorEvent;
+        })(stagl.events.Event);
+        events.ErrorEvent = ErrorEvent;
+    })(stagl.events || (stagl.events = {}));
+    var events = stagl.events;
+})(stagl || (stagl = {}));
+var stagl;
+(function (stagl) {
+    ///<reference path="../_definitions.ts"/>
     (function (events) {
         /**
         * copy from https://github.com/awayjs/awayjs-core-ts/blob/master/src/away/events/EventDispatcher.ts
@@ -105,635 +152,20 @@ var stagl;
 })(stagl || (stagl = {}));
 var stagl;
 (function (stagl) {
-    /**
-    * Base event class
-    * @class stage3d.events.Event
-    */
-    (function (events) {
-        var Event = (function () {
-            function Event(type) {
-                //        public static COMPLETE: string = 'complete';
-                //        public static OPEN: string = 'open';
-                //        public static ENTER_FRAME: string = 'enterFrame';
-                //        public static EXIT_FRAME: string = 'exitFrame';
-                //        public static RESIZE: string = "resize";
-                //        public static ERROR: string = "error";
-                //        public static CHANGE: string = "change";
-                /**
-                * Type of event
-                * @property type
-                * @type String
-                */
-                this.type = undefined;
-                /**
-                * Reference to target object
-                * @property target
-                * @type Object
-                */
-                this.target = undefined;
-                this.type = type;
-            }
-            /**
-            * Clones the current event.
-            * @return An exact duplicate of the current event.
-            */
-            Event.prototype.clone = function () {
-                return new Event(this.type);
-            };
-            Event.CONTEXT3D_CREATE = "CONTEXT3D_CREATE";
-            return Event;
-        })();
-        events.Event = Event;
-    })(stagl.events || (stagl.events = {}));
-    var events = stagl.events;
-})(stagl || (stagl = {}));
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var stagl;
-(function (stagl) {
-    (function (events) {
-        var ErrorEvent = (function (_super) {
-            __extends(ErrorEvent, _super);
-            function ErrorEvent() {
-                _super.call(this, ErrorEvent.ERROR);
-            }
-            ErrorEvent.ERROR = "error";
-            return ErrorEvent;
-        })(stagl.events.Event);
-        events.ErrorEvent = ErrorEvent;
-    })(stagl.events || (stagl.events = {}));
-    var events = stagl.events;
-})(stagl || (stagl = {}));
-var stagl;
-(function (stagl) {
     ///<reference path="../_definitions.ts"/>
     (function (geom) {
-        var Matrix3D = (function () {
-            /**
-            * Creates a Matrix3D object.
-            */
-            function Matrix3D(v) {
-                if (typeof v === "undefined") { v = null; }
-                if (v != null && v.length == 16)
-                    this.rawData = new Float32Array(v.slice(0));
-                else
-                    this.rawData = new Float32Array([
-                        1, 0, 0, 0,
-                        0, 1, 0, 0,
-                        0, 0, 1, 0,
-                        0, 0, 0, 1]);
+        var Orientation3D = (function () {
+            function Orientation3D() {
             }
-            Object.defineProperty(Matrix3D.prototype, "determinant", {
-                /**
-                * [read-only] A Number that determines whether a matrix is invertible.
-                */
-                get: function () {
-                    return ((this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) - (this.rawData[4] * this.rawData[13] - this.rawData[12] * this.rawData[5]) * (this.rawData[2] * this.rawData[11] - this.rawData[10] * this.rawData[3]) + (this.rawData[8] * this.rawData[13] - this.rawData[12] * this.rawData[9]) * (this.rawData[2] * this.rawData[7] - this.rawData[6] * this.rawData[3]));
-                },
-                enumerable: true,
-                configurable: true
-            });
-
-            Object.defineProperty(Matrix3D.prototype, "position", {
-                get: function () {
-                    return new geom.Vector3D(this.rawData[12], this.rawData[13], this.rawData[14]);
-                },
-                enumerable: true,
-                configurable: true
-            });
-
-            /**
-            * Appends the matrix by multiplying another Matrix3D object by the current Matrix3D object.
-            * Apply a transform after this transform
-            */
-            Matrix3D.prototype.append = function (lhs) {
-                //this * lhs
-                var a11 = this.rawData[0];
-                var a12 = this.rawData[1];
-                var a13 = this.rawData[2];
-                var a14 = this.rawData[3];
-                var a21 = this.rawData[4];
-                var a22 = this.rawData[5];
-                var a23 = this.rawData[6];
-                var a24 = this.rawData[7];
-                var a31 = this.rawData[8];
-                var a32 = this.rawData[9];
-                var a33 = this.rawData[10];
-                var a34 = this.rawData[11];
-                var a41 = this.rawData[12];
-                var a42 = this.rawData[13];
-                var a43 = this.rawData[14];
-                var a44 = this.rawData[15];
-
-                var b11 = lhs.rawData[0];
-                var b12 = lhs.rawData[1];
-                var b13 = lhs.rawData[2];
-                var b14 = lhs.rawData[3];
-                var b21 = lhs.rawData[4];
-                var b22 = lhs.rawData[5];
-                var b23 = lhs.rawData[6];
-                var b24 = lhs.rawData[7];
-                var b31 = lhs.rawData[8];
-                var b32 = lhs.rawData[9];
-                var b33 = lhs.rawData[10];
-                var b34 = lhs.rawData[11];
-                var b41 = lhs.rawData[12];
-                var b42 = lhs.rawData[13];
-                var b43 = lhs.rawData[14];
-                var b44 = lhs.rawData[15];
-
-                this.rawData[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
-                this.rawData[1] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
-                this.rawData[2] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
-                this.rawData[3] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
-
-                this.rawData[4] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
-                this.rawData[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
-                this.rawData[6] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
-                this.rawData[7] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
-
-                this.rawData[8] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
-                this.rawData[9] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
-                this.rawData[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
-                this.rawData[11] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
-
-                this.rawData[12] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
-                this.rawData[13] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
-                this.rawData[14] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
-                this.rawData[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
-            };
-
-            /**
-            * Prepends a matrix by multiplying the current Matrix3D object by another Matrix3D object.
-            */
-            Matrix3D.prototype.prepend = function (rhs) {
-                // rhs * this
-                var a11 = this.rawData[0];
-                var a12 = this.rawData[1];
-                var a13 = this.rawData[2];
-                var a14 = this.rawData[3];
-                var a21 = this.rawData[4];
-                var a22 = this.rawData[5];
-                var a23 = this.rawData[6];
-                var a24 = this.rawData[7];
-                var a31 = this.rawData[8];
-                var a32 = this.rawData[9];
-                var a33 = this.rawData[10];
-                var a34 = this.rawData[11];
-                var a41 = this.rawData[12];
-                var a42 = this.rawData[13];
-                var a43 = this.rawData[14];
-                var a44 = this.rawData[15];
-
-                var b11 = rhs.rawData[0];
-                var b12 = rhs.rawData[1];
-                var b13 = rhs.rawData[2];
-                var b14 = rhs.rawData[3];
-                var b21 = rhs.rawData[4];
-                var b22 = rhs.rawData[5];
-                var b23 = rhs.rawData[6];
-                var b24 = rhs.rawData[7];
-                var b31 = rhs.rawData[8];
-                var b32 = rhs.rawData[9];
-                var b33 = rhs.rawData[10];
-                var b34 = rhs.rawData[11];
-                var b41 = rhs.rawData[12];
-                var b42 = rhs.rawData[13];
-                var b43 = rhs.rawData[14];
-                var b44 = rhs.rawData[15];
-
-                this.rawData[0] = b11 * a11 + b12 * a21 + b13 * a31 + b14 * a41;
-                this.rawData[1] = b11 * a12 + b12 * a22 + b13 * a32 + b14 * a42;
-                this.rawData[2] = b11 * a13 + b12 * a23 + b13 * a33 + b14 * a43;
-                this.rawData[3] = b11 * a14 + b12 * a24 + b13 * a34 + b14 * a44;
-
-                this.rawData[4] = b21 * a11 + b22 * a21 + b23 * a31 + b24 * a41;
-                this.rawData[5] = b21 * a12 + b22 * a22 + b23 * a32 + b24 * a42;
-                this.rawData[6] = b21 * a13 + b22 * a23 + b23 * a33 + b24 * a43;
-                this.rawData[7] = b21 * a14 + b22 * a24 + b23 * a34 + b24 * a44;
-
-                this.rawData[8] = b31 * a11 + b32 * a21 + b33 * a31 + b34 * a41;
-                this.rawData[9] = b31 * a12 + b32 * a22 + b33 * a32 + b34 * a42;
-                this.rawData[10] = b31 * a13 + b32 * a23 + b33 * a33 + b34 * a43;
-                this.rawData[11] = b31 * a14 + b32 * a24 + b33 * a34 + b34 * a44;
-
-                this.rawData[12] = b41 * a11 + b42 * a21 + b43 * a31 + b44 * a41;
-                this.rawData[13] = b41 * a12 + b42 * a22 + b43 * a32 + b44 * a42;
-                this.rawData[14] = b41 * a13 + b42 * a23 + b43 * a33 + b44 * a43;
-                this.rawData[15] = b41 * a14 + b42 * a24 + b43 * a34 + b44 * a44;
-            };
-
-            /**
-            * Appends an incremental rotation to a Matrix3D object.
-            */
-            Matrix3D.prototype.appendRotation = function (degrees, axis, pivotPoint) {
-                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
-                var r = this.getRotateMatrix(axis, degrees);
-                if (pivotPoint) {
-                    //TODO:simplify
-                    this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
-                    this.append(r);
-                    this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
-                } else {
-                    this.append(r);
-                }
-            };
-
-            /**
-            * Appends an incremental scale change along the x, y, and z axes to a Matrix3D object.
-            */
-            Matrix3D.prototype.appendScale = function (xScale, yScale, zScale) {
-                /*
-                *              x 0 0 0
-                *    this  *   0 y 0 0
-                *              0 0 z 0
-                *              0 0 0 1
-                */
-                this.rawData[0] *= xScale;
-                this.rawData[1] *= yScale;
-                this.rawData[2] *= zScale;
-                this.rawData[4] *= xScale;
-                this.rawData[5] *= yScale;
-                this.rawData[6] *= zScale;
-                this.rawData[8] *= xScale;
-                this.rawData[9] *= yScale;
-                this.rawData[10] *= zScale;
-                this.rawData[12] *= xScale;
-                this.rawData[13] *= yScale;
-                this.rawData[14] *= zScale;
-            };
-
-            /**
-            * Appends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
-            */
-            Matrix3D.prototype.appendTranslation = function (x, y, z) {
-                this.rawData[12] += x;
-                this.rawData[13] += y;
-                this.rawData[14] += z;
-            };
-
-            /**
-            * Prepends an incremental rotation to a Matrix3D object.
-            */
-            Matrix3D.prototype.prependRotation = function (degrees, axis, pivotPoint) {
-                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
-                var r = this.getRotateMatrix(axis, degrees);
-                if (pivotPoint) {
-                    //TODO:simplify
-                    this.prependTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
-                    this.prepend(r);
-                    this.prependTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
-                } else {
-                    this.prepend(r);
-                }
-            };
-
-            /**
-            * Prepends an incremental scale change along the x, y, and z axes to a Matrix3D object.
-            */
-            Matrix3D.prototype.prependScale = function (xScale, yScale, zScale) {
-                /*
-                *      x 0 0 0
-                *      0 y 0 0   * this
-                *      0 0 z 0
-                *      0 0 0 1
-                */
-                this.rawData[0] *= xScale;
-                this.rawData[1] *= xScale;
-                this.rawData[2] *= xScale;
-                this.rawData[3] *= xScale;
-                this.rawData[4] *= yScale;
-                this.rawData[5] *= yScale;
-                this.rawData[6] *= yScale;
-                this.rawData[7] *= yScale;
-                this.rawData[8] *= zScale;
-                this.rawData[9] *= zScale;
-                this.rawData[10] *= zScale;
-                this.rawData[11] *= zScale;
-            };
-
-            /**
-            * Prepends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
-            */
-            Matrix3D.prototype.prependTranslation = function (x, y, z) {
-                /*
-                *             1 0 0 0
-                *             0 1 0 0   *  this
-                *             0 0 1 0
-                *             x y z 1
-                */
-                this.rawData[12] += this.rawData[0] * x + this.rawData[4] * y + this.rawData[8] * z;
-                this.rawData[13] += this.rawData[1] * x + this.rawData[5] * y + this.rawData[9] * z;
-                this.rawData[14] += this.rawData[2] * x + this.rawData[6] * y + this.rawData[10] * z;
-                this.rawData[15] += this.rawData[3] * x + this.rawData[7] * y + this.rawData[11] * z;
-            };
-
-            /**
-            * Returns a new Matrix3D object that is an exact copy of the current Matrix3D object.
-            */
-            Matrix3D.prototype.clone = function () {
-                return new Matrix3D(Array.prototype.slice.call(this.rawData));
-            };
-
-            /**
-            *  Copies a Vector3D object into specific column of the calling Matrix3D object.
-            */
-            Matrix3D.prototype.copyColumnFrom = function (column /*uint*/ , vector3D) {
-                if (column < 0 || column > 3)
-                    throw new Error("column error");
-
-                // column is row ...
-                this.rawData[column] = vector3D.x;
-                this.rawData[column * 4 + 1] = vector3D.y;
-                this.rawData[column * 4 + 2] = vector3D.z;
-                this.rawData[column * 4 + 3] = vector3D.w;
-            };
-
-            /**
-            * Copies specific column of the calling Matrix3D object into the Vector3D object.
-            */
-            Matrix3D.prototype.copyColumnTo = function (column /*uint*/ , vector3D) {
-                if (column < 0 || column > 3)
-                    throw new Error("column error");
-
-                //column is row...
-                vector3D.x = this.rawData[column * 4];
-                vector3D.y = this.rawData[column * 4 + 1];
-                vector3D.z = this.rawData[column * 4 + 2];
-                vector3D.w = this.rawData[column * 4 + 3];
-            };
-
-            /**
-            * Copies all of the matrix data from the source Matrix3D object into the calling Matrix3D object.
-            */
-            Matrix3D.prototype.copyFrom = function (sourceMatrix3D) {
-                var len = sourceMatrix3D.rawData.length;
-                for (var c = 0; c < len; c++)
-                    this.rawData[c] = sourceMatrix3D.rawData[c];
-            };
-
-            /**
-            * Copies all of the vector data from the source vector object into the calling Matrix3D object.
-            */
-            Matrix3D.prototype.copyRawDataFrom = function (vector, index, transpose) {
-                if (typeof index === "undefined") { index = 0; }
-                if (typeof transpose === "undefined") { transpose = false; }
-                if (transpose)
-                    this.transpose();
-
-                var len = vector.length - index;
-                for (var c = 0; c < len; c++)
-                    this.rawData[c] = vector[c + index];
-
-                if (transpose)
-                    this.transpose();
-            };
-
-            /**
-            * Copies all of the matrix data from the calling Matrix3D object into the provided vector.
-            */
-            Matrix3D.prototype.copyRawDataTo = function (vector, index, transpose) {
-                if (typeof index === "undefined") { index = 0; }
-                if (typeof transpose === "undefined") { transpose = false; }
-                if (transpose)
-                    this.transpose();
-
-                var len = this.rawData.length;
-                for (var c = 0; c < len; c++)
-                    vector[c + index] = this.rawData[c];
-
-                if (transpose)
-                    this.transpose();
-            };
-
-            /**
-            * Copies a Vector3D object into specific row of the calling Matrix3D object.
-            */
-            Matrix3D.prototype.copyRowFrom = function (row /*uint*/ , vector3D) {
-                if (row < 0 || row > 3)
-                    throw new Error("row error");
-                this.rawData[row] = vector3D.x;
-                this.rawData[row + 4] = vector3D.y;
-                this.rawData[row + 8] = vector3D.z;
-                this.rawData[row + 12] = vector3D.w;
-            };
-
-            /**
-            * Copies specific row of the calling Matrix3D object into the Vector3D object.
-            */
-            Matrix3D.prototype.copyRowTo = function (row /*uint*/ , vector3D) {
-                if (row < 0 || row > 3)
-                    throw new Error("row error");
-                vector3D.x = this.rawData[row];
-                vector3D.y = this.rawData[row + 4];
-                vector3D.z = this.rawData[row + 8];
-                vector3D.w = this.rawData[row + 12];
-            };
-
-            Matrix3D.prototype.copyToMatrix3D = function (dest) {
-                dest.rawData.set(this.rawData);
-            };
-
-            /**
-            * Returns the transformation matrix's translation, rotation, and scale settings as a Vector of three Vector3D objects.
-            */
-            //public decompose(orientationStyle: String = "eulerAngles"):Vector3D[]
-            //{
-            //}
-            /**
-            * Converts the current matrix to an identity or unit matrix.
-            */
-            Matrix3D.prototype.identity = function () {
-                this.rawData = new Float32Array([
-                    1, 0, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, 1, 0,
-                    0, 0, 0, 1]);
-            };
-
-            /**
-            * [static] Interpolates the translation, rotation, and scale transformation of one matrix toward those of the target matrix.
-            */
-            Matrix3D.interpolate = function (thisMat, toMat, percent) {
-                return new Matrix3D();
-            };
-
-            /**
-            * Interpolates this matrix towards the translation, rotation, and scale transformations of the target matrix.
-            */
-            Matrix3D.prototype.interpolateTo = function (toMat, percent) {
-            };
-
-            /**
-            * Inverts the current matrix.
-            */
-            Matrix3D.prototype.invert = function () {
-                return true;
-            };
-
-            /**
-            * Rotates the display object so that it faces a specified position.
-            */
-            Matrix3D.prototype.pointAt = function (pos, at, up) {
-                if (typeof at === "undefined") { at = null; }
-                if (typeof up === "undefined") { up = null; }
-                if (at == null)
-                    at = new geom.Vector3D(0, -1, 0);
-                if (up == null)
-                    up = new geom.Vector3D(0, 0, -1);
-
-                var zAxis = at.subtract(pos);
-                zAxis.normalize();
-
-                var xAxis = zAxis.crossProduct(up);
-                var yAxis = zAxis.crossProduct(xAxis);
-
-                this.rawData = new Float32Array([
-                    xAxis.x, xAxis.y, xAxis.z, 0,
-                    yAxis.x, yAxis.y, yAxis.z, 0,
-                    zAxis.x, zAxis.y, zAxis.z, 0,
-                    pos.x, pos.y, pos.z, 1
-                ]);
-            };
-
-            /**
-            * Sets the transformation matrix's translation, rotation, and scale settings.
-            */
-            Matrix3D.prototype.recompose = function (components, orientationStyle) {
-                if (typeof orientationStyle === "undefined") { orientationStyle = "eulerAngles"; }
-                return true;
-            };
-
-            /**
-            * Uses the transformation matrix to transform a Vector3D object from one space coordinate to another.
-            */
-            Matrix3D.prototype.transformVector = function (v) {
-                // [x,y,z,1] * this
-                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[4] + v.z * this.rawData[8] + this.rawData[12], v.x * this.rawData[1] + v.y * this.rawData[5] + v.z * this.rawData[9] + this.rawData[13], v.x * this.rawData[2] + v.y * this.rawData[6] + v.z * this.rawData[10] + this.rawData[14], v.x * this.rawData[3] + v.y * this.rawData[7] + v.z * this.rawData[11] + this.rawData[15]);
-            };
-
-            /**
-            * Uses the transformation matrix without its translation elements to transform a Vector3D object from one space coordinate to another.
-            */
-            Matrix3D.prototype.deltaTransformVector = function (v) {
-                //[x,y,z,0] * this
-                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[4] + v.z * this.rawData[8], v.x * this.rawData[1] + v.y * this.rawData[5] + v.z * this.rawData[9], v.x * this.rawData[2] + v.y * this.rawData[6] + v.z * this.rawData[10], v.x * this.rawData[3] + v.y * this.rawData[7] + v.z * this.rawData[11]);
-            };
-
-            /**
-            * Uses the transformation matrix to transform a Vector of Numbers from one coordinate space to another.
-            */
-            Matrix3D.prototype.transformVectors = function (vin, vout) {
-                var i = 0;
-                var x = 0, y = 0, z = 0;
-
-                while (i + 3 <= vin.length) {
-                    x = vin[i];
-                    y = vin[i + 1];
-                    z = vin[i + 2];
-                    vout[i] = x * this.rawData[0] + y * this.rawData[4] + z * this.rawData[8] + this.rawData[12];
-                    vout[i + 1] = x * this.rawData[1] + y * this.rawData[5] + z * this.rawData[9] + this.rawData[13];
-                    vout[i + 2] = x * this.rawData[2] + y * this.rawData[6] + z * this.rawData[10] + this.rawData[14];
-                    i += 3;
-                }
-            };
-
-            /**
-            * Converts the current Matrix3D object to a matrix where the rows and columns are swapped.
-            */
-            Matrix3D.prototype.transpose = function () {
-                var a12 = this.rawData[1];
-                var a13 = this.rawData[2];
-                var a14 = this.rawData[3];
-                var a21 = this.rawData[4];
-                var a23 = this.rawData[6];
-                var a24 = this.rawData[7];
-                var a31 = this.rawData[8];
-                var a32 = this.rawData[9];
-                var a34 = this.rawData[11];
-                var a41 = this.rawData[12];
-                var a42 = this.rawData[13];
-                var a43 = this.rawData[14];
-
-                this.rawData[1] = a21;
-                this.rawData[2] = a31;
-                this.rawData[3] = a41;
-                this.rawData[4] = a12;
-                this.rawData[6] = a32;
-                this.rawData[7] = a42;
-                this.rawData[8] = a13;
-                this.rawData[9] = a23;
-                this.rawData[11] = a43;
-                this.rawData[12] = a14;
-                this.rawData[13] = a24;
-                this.rawData[13] = a34;
-            };
-
-            Matrix3D.prototype.getRotateMatrix = function (axis, degrees) {
-                var ax = axis.x;
-                var ay = axis.y;
-                var az = axis.z;
-
-                var radians = Math.PI / 180 * degrees;
-                var c = Math.cos(radians);
-                var s = Math.sin(radians);
-
-                //get rotation matrix
-                var rMatrix;
-
-                if (ax != 0 && ay == 0 && az == 0) {
-                    rMatrix = new Matrix3D([
-                        1, 0, 0, 0,
-                        0, c, s, 0,
-                        0, -s, c, 0,
-                        0, 0, 0, 1
-                    ]);
-                } else if (ay != 0 && ax == 0 && az == 0) {
-                    rMatrix = new Matrix3D([
-                        c, 0, -s, 0,
-                        0, 1, 0, 0,
-                        s, 0, c, 0,
-                        0, 0, 0, 1
-                    ]);
-                } else if (az != 0 && ax == 0 && ay == 0) {
-                    rMatrix = new Matrix3D([
-                        c, s, 0, 0,
-                        -s, c, 0, 0,
-                        0, 0, 1, 0,
-                        0, 0, 0, 1
-                    ]);
-                } else {
-                    //make sure axis is a unit vector
-                    var lsq = axis.lengthSquared;
-                    if (Math.abs(lsq - 1) > 0.0001) {
-                        var f = 1 / Math.sqrt(lsq);
-                        ax = axis.x * f;
-                        ay = axis.y * f;
-                        az = axis.z * f;
-                    }
-
-                    var t = 1 - c;
-
-                    rMatrix = new Matrix3D([
-                        ax * ax * t + c, ax * ay * t + az * s, ax * az * t - ay * s, 0,
-                        ax * ay * t - az * s, ay * ay * t + c, ay * az * t + ax * s, 0,
-                        ax * az * t + ay * s, ay * az * t - ax * s, az * az * t + c, 0,
-                        0, 0, 0, 1
-                    ]);
-                }
-                return rMatrix;
-            };
-            return Matrix3D;
+            Orientation3D.AXIS_ANGLE = "axisAngle";
+            Orientation3D.EULER_ANGLES = "eulerAngles";
+            Orientation3D.QUATERNION = "quaternion";
+            return Orientation3D;
         })();
-        geom.Matrix3D = Matrix3D;
+        geom.Orientation3D = Orientation3D;
     })(stagl.geom || (stagl.geom = {}));
     var geom = stagl.geom;
 })(stagl || (stagl = {}));
-//clipspace coordinates always go from -1 to +1
 var stagl;
 (function (stagl) {
     ///<reference path="../_definitions.ts"/>
@@ -1061,7 +493,7 @@ var stagl;
             * Returns a string representation of the current Vector3D object.
             */
             Vector3D.prototype.toString = function () {
-                return "[Vector3D] (x:" + this.x + " ,y:" + this.y + ", z" + this.z + ", w:" + this.w + ")";
+                return "[Vector3D] (x:" + this.x + " ,y:" + this.y + ", z:" + this.z + ", w:" + this.w + ")";
             };
             Vector3D.X_AXIS = new Vector3D(1, 0, 0);
 
@@ -1073,6 +505,998 @@ var stagl;
         geom.Vector3D = Vector3D;
     })(stagl.geom || (stagl.geom = {}));
     var geom = stagl.geom;
+})(stagl || (stagl = {}));
+var stagl;
+(function (stagl) {
+    ///<reference path="../_definitions.ts"/>
+    (function (geom) {
+        var Matrix3D = (function () {
+            /**
+            * Creates a Matrix3D object.
+            */
+            function Matrix3D(v) {
+                if (typeof v === "undefined") { v = null; }
+                if (v != null && v.length == 16)
+                    this.rawData = new Float32Array(v.slice(0));
+                else
+                    this.rawData = new Float32Array([
+                        1, 0, 0, 0,
+                        0, 1, 0, 0,
+                        0, 0, 1, 0,
+                        0, 0, 0, 1]);
+            }
+            Object.defineProperty(Matrix3D.prototype, "determinant", {
+                /**
+                * [read-only] A Number that determines whether a matrix is invertible.
+                */
+                get: function () {
+                    return ((this.rawData[0] * this.rawData[5] - this.rawData[4] * this.rawData[1]) * (this.rawData[10] * this.rawData[15] - this.rawData[14] * this.rawData[11]) - (this.rawData[0] * this.rawData[9] - this.rawData[8] * this.rawData[1]) * (this.rawData[6] * this.rawData[15] - this.rawData[14] * this.rawData[7]) + (this.rawData[0] * this.rawData[13] - this.rawData[12] * this.rawData[1]) * (this.rawData[6] * this.rawData[11] - this.rawData[10] * this.rawData[7]) + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3]) - (this.rawData[4] * this.rawData[13] - this.rawData[12] * this.rawData[5]) * (this.rawData[2] * this.rawData[11] - this.rawData[10] * this.rawData[3]) + (this.rawData[8] * this.rawData[13] - this.rawData[12] * this.rawData[9]) * (this.rawData[2] * this.rawData[7] - this.rawData[6] * this.rawData[3]));
+                },
+                enumerable: true,
+                configurable: true
+            });
+
+            Object.defineProperty(Matrix3D.prototype, "position", {
+                get: function () {
+                    return new geom.Vector3D(this.rawData[12], this.rawData[13], this.rawData[14]);
+                },
+                enumerable: true,
+                configurable: true
+            });
+
+            /**
+            * Appends the matrix by multiplying another Matrix3D object by the current Matrix3D object.
+            * Apply a transform after this transform
+            */
+            Matrix3D.prototype.append = function (lhs) {
+                //this * lhs
+                var a11 = this.rawData[0];
+                var a12 = this.rawData[1];
+                var a13 = this.rawData[2];
+                var a14 = this.rawData[3];
+                var a21 = this.rawData[4];
+                var a22 = this.rawData[5];
+                var a23 = this.rawData[6];
+                var a24 = this.rawData[7];
+                var a31 = this.rawData[8];
+                var a32 = this.rawData[9];
+                var a33 = this.rawData[10];
+                var a34 = this.rawData[11];
+                var a41 = this.rawData[12];
+                var a42 = this.rawData[13];
+                var a43 = this.rawData[14];
+                var a44 = this.rawData[15];
+
+                var b11 = lhs.rawData[0];
+                var b12 = lhs.rawData[1];
+                var b13 = lhs.rawData[2];
+                var b14 = lhs.rawData[3];
+                var b21 = lhs.rawData[4];
+                var b22 = lhs.rawData[5];
+                var b23 = lhs.rawData[6];
+                var b24 = lhs.rawData[7];
+                var b31 = lhs.rawData[8];
+                var b32 = lhs.rawData[9];
+                var b33 = lhs.rawData[10];
+                var b34 = lhs.rawData[11];
+                var b41 = lhs.rawData[12];
+                var b42 = lhs.rawData[13];
+                var b43 = lhs.rawData[14];
+                var b44 = lhs.rawData[15];
+
+                this.rawData[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
+                this.rawData[1] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
+                this.rawData[2] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
+                this.rawData[3] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+
+                this.rawData[4] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
+                this.rawData[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
+                this.rawData[6] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
+                this.rawData[7] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+
+                this.rawData[8] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
+                this.rawData[9] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
+                this.rawData[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
+                this.rawData[11] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+
+                this.rawData[12] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
+                this.rawData[13] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
+                this.rawData[14] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
+                this.rawData[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+            };
+
+            /**
+            * Prepends a matrix by multiplying the current Matrix3D object by another Matrix3D object.
+            */
+            Matrix3D.prototype.prepend = function (rhs) {
+                // rhs * this
+                var a11 = this.rawData[0];
+                var a12 = this.rawData[1];
+                var a13 = this.rawData[2];
+                var a14 = this.rawData[3];
+                var a21 = this.rawData[4];
+                var a22 = this.rawData[5];
+                var a23 = this.rawData[6];
+                var a24 = this.rawData[7];
+                var a31 = this.rawData[8];
+                var a32 = this.rawData[9];
+                var a33 = this.rawData[10];
+                var a34 = this.rawData[11];
+                var a41 = this.rawData[12];
+                var a42 = this.rawData[13];
+                var a43 = this.rawData[14];
+                var a44 = this.rawData[15];
+
+                var b11 = rhs.rawData[0];
+                var b12 = rhs.rawData[1];
+                var b13 = rhs.rawData[2];
+                var b14 = rhs.rawData[3];
+                var b21 = rhs.rawData[4];
+                var b22 = rhs.rawData[5];
+                var b23 = rhs.rawData[6];
+                var b24 = rhs.rawData[7];
+                var b31 = rhs.rawData[8];
+                var b32 = rhs.rawData[9];
+                var b33 = rhs.rawData[10];
+                var b34 = rhs.rawData[11];
+                var b41 = rhs.rawData[12];
+                var b42 = rhs.rawData[13];
+                var b43 = rhs.rawData[14];
+                var b44 = rhs.rawData[15];
+
+                this.rawData[0] = b11 * a11 + b12 * a21 + b13 * a31 + b14 * a41;
+                this.rawData[1] = b11 * a12 + b12 * a22 + b13 * a32 + b14 * a42;
+                this.rawData[2] = b11 * a13 + b12 * a23 + b13 * a33 + b14 * a43;
+                this.rawData[3] = b11 * a14 + b12 * a24 + b13 * a34 + b14 * a44;
+
+                this.rawData[4] = b21 * a11 + b22 * a21 + b23 * a31 + b24 * a41;
+                this.rawData[5] = b21 * a12 + b22 * a22 + b23 * a32 + b24 * a42;
+                this.rawData[6] = b21 * a13 + b22 * a23 + b23 * a33 + b24 * a43;
+                this.rawData[7] = b21 * a14 + b22 * a24 + b23 * a34 + b24 * a44;
+
+                this.rawData[8] = b31 * a11 + b32 * a21 + b33 * a31 + b34 * a41;
+                this.rawData[9] = b31 * a12 + b32 * a22 + b33 * a32 + b34 * a42;
+                this.rawData[10] = b31 * a13 + b32 * a23 + b33 * a33 + b34 * a43;
+                this.rawData[11] = b31 * a14 + b32 * a24 + b33 * a34 + b34 * a44;
+
+                this.rawData[12] = b41 * a11 + b42 * a21 + b43 * a31 + b44 * a41;
+                this.rawData[13] = b41 * a12 + b42 * a22 + b43 * a32 + b44 * a42;
+                this.rawData[14] = b41 * a13 + b42 * a23 + b43 * a33 + b44 * a43;
+                this.rawData[15] = b41 * a14 + b42 * a24 + b43 * a34 + b44 * a44;
+            };
+
+            /**
+            * Appends an incremental rotation to a Matrix3D object.
+            */
+            Matrix3D.prototype.appendRotation = function (degrees, axis, pivotPoint) {
+                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
+                var r = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
+                if (pivotPoint) {
+                    //TODO:simplify
+                    this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
+                    this.append(r);
+                    this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
+                } else {
+                    this.append(r);
+                }
+            };
+
+            /**
+            * Appends an incremental scale change along the x, y, and z axes to a Matrix3D object.
+            */
+            Matrix3D.prototype.appendScale = function (xScale, yScale, zScale) {
+                /*
+                *              x 0 0 0
+                *    this  *   0 y 0 0
+                *              0 0 z 0
+                *              0 0 0 1
+                */
+                this.rawData[0] *= xScale;
+                this.rawData[1] *= yScale;
+                this.rawData[2] *= zScale;
+                this.rawData[4] *= xScale;
+                this.rawData[5] *= yScale;
+                this.rawData[6] *= zScale;
+                this.rawData[8] *= xScale;
+                this.rawData[9] *= yScale;
+                this.rawData[10] *= zScale;
+                this.rawData[12] *= xScale;
+                this.rawData[13] *= yScale;
+                this.rawData[14] *= zScale;
+            };
+
+            /**
+            * Appends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
+            */
+            Matrix3D.prototype.appendTranslation = function (x, y, z) {
+                this.rawData[12] += x;
+                this.rawData[13] += y;
+                this.rawData[14] += z;
+            };
+
+            /**
+            * Prepends an incremental rotation to a Matrix3D object.
+            */
+            Matrix3D.prototype.prependRotation = function (degrees, axis, pivotPoint) {
+                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
+                var r = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
+                if (pivotPoint) {
+                    //TODO:simplify
+                    this.prependTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
+                    this.prepend(r);
+                    this.prependTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
+                } else {
+                    this.prepend(r);
+                }
+            };
+
+            /**
+            * Prepends an incremental scale change along the x, y, and z axes to a Matrix3D object.
+            */
+            Matrix3D.prototype.prependScale = function (xScale, yScale, zScale) {
+                /*
+                *      x 0 0 0
+                *      0 y 0 0   * this
+                *      0 0 z 0
+                *      0 0 0 1
+                */
+                this.rawData[0] *= xScale;
+                this.rawData[1] *= xScale;
+                this.rawData[2] *= xScale;
+                this.rawData[3] *= xScale;
+                this.rawData[4] *= yScale;
+                this.rawData[5] *= yScale;
+                this.rawData[6] *= yScale;
+                this.rawData[7] *= yScale;
+                this.rawData[8] *= zScale;
+                this.rawData[9] *= zScale;
+                this.rawData[10] *= zScale;
+                this.rawData[11] *= zScale;
+            };
+
+            /**
+            * Prepends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
+            */
+            Matrix3D.prototype.prependTranslation = function (x, y, z) {
+                /*
+                *             1 0 0 0
+                *             0 1 0 0   *  this
+                *             0 0 1 0
+                *             x y z 1
+                */
+                this.rawData[12] += this.rawData[0] * x + this.rawData[4] * y + this.rawData[8] * z;
+                this.rawData[13] += this.rawData[1] * x + this.rawData[5] * y + this.rawData[9] * z;
+                this.rawData[14] += this.rawData[2] * x + this.rawData[6] * y + this.rawData[10] * z;
+                this.rawData[15] += this.rawData[3] * x + this.rawData[7] * y + this.rawData[11] * z;
+            };
+
+            /**
+            * Returns a new Matrix3D object that is an exact copy of the current Matrix3D object.
+            */
+            Matrix3D.prototype.clone = function () {
+                return new Matrix3D(Array.prototype.slice.call(this.rawData));
+            };
+
+            /**
+            *  Copies a Vector3D object into specific column of the calling Matrix3D object.
+            */
+            Matrix3D.prototype.copyColumnFrom = function (column /*uint*/ , vector3D) {
+                if (column < 0 || column > 3)
+                    throw new Error("column error");
+
+                // column is row ...
+                this.rawData[column * 4 + 0] = vector3D.x;
+                this.rawData[column * 4 + 1] = vector3D.y;
+                this.rawData[column * 4 + 2] = vector3D.z;
+                this.rawData[column * 4 + 3] = vector3D.w;
+            };
+
+            /**
+            * Copies specific column of the calling Matrix3D object into the Vector3D object.
+            */
+            Matrix3D.prototype.copyColumnTo = function (column /*uint*/ , vector3D) {
+                if (column < 0 || column > 3)
+                    throw new Error("column error");
+
+                //column is row...
+                vector3D.x = this.rawData[column * 4];
+                vector3D.y = this.rawData[column * 4 + 1];
+                vector3D.z = this.rawData[column * 4 + 2];
+                vector3D.w = this.rawData[column * 4 + 3];
+            };
+
+            /**
+            * Copies all of the matrix data from the source Matrix3D object into the calling Matrix3D object.
+            */
+            Matrix3D.prototype.copyFrom = function (sourceMatrix3D) {
+                var len = sourceMatrix3D.rawData.length;
+                for (var c = 0; c < len; c++)
+                    this.rawData[c] = sourceMatrix3D.rawData[c];
+            };
+
+            /**
+            * Copies all of the vector data from the source vector object into the calling Matrix3D object.
+            */
+            Matrix3D.prototype.copyRawDataFrom = function (vector, index, transpose) {
+                if (typeof index === "undefined") { index = 0; }
+                if (typeof transpose === "undefined") { transpose = false; }
+                if (transpose)
+                    this.transpose();
+
+                var len = vector.length - index;
+                for (var c = 0; c < len; c++)
+                    this.rawData[c] = vector[c + index];
+
+                if (transpose)
+                    this.transpose();
+            };
+
+            /**
+            * Copies all of the matrix data from the calling Matrix3D object into the provided vector.
+            */
+            Matrix3D.prototype.copyRawDataTo = function (vector, index, transpose) {
+                if (typeof index === "undefined") { index = 0; }
+                if (typeof transpose === "undefined") { transpose = false; }
+                if (transpose)
+                    this.transpose();
+
+                var len = this.rawData.length;
+
+                for (var c = 0; c < len; c++)
+                    vector[c + index] = this.rawData[c];
+
+                if (index >= 0) {
+                    for (var i = 0; i < index; i++)
+                        vector[i] = 0;
+                    vector.length = index + len;
+                }
+                if (transpose)
+                    this.transpose();
+            };
+
+            /**
+            * Copies a Vector3D object into specific row of the calling Matrix3D object.
+            */
+            Matrix3D.prototype.copyRowFrom = function (row /*uint*/ , vector3D) {
+                if (row < 0 || row > 3)
+                    throw new Error("row error");
+                this.rawData[row] = vector3D.x;
+                this.rawData[row + 4] = vector3D.y;
+                this.rawData[row + 8] = vector3D.z;
+                this.rawData[row + 12] = vector3D.w;
+            };
+
+            /**
+            * Copies specific row of the calling Matrix3D object into the Vector3D object.
+            */
+            Matrix3D.prototype.copyRowTo = function (row /*uint*/ , vector3D) {
+                if (row < 0 || row > 3)
+                    throw new Error("row error");
+                vector3D.x = this.rawData[row];
+                vector3D.y = this.rawData[row + 4];
+                vector3D.z = this.rawData[row + 8];
+                vector3D.w = this.rawData[row + 12];
+            };
+
+            Matrix3D.prototype.copyToMatrix3D = function (dest) {
+                dest.rawData.set(this.rawData);
+            };
+
+            /**
+            * Returns the transformation matrix's translation, rotation, and scale settings as a Vector of three Vector3D objects.
+            */
+            Matrix3D.prototype.decompose = function (orientationStyle) {
+                // Initial Tests - Not OK
+                if (typeof orientationStyle === "undefined") { orientationStyle = "eulerAngles"; }
+                var vec = [];
+                var m = this.clone();
+                var mr = m.rawData;
+
+                var pos = new geom.Vector3D(mr[12], mr[13], mr[14]);
+                mr[12] = 0;
+                mr[13] = 0;
+                mr[14] = 0;
+
+                var scale = new geom.Vector3D();
+
+                scale.x = Math.sqrt(mr[0] * mr[0] + mr[1] * mr[1] + mr[2] * mr[2]);
+                scale.y = Math.sqrt(mr[4] * mr[4] + mr[5] * mr[5] + mr[6] * mr[6]);
+                scale.z = Math.sqrt(mr[8] * mr[8] + mr[9] * mr[9] + mr[10] * mr[10]);
+
+                //determine 3*3
+                if (mr[0] * (mr[5] * mr[10] - mr[6] * mr[9]) - mr[1] * (mr[4] * mr[10] - mr[6] * mr[8]) + mr[2] * (mr[4] * mr[9] - mr[5] * mr[8]) < 0)
+                    scale.z = -scale.z;
+
+                mr[0] /= scale.x;
+                mr[1] /= scale.x;
+                mr[2] /= scale.x;
+                mr[4] /= scale.y;
+                mr[5] /= scale.y;
+                mr[6] /= scale.y;
+                mr[8] /= scale.z;
+                mr[9] /= scale.z;
+                mr[10] /= scale.z;
+
+                var rot = new geom.Vector3D();
+
+                switch (orientationStyle) {
+                    case stagl.geom.Orientation3D.AXIS_ANGLE:
+                        rot.w = Math.acos((mr[0] + mr[5] + mr[10] - 1) / 2);
+
+                        var len = Math.sqrt((mr[6] - mr[9]) * (mr[6] - mr[9]) + (mr[8] - mr[2]) * (mr[8] - mr[2]) + (mr[1] - mr[4]) * (mr[1] - mr[4]));
+                        rot.x = (mr[6] - mr[9]) / len;
+                        rot.y = (mr[8] - mr[2]) / len;
+                        rot.z = (mr[1] - mr[4]) / len;
+
+                        break;
+                    case stagl.geom.Orientation3D.QUATERNION:
+                        var tr = mr[0] + mr[5] + mr[10];
+
+                        if (tr > 0) {
+                            rot.w = Math.sqrt(1 + tr) / 2;
+
+                            rot.x = (mr[6] - mr[9]) / (4 * rot.w);
+                            rot.y = (mr[8] - mr[2]) / (4 * rot.w);
+                            rot.z = (mr[1] - mr[4]) / (4 * rot.w);
+                        } else if ((mr[0] > mr[5]) && (mr[0] > mr[10])) {
+                            rot.x = Math.sqrt(1 + mr[0] - mr[5] - mr[10]) / 2;
+
+                            rot.w = (mr[6] - mr[9]) / (4 * rot.x);
+                            rot.y = (mr[1] + mr[4]) / (4 * rot.x);
+                            rot.z = (mr[8] + mr[2]) / (4 * rot.x);
+                        } else if (mr[5] > mr[10]) {
+                            rot.y = Math.sqrt(1 + mr[5] - mr[0] - mr[10]) / 2;
+
+                            rot.x = (mr[1] + mr[4]) / (4 * rot.y);
+                            rot.w = (mr[8] - mr[2]) / (4 * rot.y);
+                            rot.z = (mr[6] + mr[9]) / (4 * rot.y);
+                        } else {
+                            rot.z = Math.sqrt(1 + mr[10] - mr[0] - mr[5]) / 2;
+
+                            rot.x = (mr[8] + mr[2]) / (4 * rot.z);
+                            rot.y = (mr[6] + mr[9]) / (4 * rot.z);
+                            rot.w = (mr[1] - mr[4]) / (4 * rot.z);
+                        }
+
+                        break;
+                    case stagl.geom.Orientation3D.EULER_ANGLES:
+                        rot.y = Math.asin(-mr[2]);
+
+                        //var cos:number = Math.cos(rot.y);
+                        if (mr[2] != 1 && mr[2] != -1) {
+                            rot.x = Math.atan2(mr[6], mr[10]);
+                            rot.z = Math.atan2(mr[1], mr[0]);
+                        } else {
+                            rot.z = 0;
+                            rot.x = Math.atan2(mr[4], mr[5]);
+                        }
+
+                        break;
+                }
+
+                vec.push(pos);
+                vec.push(rot);
+                vec.push(scale);
+
+                return vec;
+            };
+
+            /**
+            * Converts the current matrix to an identity or unit matrix.
+            */
+            Matrix3D.prototype.identity = function () {
+                this.rawData = new Float32Array([
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1]);
+            };
+
+            /**
+            * [static] Interpolates the translation, rotation, and scale transformation of one matrix toward those of the target matrix.
+            */
+            //TODO: only support rotation matrix for now
+            Matrix3D.interpolate = function (thisMat, toMat, percent) {
+                var a = new geom.Quaternion().fromMatrix3D(thisMat);
+                var b = new geom.Quaternion().fromMatrix3D(toMat);
+
+                return geom.Quaternion.lerp(a, b, percent).toMatrix3D();
+            };
+
+            /**
+            * Interpolates this matrix towards the translation, rotation, and scale transformations of the target matrix.
+            */
+            //TODO: only support rotation matrix for now
+            Matrix3D.prototype.interpolateTo = function (toMat, percent) {
+                this.rawData.set(Matrix3D.interpolate(this, toMat, percent).rawData);
+            };
+
+            /**
+            * Inverts the current matrix.
+            */
+            Matrix3D.prototype.invert = function () {
+                var d = this.determinant;
+                var invertable = Math.abs(d) > 0.00000000001;
+
+                if (invertable) {
+                    d = 1 / d;
+                    var m11 = this.rawData[0];
+                    var m21 = this.rawData[4];
+                    var m31 = this.rawData[8];
+                    var m41 = this.rawData[12];
+                    var m12 = this.rawData[1];
+                    var m22 = this.rawData[5];
+                    var m32 = this.rawData[9];
+                    var m42 = this.rawData[13];
+                    var m13 = this.rawData[2];
+                    var m23 = this.rawData[6];
+                    var m33 = this.rawData[10];
+                    var m43 = this.rawData[14];
+                    var m14 = this.rawData[3];
+                    var m24 = this.rawData[7];
+                    var m34 = this.rawData[11];
+                    var m44 = this.rawData[15];
+
+                    this.rawData[0] = d * (m22 * (m33 * m44 - m43 * m34) - m32 * (m23 * m44 - m43 * m24) + m42 * (m23 * m34 - m33 * m24));
+                    this.rawData[1] = -d * (m12 * (m33 * m44 - m43 * m34) - m32 * (m13 * m44 - m43 * m14) + m42 * (m13 * m34 - m33 * m14));
+                    this.rawData[2] = d * (m12 * (m23 * m44 - m43 * m24) - m22 * (m13 * m44 - m43 * m14) + m42 * (m13 * m24 - m23 * m14));
+                    this.rawData[3] = -d * (m12 * (m23 * m34 - m33 * m24) - m22 * (m13 * m34 - m33 * m14) + m32 * (m13 * m24 - m23 * m14));
+                    this.rawData[4] = -d * (m21 * (m33 * m44 - m43 * m34) - m31 * (m23 * m44 - m43 * m24) + m41 * (m23 * m34 - m33 * m24));
+                    this.rawData[5] = d * (m11 * (m33 * m44 - m43 * m34) - m31 * (m13 * m44 - m43 * m14) + m41 * (m13 * m34 - m33 * m14));
+                    this.rawData[6] = -d * (m11 * (m23 * m44 - m43 * m24) - m21 * (m13 * m44 - m43 * m14) + m41 * (m13 * m24 - m23 * m14));
+                    this.rawData[7] = d * (m11 * (m23 * m34 - m33 * m24) - m21 * (m13 * m34 - m33 * m14) + m31 * (m13 * m24 - m23 * m14));
+                    this.rawData[8] = d * (m21 * (m32 * m44 - m42 * m34) - m31 * (m22 * m44 - m42 * m24) + m41 * (m22 * m34 - m32 * m24));
+                    this.rawData[9] = -d * (m11 * (m32 * m44 - m42 * m34) - m31 * (m12 * m44 - m42 * m14) + m41 * (m12 * m34 - m32 * m14));
+                    this.rawData[10] = d * (m11 * (m22 * m44 - m42 * m24) - m21 * (m12 * m44 - m42 * m14) + m41 * (m12 * m24 - m22 * m14));
+                    this.rawData[11] = -d * (m11 * (m22 * m34 - m32 * m24) - m21 * (m12 * m34 - m32 * m14) + m31 * (m12 * m24 - m22 * m14));
+                    this.rawData[12] = -d * (m21 * (m32 * m43 - m42 * m33) - m31 * (m22 * m43 - m42 * m23) + m41 * (m22 * m33 - m32 * m23));
+                    this.rawData[13] = d * (m11 * (m32 * m43 - m42 * m33) - m31 * (m12 * m43 - m42 * m13) + m41 * (m12 * m33 - m32 * m13));
+                    this.rawData[14] = -d * (m11 * (m22 * m43 - m42 * m23) - m21 * (m12 * m43 - m42 * m13) + m41 * (m12 * m23 - m22 * m13));
+                    this.rawData[15] = d * (m11 * (m22 * m33 - m32 * m23) - m21 * (m12 * m33 - m32 * m13) + m31 * (m12 * m23 - m22 * m13));
+                }
+                return invertable;
+            };
+
+            /**
+            * Rotates the display object so that it faces a specified position.
+            */
+            Matrix3D.prototype.pointAt = function (pos, at, up) {
+                if (typeof at === "undefined") { at = null; }
+                if (typeof up === "undefined") { up = null; }
+                console.log('pointAt not impletement');
+                //            if (at == null)
+                //                at = new Vector3D(0, -1, 0);
+                //            if (up == null)
+                //                up = new Vector3D(0, 0, -1);
+                //
+                //            var zAxis: Vector3D = at.subtract(pos);
+                //            zAxis.normalize();
+                //
+                //            var xAxis: Vector3D = zAxis.crossProduct(up);
+                //            var yAxis: Vector3D = zAxis.crossProduct(xAxis);
+                //
+                //            this.rawData = new Float32Array([
+                //                xAxis.x, xAxis.y, xAxis.z, 0,
+                //                yAxis.x, yAxis.y, yAxis.z, 0,
+                //                zAxis.x, zAxis.y, zAxis.z, 0,
+                //                pos.x, pos.y, pos.z, 1
+                //            ]);
+            };
+
+            /**
+            * Sets the transformation matrix's translation, rotation, and scale settings.
+            */
+            Matrix3D.prototype.recompose = function (components, orientationStyle) {
+                if (typeof orientationStyle === "undefined") { orientationStyle = "eulerAngles"; }
+                if (components.length < 3)
+                    return false;
+
+                //TODO: only support euler angle for now
+                var scale_tmp = components[2];
+                var pos_tmp = components[0];
+                var euler_tmp = components[1];
+
+                this.identity();
+                this.appendScale(scale_tmp.x, scale_tmp.y, scale_tmp.z);
+
+                this.append(this.getRotateMatrix(stagl.geom.Vector3D.X_AXIS, euler_tmp.x));
+                this.append(this.getRotateMatrix(stagl.geom.Vector3D.Y_AXIS, euler_tmp.y));
+                this.append(this.getRotateMatrix(stagl.geom.Vector3D.Z_AXIS, euler_tmp.z));
+
+                this.rawData[12] = pos_tmp.x;
+                this.rawData[13] = pos_tmp.y;
+                this.rawData[14] = pos_tmp.z;
+                this.rawData[15] = 1;
+
+                return true;
+            };
+
+            /**
+            * Uses the transformation matrix to transform a Vector3D object from one space coordinate to another.
+            */
+            Matrix3D.prototype.transformVector = function (v) {
+                // [x,y,z,1] * this
+                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[4] + v.z * this.rawData[8] + this.rawData[12], v.x * this.rawData[1] + v.y * this.rawData[5] + v.z * this.rawData[9] + this.rawData[13], v.x * this.rawData[2] + v.y * this.rawData[6] + v.z * this.rawData[10] + this.rawData[14], v.x * this.rawData[3] + v.y * this.rawData[7] + v.z * this.rawData[11] + this.rawData[15]);
+            };
+
+            /**
+            * Uses the transformation matrix without its translation elements to transform a Vector3D object from one space coordinate to another.
+            */
+            Matrix3D.prototype.deltaTransformVector = function (v) {
+                //[x,y,z,0] * this
+                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[4] + v.z * this.rawData[8], v.x * this.rawData[1] + v.y * this.rawData[5] + v.z * this.rawData[9], v.x * this.rawData[2] + v.y * this.rawData[6] + v.z * this.rawData[10], v.x * this.rawData[3] + v.y * this.rawData[7] + v.z * this.rawData[11]);
+            };
+
+            /**
+            * Uses the transformation matrix to transform a Vector of Numbers from one coordinate space to another.
+            */
+            Matrix3D.prototype.transformVectors = function (vin, vout) {
+                var i = 0;
+                var x = 0, y = 0, z = 0;
+
+                while (i + 3 <= vin.length) {
+                    x = vin[i];
+                    y = vin[i + 1];
+                    z = vin[i + 2];
+                    vout[i] = x * this.rawData[0] + y * this.rawData[4] + z * this.rawData[8] + this.rawData[12];
+                    vout[i + 1] = x * this.rawData[1] + y * this.rawData[5] + z * this.rawData[9] + this.rawData[13];
+                    vout[i + 2] = x * this.rawData[2] + y * this.rawData[6] + z * this.rawData[10] + this.rawData[14];
+                    i += 3;
+                }
+            };
+
+            /**
+            * Converts the current Matrix3D object to a matrix where the rows and columns are swapped.
+            */
+            Matrix3D.prototype.transpose = function () {
+                var a12 = this.rawData[1];
+                var a13 = this.rawData[2];
+                var a14 = this.rawData[3];
+                var a21 = this.rawData[4];
+                var a23 = this.rawData[6];
+                var a24 = this.rawData[7];
+                var a31 = this.rawData[8];
+                var a32 = this.rawData[9];
+                var a34 = this.rawData[11];
+                var a41 = this.rawData[12];
+                var a42 = this.rawData[13];
+                var a43 = this.rawData[14];
+
+                this.rawData[1] = a21;
+                this.rawData[2] = a31;
+                this.rawData[3] = a41;
+                this.rawData[4] = a12;
+                this.rawData[6] = a32;
+                this.rawData[7] = a42;
+                this.rawData[8] = a13;
+                this.rawData[9] = a23;
+                this.rawData[11] = a43;
+                this.rawData[12] = a14;
+                this.rawData[13] = a24;
+                this.rawData[14] = a34;
+            };
+
+            Matrix3D.prototype.toString = function () {
+                var str = "[Matrix3D]\n";
+                for (var i = 0; i < this.rawData.length; i++) {
+                    str += this.rawData[i] + "  , ";
+                    if (((i + 1) % 4) == 0)
+                        str += "\n";
+                }
+
+                return str;
+            };
+
+            Matrix3D.prototype.getRotateMatrix = function (axis, radians) {
+                var ax = axis.x;
+                var ay = axis.y;
+                var az = axis.z;
+
+                //var radians: number = Math.PI / 180 * degrees;
+                var c = Math.cos(radians);
+                var s = Math.sin(radians);
+
+                //get rotation matrix
+                var rMatrix;
+
+                if (ax != 0 && ay == 0 && az == 0) {
+                    rMatrix = new Matrix3D([
+                        1, 0, 0, 0,
+                        0, c, s, 0,
+                        0, -s, c, 0,
+                        0, 0, 0, 1
+                    ]);
+                } else if (ay != 0 && ax == 0 && az == 0) {
+                    rMatrix = new Matrix3D([
+                        c, 0, -s, 0,
+                        0, 1, 0, 0,
+                        s, 0, c, 0,
+                        0, 0, 0, 1
+                    ]);
+                } else if (az != 0 && ax == 0 && ay == 0) {
+                    rMatrix = new Matrix3D([
+                        c, s, 0, 0,
+                        -s, c, 0, 0,
+                        0, 0, 1, 0,
+                        0, 0, 0, 1
+                    ]);
+                } else {
+                    //make sure axis is a unit vector
+                    var lsq = axis.lengthSquared;
+                    if (Math.abs(lsq - 1) > 0.0001) {
+                        var f = 1 / Math.sqrt(lsq);
+                        ax = axis.x * f;
+                        ay = axis.y * f;
+                        az = axis.z * f;
+                    }
+
+                    var t = 1 - c;
+
+                    rMatrix = new Matrix3D([
+                        ax * ax * t + c, ax * ay * t + az * s, ax * az * t - ay * s, 0,
+                        ax * ay * t - az * s, ay * ay * t + c, ay * az * t + ax * s, 0,
+                        ax * az * t + ay * s, ay * az * t - ax * s, az * az * t + c, 0,
+                        0, 0, 0, 1
+                    ]);
+                }
+                return rMatrix;
+            };
+            Matrix3D.DEG_2_RAD = Math.PI / 180;
+            return Matrix3D;
+        })();
+        geom.Matrix3D = Matrix3D;
+    })(stagl.geom || (stagl.geom = {}));
+    var geom = stagl.geom;
+})(stagl || (stagl = {}));
+var stagl;
+(function (stagl) {
+    ///<reference path="../_definitions.ts"/>
+    ///<reference path="Matrix3D.ts"/>
+    (function (geom) {
+        var Quaternion = (function () {
+            function Quaternion(x, y, z, w) {
+                if (typeof x === "undefined") { x = 0; }
+                if (typeof y === "undefined") { y = 0; }
+                if (typeof z === "undefined") { z = 0; }
+                if (typeof w === "undefined") { w = 1; }
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
+                this.w = 1;
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.w = w;
+            }
+            Quaternion.lerp = function (qa, qb, percent) {
+                // shortest direction
+                if (qa.x * qb.x + qa.y * qb.y + qa.z * qb.z + qa.w * qb.w < 0) {
+                    return new Quaternion(qa.x + percent * (-qb.x - qa.x), qa.y + percent * (-qb.y - qa.y), qa.z + percent * (-qb.z - qa.z), qa.w + percent * (-qb.w - qb.w));
+                }
+                return new Quaternion(qa.x + percent * (qb.x - qa.x), qa.y + percent * (qb.y - qa.y), qa.z + percent * (qb.z - qa.z), qa.w + percent * (qb.w - qb.w));
+            };
+
+            Quaternion.prototype.fromMatrix3D = function (m) {
+                var m11 = m.rawData[0], m12 = m.rawData[1], m13 = m.rawData[2], m21 = m.rawData[4], m22 = m.rawData[5], m23 = m.rawData[6], m31 = m.rawData[8], m32 = m.rawData[9], m33 = m.rawData[10];
+
+                var tr = m11 + m22 + m33;
+                var tmp;
+                if (tr > 0) {
+                    tmp = 1 / (2 * Math.sqrt(tr + 1));
+
+                    this.x = (m23 - m32) * tmp;
+                    this.y = (m31 - m13) * tmp;
+                    this.z = (m12 - m21) * tmp;
+                    this.w = 0.25 / tmp;
+                } else {
+                    if ((m11 > m22) && (m11 > m33)) {
+                        tmp = 1 / (2 * Math.sqrt(1 + m11 - m22 + m33));
+
+                        this.x = (m21 + m12) * tmp;
+                        this.y = (m13 + m31) * tmp;
+                        this.z = (m32 - m23) * tmp;
+                        this.w = 0.25 / tmp;
+                    } else if ((m22 > m11) && (m22 > m33)) {
+                        tmp = 1 / (Math.sqrt(1 + m22 - m11 - m33));
+                        this.x = 0.25 / tmp;
+                        this.y = (m32 + m23) * tmp;
+                        this.z = (m13 - m31) * tmp;
+                        this.w = (m21 + m12) * tmp;
+                    } else if ((m33 > m11) && (m33 > m22)) {
+                        tmp = 1 / (Math.sqrt(1 + m33 - m11 - m22));
+                        this.x = (m32 + m23) * tmp;
+                        this.y = 0.25 / tmp;
+                        this.z = (m21 - m12) * tmp;
+                        this.w = (m13 + m31) * tmp;
+                    }
+                }
+                return this;
+            };
+
+            Quaternion.prototype.toMatrix3D = function (target) {
+                if (typeof target === "undefined") { target = null; }
+                var x2 = this.x + this.x, y2 = this.y + this.y, z2 = this.z + this.z, xx = this.x * x2, xy = this.x * y2, xz = this.x * z2, yy = this.y * y2, yz = this.y * z2, zz = this.z * z2, wx = this.w * x2, wy = this.w * y2, wz = this.w * z2;
+
+                if (!target)
+                    target = new geom.Matrix3D();
+
+                target.rawData[0] = 1 - (yy + zz);
+                target.rawData[1] = xy + wz;
+                target.rawData[2] = xz - wy;
+                target.rawData[3] = 0;
+                target.rawData[4] = xy - wz;
+                target.rawData[5] = 1 - (xx + zz);
+                target.rawData[6] = yz + wx;
+                target.rawData[7] = 0;
+                target.rawData[8] = xz + wy;
+                target.rawData[9] = yz - wx;
+                target.rawData[10] = 1 - (xx + yy);
+                target.rawData[11] = 0;
+                target.rawData[12] = 0;
+                target.rawData[13] = 0;
+                target.rawData[14] = 0;
+                target.rawData[15] = 1;
+
+                return target;
+            };
+
+            /**
+            * @param axis   must be a normalized vector
+            * @param angleInRadians
+            */
+            Quaternion.prototype.fromAxisAngle = function (axis, angleInRadians) {
+                var angle = angleInRadians * 0.5;
+                var sin_a = Math.sin(angle);
+                var cos_a = Math.cos(angle);
+
+                this.x = axis.x * sin_a;
+                this.y = axis.y * sin_a;
+                this.z = axis.z * sin_a;
+                this.w = cos_a;
+            };
+
+            Quaternion.prototype.conjugate = function () {
+                this.x = -this.x;
+                this.y = -this.y;
+                this.z = -this.z;
+            };
+
+            Quaternion.prototype.toString = function () {
+                return "[Quaternion] (x:" + this.x + " ,y:" + this.y + ", z:" + this.z + ", w:" + this.w + ")";
+            };
+            return Quaternion;
+        })();
+        geom.Quaternion = Quaternion;
+    })(stagl.geom || (stagl.geom = {}));
+    var geom = stagl.geom;
+})(stagl || (stagl = {}));
+var stagl;
+(function (stagl) {
+    ///<reference path="../_definitions.ts"/>
+    (function (geom) {
+        var PerspectiveMatrix3D = (function (_super) {
+            __extends(PerspectiveMatrix3D, _super);
+            function PerspectiveMatrix3D() {
+                _super.apply(this, arguments);
+            }
+            PerspectiveMatrix3D.prototype.perspectiveFieldOfViewRH = function (fieldOfViewY, aspectRatio, zNear, zFar) {
+                var yScale = 1.0 / Math.tan(fieldOfViewY / 2.0);
+                var xScale = yScale / aspectRatio;
+                this.copyRawDataFrom([
+                    xScale, 0.0, 0.0, 0.0,
+                    0.0, yScale, 0.0, 0.0,
+                    0.0, 0.0, (zFar + zNear) / (zNear - zFar), -1.0,
+                    0.0, 0.0, (2 * zNear * zFar) / (zNear - zFar), 0.0
+                ]);
+            };
+
+            PerspectiveMatrix3D.prototype.perspectiveFieldOfViewLH = function (fieldOfViewY, aspectRatio, zNear, zFar) {
+                var yScale = 1.0 / Math.tan(fieldOfViewY / 2.0);
+                var xScale = yScale / aspectRatio;
+                this.copyRawDataFrom([
+                    xScale, 0.0, 0.0, 0.0,
+                    0.0, yScale, 0.0, 0.0,
+                    0.0, 0.0, (zFar + zNear) / (zFar - zNear), 1.0,
+                    0.0, 0.0, (zNear * zFar) / (zNear - zFar), 0.0
+                ]);
+            };
+            return PerspectiveMatrix3D;
+        })(geom.Matrix3D);
+        geom.PerspectiveMatrix3D = PerspectiveMatrix3D;
+    })(stagl.geom || (stagl.geom = {}));
+    var geom = stagl.geom;
+})(stagl || (stagl = {}));
+//clipspace coordinates always go from -1 to +1
+///<reference path="_definitions.ts"/>
+var stagl;
+(function (stagl) {
+    stagl.VERSION = 0.001;
+
+    var Stage3D = (function (_super) {
+        __extends(Stage3D, _super);
+        function Stage3D(canvas) {
+            _super.call(this);
+            this._context3D = null;
+            this._stageWidth = 0;
+            this._stageHeight = 0;
+            this._canvas = canvas;
+            this._stageWidth = canvas.width;
+            this._stageHeight = canvas.height;
+        }
+        Object.defineProperty(Stage3D.prototype, "context3D", {
+            /**
+            * [read-only] The Context3D object associated with this Stage3D instance.
+            */
+            get: function () {
+                return this._context3D;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Stage3D.prototype, "stageWidth", {
+            get: function () {
+                return this._stageWidth;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Stage3D.prototype, "stageHeight", {
+            get: function () {
+                return this._stageHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Stage3D.prototype.requestContext3D = function () {
+            if (!this._canvas)
+                return;
+
+            if (this._context3D != null)
+                return this.onCreateSuccess();
+
+            if (this._canvas.addEventListener)
+                this._canvas.addEventListener("webglcontextcreationerror", this.onCreationError, false);
+
+            var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+            stagl.Context3D.GL = null;
+            for (var i = 0; i < names.length; i++) {
+                try  {
+                    stagl.Context3D.GL = this._canvas.getContext(names[i]);
+                } catch (e) {
+                }
+
+                if (stagl.Context3D.GL)
+                    break;
+            }
+
+            if (stagl.Context3D.GL == null)
+                return this.onCreationError(null);
+
+            this._context3D = new stagl.Context3D();
+            return this.onCreateSuccess();
+        };
+
+        Stage3D.prototype.onCreationError = function (e) {
+            if (typeof e === "undefined") { e = null; }
+            if (e != null) {
+                if (this._canvas.removeEventListener)
+                    this._canvas.removeEventListener("webglcontextcreationerror", this.onCreationError, false);
+            }
+
+            this.dispatchEvent(new stagl.events.ErrorEvent()); //TODO: error message
+        };
+
+        Stage3D.prototype.onCreateSuccess = function () {
+            var e = new stagl.events.Event(stagl.events.Event.CONTEXT3D_CREATE);
+            e.target = this;
+            this.dispatchEvent(e);
+        };
+        return Stage3D;
+    })(stagl.events.EventDispatcher);
+    stagl.Stage3D = Stage3D;
 })(stagl || (stagl = {}));
 ///<reference path="_definitions.ts"/>
 var stagl;
@@ -1417,45 +1841,6 @@ var stagl;
     })();
     stagl.Context3D = Context3D;
 })(stagl || (stagl = {}));
-var stagl;
-(function (stagl) {
-    var Context3DBlendFactor = (function () {
-        function Context3DBlendFactor() {
-        }
-        Context3DBlendFactor.init = function () {
-            Context3DBlendFactor.ONE = stagl.Context3D.GL.ONE;
-            Context3DBlendFactor.ZERO = stagl.Context3D.GL.ZERO;
-            Context3DBlendFactor.SOURCE_COLOR = stagl.Context3D.GL.SRC_COLOR;
-            Context3DBlendFactor.DESTINATION_COLOR = stagl.Context3D.GL.DST_COLOR;
-            Context3DBlendFactor.SOURCE_ALPHA = stagl.Context3D.GL.SRC_ALPHA;
-            Context3DBlendFactor.DESTINATION_ALPHA = stagl.Context3D.GL.DST_ALPHA;
-            Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR = stagl.Context3D.GL.ONE_MINUS_SRC_COLOR;
-            Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR = stagl.Context3D.GL.ONE_MINUS_DST_COLOR;
-            Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA = stagl.Context3D.GL.ONE_MINUS_SRC_ALPHA;
-            Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA = stagl.Context3D.GL.ONE_MINUS_DST_ALPHA;
-            //CONSTANT_COLOR
-            //ONE_MINUS_CONSTANT_COLOR
-            //ONE_MINUS_CONSTANT_ALPHA
-        };
-        return Context3DBlendFactor;
-    })();
-    stagl.Context3DBlendFactor = Context3DBlendFactor;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts"/>
-var stagl;
-(function (stagl) {
-    var Context3DVertexBufferFormat = (function () {
-        function Context3DVertexBufferFormat() {
-        }
-        Context3DVertexBufferFormat.BYTES_4 = "bytes4";
-        Context3DVertexBufferFormat.FLOAT_1 = "float1";
-        Context3DVertexBufferFormat.FLOAT_2 = "float2";
-        Context3DVertexBufferFormat.FLOAT_3 = "float3";
-        Context3DVertexBufferFormat.FLOAT_4 = "float4";
-        return Context3DVertexBufferFormat;
-    })();
-    stagl.Context3DVertexBufferFormat = Context3DVertexBufferFormat;
-})(stagl || (stagl = {}));
 ///<reference path="_definitions.ts"/>
 var stagl;
 (function (stagl) {
@@ -1559,93 +1944,54 @@ var stagl;
 ///<reference path="_definitions.ts"/>
 var stagl;
 (function (stagl) {
-    stagl.VERSION = 0.001;
+    var VertexBuffer3D = (function () {
+        function VertexBuffer3D(numVertices, data32PerVertex) {
+            this._numVertices = numVertices;
+            this._data32PerVertex = data32PerVertex;
 
-    var Stage3D = (function (_super) {
-        __extends(Stage3D, _super);
-        function Stage3D(canvas) {
-            _super.call(this);
-            this._context3D = null;
-            this._stageWidth = 0;
-            this._stageHeight = 0;
-            this._canvas = canvas;
-            this._stageWidth = canvas.width;
-            this._stageHeight = canvas.height;
+            this._glBuffer = stagl.Context3D.GL.createBuffer();
+            if (!this._glBuffer)
+                throw new Error("Failed to create buffer");
+            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, this._glBuffer);
         }
-        Object.defineProperty(Stage3D.prototype, "context3D", {
-            /**
-            * [read-only] The Context3D object associated with this Stage3D instance.
-            */
+        Object.defineProperty(VertexBuffer3D.prototype, "glBuffer", {
             get: function () {
-                return this._context3D;
+                return this._glBuffer;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(Stage3D.prototype, "stageWidth", {
+        Object.defineProperty(VertexBuffer3D.prototype, "data32PerVertex", {
             get: function () {
-                return this._stageWidth;
+                return this._data32PerVertex;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(Stage3D.prototype, "stageHeight", {
-            get: function () {
-                return this._stageHeight;
-            },
-            enumerable: true,
-            configurable: true
-        });
+        VertexBuffer3D.prototype.uploadFromVector = function (data, startVertex /* int */ , numVertices /* int */ ) {
+            this._data = data;
 
-        Stage3D.prototype.requestContext3D = function () {
-            if (!this._canvas)
-                return;
-
-            if (this._context3D != null)
-                return this.onCreateSuccess();
-
-            if (this._canvas.addEventListener)
-                this._canvas.addEventListener("webglcontextcreationerror", this.onCreationError, false);
-
-            var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-            stagl.Context3D.GL = null;
-            for (var i = 0; i < names.length; i++) {
-                try  {
-                    stagl.Context3D.GL = this._canvas.getContext(names[i]);
-                } catch (e) {
-                }
-
-                if (stagl.Context3D.GL)
-                    break;
+            if (startVertex != 0 || numVertices != this._numVertices) {
+                data = data.slice(startVertex * this._data32PerVertex, (numVertices * this._data32PerVertex));
             }
 
-            if (stagl.Context3D.GL == null)
-                return this.onCreationError(null);
-
-            this._context3D = new stagl.Context3D();
-            return this.onCreateSuccess();
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, this._glBuffer);
+            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ARRAY_BUFFER, new Float32Array(data), stagl.Context3D.GL.STATIC_DRAW);
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, null);
         };
 
-        Stage3D.prototype.onCreationError = function (e) {
-            if (typeof e === "undefined") { e = null; }
-            if (e != null) {
-                if (this._canvas.removeEventListener)
-                    this._canvas.removeEventListener("webglcontextcreationerror", this.onCreationError, false);
-            }
-
-            this.dispatchEvent(new stagl.events.ErrorEvent()); //TODO: error message
+        VertexBuffer3D.prototype.dispose = function () {
+            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
+            this._glBuffer = null;
+            this._data.length = 0;
+            this._numVertices = 0;
+            this._data32PerVertex = 0;
         };
-
-        Stage3D.prototype.onCreateSuccess = function () {
-            var e = new stagl.events.Event(stagl.events.Event.CONTEXT3D_CREATE);
-            e.target = this;
-            this.dispatchEvent(e);
-        };
-        return Stage3D;
-    })(stagl.events.EventDispatcher);
-    stagl.Stage3D = Stage3D;
+        return VertexBuffer3D;
+    })();
+    stagl.VertexBuffer3D = VertexBuffer3D;
 })(stagl || (stagl = {}));
 ///<reference path="_definitions.ts" />
 var stagl;
@@ -1724,6 +2070,46 @@ var stagl;
     })();
     stagl.Texture = Texture;
 })(stagl || (stagl = {}));
+///<reference path="_definitions.ts"/>
+var stagl;
+(function (stagl) {
+    var Context3DBlendFactor = (function () {
+        function Context3DBlendFactor() {
+        }
+        Context3DBlendFactor.init = function () {
+            Context3DBlendFactor.ONE = stagl.Context3D.GL.ONE;
+            Context3DBlendFactor.ZERO = stagl.Context3D.GL.ZERO;
+            Context3DBlendFactor.SOURCE_COLOR = stagl.Context3D.GL.SRC_COLOR;
+            Context3DBlendFactor.DESTINATION_COLOR = stagl.Context3D.GL.DST_COLOR;
+            Context3DBlendFactor.SOURCE_ALPHA = stagl.Context3D.GL.SRC_ALPHA;
+            Context3DBlendFactor.DESTINATION_ALPHA = stagl.Context3D.GL.DST_ALPHA;
+            Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR = stagl.Context3D.GL.ONE_MINUS_SRC_COLOR;
+            Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR = stagl.Context3D.GL.ONE_MINUS_DST_COLOR;
+            Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA = stagl.Context3D.GL.ONE_MINUS_SRC_ALPHA;
+            Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA = stagl.Context3D.GL.ONE_MINUS_DST_ALPHA;
+            //CONSTANT_COLOR
+            //ONE_MINUS_CONSTANT_COLOR
+            //ONE_MINUS_CONSTANT_ALPHA
+        };
+        return Context3DBlendFactor;
+    })();
+    stagl.Context3DBlendFactor = Context3DBlendFactor;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts"/>
+var stagl;
+(function (stagl) {
+    var Context3DVertexBufferFormat = (function () {
+        function Context3DVertexBufferFormat() {
+        }
+        Context3DVertexBufferFormat.BYTES_4 = "bytes4";
+        Context3DVertexBufferFormat.FLOAT_1 = "float1";
+        Context3DVertexBufferFormat.FLOAT_2 = "float2";
+        Context3DVertexBufferFormat.FLOAT_3 = "float3";
+        Context3DVertexBufferFormat.FLOAT_4 = "float4";
+        return Context3DVertexBufferFormat;
+    })();
+    stagl.Context3DVertexBufferFormat = Context3DVertexBufferFormat;
+})(stagl || (stagl = {}));
 ///<reference path="_definitions.ts" />
 var stagl;
 (function (stagl) {
@@ -1756,72 +2142,23 @@ var stagl;
     })();
     stagl.Context3DTriangleFace = Context3DTriangleFace;
 })(stagl || (stagl = {}));
-///<reference path="events/EventDispatcher.ts"/>
 ///<reference path="events/Event.ts"/>
 ///<reference path="events/ErrorEvent.ts"/>
-///<reference path="geom/Matrix3D.ts"/>
+///<reference path="events/EventDispatcher.ts"/>
+///<reference path="geom/Orientation3D.ts"/>
 ///<reference path="geom/Vector3D.ts"/>
-///<reference path="Context3D.ts"/>
-///<reference path="Context3DBlendFactor.ts"/>
-///<reference path="Context3DVertexBufferFormat.ts" />
-///<reference path="Program3D.ts"/>
+///<reference path="geom/Quaternion.ts"/>
+///<reference path="geom/Matrix3D.ts"/>
+///<reference path="geom/PerspectiveMatrix3D.ts"/>
 ///<reference path="Stage3D.ts"/>
+///<reference path="Context3D.ts"/>
+///<reference path="Program3D.ts"/>
 ///<reference path="VertexBuffer3D.ts"/>
 ///<reference path="IndexBuffer3D.ts"/>
 ///<reference path="Texture.ts"/>
+///<reference path="Context3DBlendFactor.ts"/>
+///<reference path="Context3DVertexBufferFormat.ts" />
 ///<reference path="Context3DVertexBufferFormat.ts"/>
 ///<reference path="Context3DCompareMode.ts"/>
 ///<reference path="Context3DTriangleFace.ts"/>
-///<reference path="_definitions.ts"/>
-var stagl;
-(function (stagl) {
-    var VertexBuffer3D = (function () {
-        function VertexBuffer3D(numVertices, data32PerVertex) {
-            this._numVertices = numVertices;
-            this._data32PerVertex = data32PerVertex;
-
-            this._glBuffer = stagl.Context3D.GL.createBuffer();
-            if (!this._glBuffer)
-                throw new Error("Failed to create buffer");
-            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, this._glBuffer);
-        }
-        Object.defineProperty(VertexBuffer3D.prototype, "glBuffer", {
-            get: function () {
-                return this._glBuffer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(VertexBuffer3D.prototype, "data32PerVertex", {
-            get: function () {
-                return this._data32PerVertex;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        VertexBuffer3D.prototype.uploadFromVector = function (data, startVertex /* int */ , numVertices /* int */ ) {
-            this._data = data;
-
-            if (startVertex != 0 || numVertices != this._numVertices) {
-                data = data.slice(startVertex * this._data32PerVertex, (numVertices * this._data32PerVertex));
-            }
-
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, this._glBuffer);
-            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ARRAY_BUFFER, new Float32Array(data), stagl.Context3D.GL.STATIC_DRAW);
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, null);
-        };
-
-        VertexBuffer3D.prototype.dispose = function () {
-            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
-            this._glBuffer = null;
-            this._data.length = 0;
-            this._numVertices = 0;
-            this._data32PerVertex = 0;
-        };
-        return VertexBuffer3D;
-    })();
-    stagl.VertexBuffer3D = VertexBuffer3D;
-})(stagl || (stagl = {}));
 //# sourceMappingURL=stagl.js.map

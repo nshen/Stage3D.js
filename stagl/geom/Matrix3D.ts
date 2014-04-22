@@ -4,6 +4,8 @@ module stagl.geom
     export class Matrix3D
     {
 
+        private static DEG_2_RAD:number = Math.PI / 180 ;
+
         /**
          * [read-only] A Number that determines whether a matrix is invertible.
          */
@@ -132,7 +134,7 @@ module stagl.geom
         public appendRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = null): void
         {
 
-            var r: Matrix3D = this.getRotateMatrix(axis, degrees);
+            var r: Matrix3D = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
             if (pivotPoint)
             {  
                  //TODO:simplify
@@ -183,7 +185,7 @@ module stagl.geom
          */
         public prependRotation(degrees: number, axis: Vector3D, pivotPoint: Vector3D = null): void
         {
-            var r: Matrix3D = this.getRotateMatrix(axis, degrees);
+            var r: Matrix3D = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
             if (pivotPoint) {
                 //TODO:simplify
                 this.prependTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
@@ -249,7 +251,7 @@ module stagl.geom
                 throw new Error("column error");
 
             // column is row ...
-            this.rawData[column] = vector3D.x;
+            this.rawData[column * 4 + 0] = vector3D.x;
             this.rawData[column * 4 + 1] = vector3D.y;
             this.rawData[column * 4 + 2] = vector3D.z;
             this.rawData[column * 4 + 3] = vector3D.w;
@@ -304,10 +306,17 @@ module stagl.geom
             if (transpose)
                 this.transpose();
 
-            var len: number = this.rawData.length
+            var len: number = this.rawData.length;
+
 			for (var c: number = 0; c < len; c++)
                 vector[c + index] = this.rawData[c];
 
+            if(index >= 0)
+            {
+                for (var i:number = 0 ; i < index; i++)
+                    vector[i] = 0;
+                vector.length = index + len;
+            }
             if (transpose)
                 this.transpose();
         }
@@ -346,10 +355,107 @@ module stagl.geom
         /**
          * Returns the transformation matrix's translation, rotation, and scale settings as a Vector of three Vector3D objects.
          */
-        //public decompose(orientationStyle: String = "eulerAngles"):Vector3D[]
-        //{
+        public decompose(orientationStyle: String = "eulerAngles"):Vector3D[]
+        {
+            // Initial Tests - Not OK
 
-        //}
+            var vec:Vector3D[] = [];
+            var m = this.clone();
+            var mr = m.rawData;
+
+            var pos:Vector3D = new Vector3D(mr[12], mr[13], mr[14]);
+            mr[12] = 0;
+            mr[13] = 0;
+            mr[14] = 0;
+
+            var scale:Vector3D = new Vector3D();
+
+            scale.x = Math.sqrt(mr[0]*mr[0] + mr[1]*mr[1] + mr[2]*mr[2]);
+            scale.y = Math.sqrt(mr[4]*mr[4] + mr[5]*mr[5] + mr[6]*mr[6]);
+            scale.z = Math.sqrt(mr[8]*mr[8] + mr[9]*mr[9] + mr[10]*mr[10]);
+
+            //determine 3*3
+            if (mr[0]*(mr[5]*mr[10] - mr[6]*mr[9]) - mr[1]*(mr[4]*mr[10] - mr[6]*mr[8]) + mr[2]*(mr[4]*mr[9] - mr[5]*mr[8]) < 0)
+                scale.z = -scale.z;
+
+            mr[0] /= scale.x;
+            mr[1] /= scale.x;
+            mr[2] /= scale.x;
+            mr[4] /= scale.y;
+            mr[5] /= scale.y;
+            mr[6] /= scale.y;
+            mr[8] /= scale.z;
+            mr[9] /= scale.z;
+            mr[10] /= scale.z;
+
+            var rot = new Vector3D();
+
+            switch (orientationStyle) {
+                case stagl.geom.Orientation3D.AXIS_ANGLE:
+
+                    rot.w = Math.acos((mr[0] + mr[5] + mr[10] - 1)/2);
+
+                    var len:number = Math.sqrt((mr[6] - mr[9])*(mr[6] - mr[9]) + (mr[8] - mr[2])*(mr[8] - mr[2]) + (mr[1] - mr[4])*(mr[1] - mr[4]));
+                    rot.x = (mr[6] - mr[9])/len;
+                    rot.y = (mr[8] - mr[2])/len;
+                    rot.z = (mr[1] - mr[4])/len;
+
+                    break;
+                case stagl.geom.Orientation3D.QUATERNION:
+
+                    var tr = mr[0] + mr[5] + mr[10];
+
+                    if (tr > 0) {
+                        rot.w = Math.sqrt(1 + tr)/2;
+
+                        rot.x = (mr[6] - mr[9])/(4*rot.w);
+                        rot.y = (mr[8] - mr[2])/(4*rot.w);
+                        rot.z = (mr[1] - mr[4])/(4*rot.w);
+                    } else if ((mr[0] > mr[5]) && (mr[0] > mr[10])) {
+                        rot.x = Math.sqrt(1 + mr[0] - mr[5] - mr[10])/2;
+
+                        rot.w = (mr[6] - mr[9])/(4*rot.x);
+                        rot.y = (mr[1] + mr[4])/(4*rot.x);
+                        rot.z = (mr[8] + mr[2])/(4*rot.x);
+                    } else if (mr[5] > mr[10]) {
+                        rot.y = Math.sqrt(1 + mr[5] - mr[0] - mr[10])/2;
+
+                        rot.x = (mr[1] + mr[4])/(4*rot.y);
+                        rot.w = (mr[8] - mr[2])/(4*rot.y);
+                        rot.z = (mr[6] + mr[9])/(4*rot.y);
+                    } else {
+                        rot.z = Math.sqrt(1 + mr[10] - mr[0] - mr[5])/2;
+
+                        rot.x = (mr[8] + mr[2])/(4*rot.z);
+                        rot.y = (mr[6] + mr[9])/(4*rot.z);
+                        rot.w = (mr[1] - mr[4])/(4*rot.z);
+                    }
+
+
+                    break;
+                case stagl.geom.Orientation3D.EULER_ANGLES:
+
+                    rot.y = Math.asin(-mr[2]);
+
+                    //var cos:number = Math.cos(rot.y);
+
+                    if (mr[2] != 1 && mr[2] != -1) {
+                        rot.x = Math.atan2(mr[6], mr[10]);
+                        rot.z = Math.atan2(mr[1], mr[0]);
+                    } else {
+                        rot.z = 0;
+                        rot.x = Math.atan2(mr[4], mr[5]);
+                    }
+
+                    break;
+            }
+
+            vec.push(pos);
+            vec.push(rot);
+            vec.push(scale);
+
+            return vec;
+        }
         
 
 
@@ -368,16 +474,22 @@ module stagl.geom
         /**
          * [static] Interpolates the translation, rotation, and scale transformation of one matrix toward those of the target matrix.
          */
+        //TODO: only support rotation matrix for now
         public static interpolate(thisMat: Matrix3D, toMat: Matrix3D, percent: number): Matrix3D
         {
-            return new Matrix3D();
+            var a:Quaternion = new Quaternion().fromMatrix3D(thisMat);
+            var b:Quaternion = new Quaternion().fromMatrix3D(toMat);
+
+            return Quaternion.lerp(a,b,percent).toMatrix3D();
         }
 
         /**
          * Interpolates this matrix towards the translation, rotation, and scale transformations of the target matrix.
          */
+        //TODO: only support rotation matrix for now
         public interpolateTo(toMat: Matrix3D, percent: number): void
         {
+            this.rawData.set(Matrix3D.interpolate(this,toMat,percent).rawData);
         }
 
         /**
@@ -385,7 +497,46 @@ module stagl.geom
          */
         public invert(): boolean
         {
-            return true;
+            var d:number = this.determinant;
+            var invertable:boolean = Math.abs(d) > 0.00000000001;
+
+            if (invertable) {
+                d = 1/d;
+                var m11:number = this.rawData[0];
+                var m21:number = this.rawData[4];
+                var m31:number = this.rawData[8];
+                var m41:number = this.rawData[12];
+                var m12:number = this.rawData[1];
+                var m22:number = this.rawData[5];
+                var m32:number = this.rawData[9];
+                var m42:number = this.rawData[13];
+                var m13:number = this.rawData[2];
+                var m23:number = this.rawData[6];
+                var m33:number = this.rawData[10];
+                var m43:number = this.rawData[14];
+                var m14:number = this.rawData[3];
+                var m24:number = this.rawData[7];
+                var m34:number = this.rawData[11];
+                var m44:number = this.rawData[15];
+
+                this.rawData[0] = d*(m22*(m33*m44 - m43*m34) - m32*(m23*m44 - m43*m24) + m42*(m23*m34 - m33*m24));
+                this.rawData[1] = -d*(m12*(m33*m44 - m43*m34) - m32*(m13*m44 - m43*m14) + m42*(m13*m34 - m33*m14));
+                this.rawData[2] = d*(m12*(m23*m44 - m43*m24) - m22*(m13*m44 - m43*m14) + m42*(m13*m24 - m23*m14));
+                this.rawData[3] = -d*(m12*(m23*m34 - m33*m24) - m22*(m13*m34 - m33*m14) + m32*(m13*m24 - m23*m14));
+                this.rawData[4] = -d*(m21*(m33*m44 - m43*m34) - m31*(m23*m44 - m43*m24) + m41*(m23*m34 - m33*m24));
+                this.rawData[5] = d*(m11*(m33*m44 - m43*m34) - m31*(m13*m44 - m43*m14) + m41*(m13*m34 - m33*m14));
+                this.rawData[6] = -d*(m11*(m23*m44 - m43*m24) - m21*(m13*m44 - m43*m14) + m41*(m13*m24 - m23*m14));
+                this.rawData[7] = d*(m11*(m23*m34 - m33*m24) - m21*(m13*m34 - m33*m14) + m31*(m13*m24 - m23*m14));
+                this.rawData[8] = d*(m21*(m32*m44 - m42*m34) - m31*(m22*m44 - m42*m24) + m41*(m22*m34 - m32*m24));
+                this.rawData[9] = -d*(m11*(m32*m44 - m42*m34) - m31*(m12*m44 - m42*m14) + m41*(m12*m34 - m32*m14));
+                this.rawData[10] = d*(m11*(m22*m44 - m42*m24) - m21*(m12*m44 - m42*m14) + m41*(m12*m24 - m22*m14));
+                this.rawData[11] = -d*(m11*(m22*m34 - m32*m24) - m21*(m12*m34 - m32*m14) + m31*(m12*m24 - m22*m14));
+                this.rawData[12] = -d*(m21*(m32*m43 - m42*m33) - m31*(m22*m43 - m42*m23) + m41*(m22*m33 - m32*m23));
+                this.rawData[13] = d*(m11*(m32*m43 - m42*m33) - m31*(m12*m43 - m42*m13) + m41*(m12*m33 - m32*m13));
+                this.rawData[14] = -d*(m11*(m22*m43 - m42*m23) - m21*(m12*m43 - m42*m13) + m41*(m12*m23 - m22*m13));
+                this.rawData[15] = d*(m11*(m22*m33 - m32*m23) - m21*(m12*m33 - m32*m13) + m31*(m12*m23 - m22*m13));
+            }
+            return invertable;
         }
 
         /**
@@ -393,23 +544,25 @@ module stagl.geom
          */
         public pointAt(pos: Vector3D, at: Vector3D = null, up: Vector3D = null): void
         {
-            if (at == null)
-                at = new Vector3D(0, -1, 0);
-            if (up == null)
-                up = new Vector3D(0, 0, -1);
 
-            var zAxis: Vector3D = at.subtract(pos);
-            zAxis.normalize();
-
-            var xAxis: Vector3D = zAxis.crossProduct(up);
-            var yAxis: Vector3D = zAxis.crossProduct(xAxis);
-
-            this.rawData = new Float32Array([
-                xAxis.x, xAxis.y, xAxis.z, 0,
-                yAxis.x, yAxis.y, yAxis.z, 0,
-                zAxis.x, zAxis.y, zAxis.z, 0,
-                pos.x, pos.y, pos.z, 1
-            ]);
+              console.log('pointAt not impletement')
+//            if (at == null)
+//                at = new Vector3D(0, -1, 0);
+//            if (up == null)
+//                up = new Vector3D(0, 0, -1);
+//
+//            var zAxis: Vector3D = at.subtract(pos);
+//            zAxis.normalize();
+//
+//            var xAxis: Vector3D = zAxis.crossProduct(up);
+//            var yAxis: Vector3D = zAxis.crossProduct(xAxis);
+//
+//            this.rawData = new Float32Array([
+//                xAxis.x, xAxis.y, xAxis.z, 0,
+//                yAxis.x, yAxis.y, yAxis.z, 0,
+//                zAxis.x, zAxis.y, zAxis.z, 0,
+//                pos.x, pos.y, pos.z, 1
+//            ]);
 
         }
 
@@ -422,6 +575,25 @@ module stagl.geom
          */
         public recompose(components:Vector3D[], orientationStyle: String = "eulerAngles"): boolean
         {
+            if (components.length < 3) return false
+
+            //TODO: only support euler angle for now
+            var scale_tmp:Vector3D = components[2];
+            var pos_tmp:Vector3D = components[0];
+            var euler_tmp:Vector3D = components[1];
+
+            this.identity();
+            this.appendScale(scale_tmp.x, scale_tmp.y, scale_tmp.z);
+
+            this.append(this.getRotateMatrix(stagl.geom.Vector3D.X_AXIS , euler_tmp.x));
+            this.append(this.getRotateMatrix(stagl.geom.Vector3D.Y_AXIS , euler_tmp.y));
+            this.append(this.getRotateMatrix(stagl.geom.Vector3D.Z_AXIS , euler_tmp.z));
+
+            this.rawData[12] = pos_tmp.x;
+            this.rawData[13] = pos_tmp.y;
+            this.rawData[14] = pos_tmp.z;
+            this.rawData[15] = 1;
+
             return true;
         }
 
@@ -494,17 +666,32 @@ module stagl.geom
             this.rawData[11] = a43;
             this.rawData[12] = a14;
             this.rawData[13] = a24;
-            this.rawData[13] = a34;
+            this.rawData[14] = a34;
 
         }
+
+        public toString():string
+        {
+
+            var str:string = "[Matrix3D]\n";
+            for (var i:number = 0 ; i < this.rawData.length ; i ++)
+            {
+                str += this.rawData[i] + "  , ";
+                if( ((i+1) % 4) ==0)
+                    str += "\n"
+
+            }
+
+            return str;
+        }
     
-        private getRotateMatrix(axis: Vector3D, degrees: number): Matrix3D
+        private getRotateMatrix(axis: Vector3D, radians: number): Matrix3D
         {
             var ax: number = axis.x;
             var ay: number = axis.y;
             var az: number = axis.z;
 
-            var radians: number = Math.PI / 180 * degrees;
+            //var radians: number = Math.PI / 180 * degrees;
             var c: number = Math.cos(radians);
             var s: number = Math.sin(radians);
 
@@ -568,4 +755,3 @@ module stagl.geom
 
 }
 
-//clipspace coordinates always go from -1 to +1

@@ -8,6 +8,7 @@ module stagl
         //enableErrorChecking
 
         private _clearBit: number;
+
         constructor()
         {
             Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend?
@@ -253,7 +254,8 @@ module stagl
         }
 
 
-        public setDepthTest(depthMask: boolean, passCompareMode: string): void {
+        public setDepthTest(depthMask: boolean, passCompareMode: string): void
+        {
             // Context3D.GL.enable(Context3D.GL.DEPTH_TEST); need this ?
             Context3D.GL.depthMask(depthMask);
 

@@ -514,20 +514,20 @@ declare module stagl {
         public createTexture(streamingLevels?: number): Texture;
         public createProgram(): Program3D;
         /**
-        * private  setVertexBufferAt�Ĳ�������
+        * private  setVertexBufferAt
         */
         private _attributesToEnable;
         /**
-        *  ����webglҪȡ�ñ���������index�ĳ�variable��
+        *  @variable must predefined in glsl
         */
         public setVertexBufferAt(variable: string, buffer: VertexBuffer3D, bufferOffset?: number, format?: String): void;
         private _constantsToEnable;
         /**
-        *  programType������Ҫ��ֻ���ṩ�������
+        *  @variable must predefined in glsl
         */
         public setProgramConstantsFromVector(variable: string, data: number[]): void;
         /**
-        *  programType������Ҫ��ֻ���ṩ�������
+        *  @variable must predefined in glsl
         */
         public setProgramConstantsFromMatrix(variable: string, matrix: geom.Matrix3D, transposedMatrix?: boolean): void;
         public setTextureAt(sampler: string, texture: Texture): void;

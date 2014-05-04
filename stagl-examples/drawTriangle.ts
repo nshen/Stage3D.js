@@ -28,7 +28,7 @@ module test.drawTriangle
         program.upload("shader-vs", "shader-fs"); // shaders are in html file
         context3d.setProgram(program);
 
-
+        
         var vertexBuffer: stagl.VertexBuffer3D = context3d.createVertexBuffer(3, 7);
         vertexBuffer.uploadFromVector([
             -1, -1, 0, 1, 0, 0, 1,   //xyz rgba

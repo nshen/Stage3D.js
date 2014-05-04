@@ -1504,7 +1504,7 @@ var stagl;
     var Context3D = (function () {
         function Context3D() {
             /**
-            * private  setVertexBufferAt�Ĳ�������
+            * private  setVertexBufferAt
             */
             this._attributesToEnable = new Array();
             this._constantsToEnable = new Array();
@@ -1551,7 +1551,7 @@ var stagl;
         };
 
         /**
-        *  ����webglҪȡ�ñ���������index�ĳ�variable��
+        *  @variable must predefined in glsl
         */
         Context3D.prototype.setVertexBufferAt = function (variable, buffer, bufferOffset, format) {
             if (typeof bufferOffset === "undefined") { bufferOffset = 0; }
@@ -1597,7 +1597,7 @@ var stagl;
         };
 
         /**
-        *  programType������Ҫ��ֻ���ṩ�������
+        *  @variable must predefined in glsl
         */
         Context3D.prototype.setProgramConstantsFromVector = function (variable, data /* Vector.<Number> */ ) {
             if (data.length > 4)
@@ -1635,7 +1635,7 @@ var stagl;
 
         //programType: String, firstRegister: int, matrix: Matrix3D, transposedMatrix: Boolean = false): void
         /**
-        *  programType������Ҫ��ֻ���ṩ�������
+        *  @variable must predefined in glsl
         */
         Context3D.prototype.setProgramConstantsFromMatrix = function (variable, matrix, transposedMatrix) {
             if (typeof transposedMatrix === "undefined") { transposedMatrix = false; }

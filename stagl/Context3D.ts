@@ -61,11 +61,11 @@ module stagl
         }
 
         /**
-        * private  setVertexBufferAt�Ĳ�������
+        * private  setVertexBufferAt
         */
         private _attributesToEnable:any[][] = new Array();
         /**
-        *  ����webglҪȡ�ñ���������index�ĳ�variable��
+        *  @variable must predefined in glsl
         */
         public setVertexBufferAt(variable: string, buffer: VertexBuffer3D, bufferOffset: number/* int */ = 0, format: String = "float4"): void
         {
@@ -118,7 +118,7 @@ module stagl
 
         private _constantsToEnable: any[][] = new Array();
         /**
-        *  programType������Ҫ��ֻ���ṩ�������
+        *  @variable must predefined in glsl
         */
         public setProgramConstantsFromVector(variable: string, data: number[] /* Vector.<Number> */): void
         {
@@ -157,7 +157,7 @@ module stagl
 
         //programType: String, firstRegister: int, matrix: Matrix3D, transposedMatrix: Boolean = false): void
         /**
-        *  programType������Ҫ��ֻ���ṩ�������
+        *  @variable must predefined in glsl
         */
         public setProgramConstantsFromMatrix(variable: string, matrix:geom.Matrix3D, transposedMatrix: boolean = false): void
         {

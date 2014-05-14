@@ -6,7 +6,7 @@ var test;
         var context3d;
 
         /**
-        *  window.onload 入口
+        *  window.onload entry point
         */
         function main() {
             var canvas = document.getElementById("my-canvas");

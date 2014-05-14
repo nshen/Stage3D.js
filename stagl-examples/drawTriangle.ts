@@ -8,7 +8,7 @@ module test.drawTriangle
 
 
     /**
-     *  window.onload 入口
+     *  window.onload entry point
      */
     export function main()
     {

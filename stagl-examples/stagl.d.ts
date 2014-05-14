@@ -480,6 +480,111 @@ declare module stagl.geom {
     }
 }
 declare module stagl {
+    class Context3DVertexBufferFormat {
+        static BYTES_4: string;
+        static FLOAT_1: string;
+        static FLOAT_2: string;
+        static FLOAT_3: string;
+        static FLOAT_4: string;
+    }
+}
+declare module stagl {
+    class Context3DTextureFormat {
+        static BGRA: string;
+    }
+}
+declare module stagl {
+    class Context3DCompareMode {
+        static ALWAYS: string;
+        static EQUAL: string;
+        static GREATER: string;
+        static GREATER_EQUAL: string;
+        static LESS: string;
+        static LESS_EQUAL: string;
+        static NEVER: string;
+        static NOT_EQUAL: string;
+    }
+}
+declare module stagl {
+    class Context3DBlendFactor {
+        static ONE: number;
+        static ZERO: number;
+        static SOURCE_COLOR: number;
+        static DESTINATION_COLOR: number;
+        static SOURCE_ALPHA: number;
+        static DESTINATION_ALPHA: number;
+        static ONE_MINUS_SOURCE_COLOR: number;
+        static ONE_MINUS_DESTINATION_COLOR: number;
+        static ONE_MINUS_SOURCE_ALPHA: number;
+        static ONE_MINUS_DESTINATION_ALPHA: number;
+        static init(): void;
+    }
+}
+declare module stagl {
+    class Context3DTriangleFace {
+        static BACK: string;
+        static FRONT: string;
+        static FRONT_AND_BACK: string;
+        static NONE: string;
+    }
+}
+declare module stagl {
+    class VertexBuffer3D {
+        private _numVertices;
+        private _data32PerVertex;
+        private _glBuffer;
+        private _data;
+        constructor(numVertices: number, data32PerVertex: number);
+        public glBuffer : WebGLBuffer;
+        public data32PerVertex : number;
+        public uploadFromVector(data: number[], startVertex: number, numVertices: number): void;
+        public dispose(): void;
+    }
+}
+declare module stagl {
+    class IndexBuffer3D {
+        public numIndices: number;
+        private _data;
+        private _glBuffer;
+        constructor(numIndices: number);
+        public glBuffer : WebGLBuffer;
+        public uploadFromVector(data: number[], startOffset: number, count: number): void;
+        public dispose(): void;
+    }
+}
+declare module stagl {
+    class Texture {
+        private _glTexture;
+        private _streamingLevels;
+        private _width;
+        private _height;
+        private _format;
+        private _forRTT;
+        private static _bindingTexture;
+        constructor(width: number, height: number, format: string, optimizeForRenderToTexture: boolean, streamingLevels: number);
+        public __getGLTexture(): WebGLTexture;
+        public uploadFromBitmapData(source: HTMLImageElement, miplevel?: number): void;
+        public uploadFromImage(source: HTMLImageElement, miplevel?: number): void;
+        public dispose(): void;
+    }
+}
+declare module stagl {
+    class Program3D {
+        private _glProgram;
+        private _vShader;
+        private _fShader;
+        constructor();
+        public glProgram : WebGLProgram;
+        public dispose(): void;
+        public upload(vertexProgramId?: string, fragmentProgramId?: string): void;
+        private loadShader(elementId, type);
+        /**
+        *   to delete .......
+        */
+        public getShader2(elementId: string): WebGLShader;
+    }
+}
+declare module stagl {
     var VERSION: number;
     class Stage3D extends events.EventDispatcher {
         private _context3D;
@@ -507,11 +612,13 @@ declare module stagl {
         public createVertexBuffer(numVertices: number, data32PerVertex: number): VertexBuffer3D;
         public createIndexBuffer(numIndices: number): IndexBuffer3D;
         /**
-        * @width and @height are not need.
-        * @format only support rgba
+        * @format only support Context3DTextureFormat.BGRA
         * @optimizeForRenderToTexture not implement
         */
-        public createTexture(streamingLevels?: number): Texture;
+        public createTexture(width: number, height: number, format: string, optimizeForRenderToTexture: boolean, streamingLevels?: number): Texture;
+        private _rttFramebuffer;
+        public setRenderToTexture(texture: Texture, enableDepthAndStencil?: boolean, antiAlias?: number, surfaceSelector?: number, colorOutputIndex?: number): void;
+        public setRenderToBackBuffer(): void;
         public createProgram(): Program3D;
         /**
         * private  setVertexBufferAt
@@ -566,98 +673,5 @@ declare module stagl {
         *   In webgl we dont need to call present , browser will do this for us.
         */
         public present(): void;
-    }
-}
-declare module stagl {
-    class Program3D {
-        private _glProgram;
-        private _vShader;
-        private _fShader;
-        constructor();
-        public glProgram : WebGLProgram;
-        public dispose(): void;
-        public upload(vertexProgramId?: string, fragmentProgramId?: string): void;
-        private loadShader(elementId, type);
-        /**
-        *   to delete .......
-        */
-        public getShader2(elementId: string): WebGLShader;
-    }
-}
-declare module stagl {
-    class VertexBuffer3D {
-        private _numVertices;
-        private _data32PerVertex;
-        private _glBuffer;
-        private _data;
-        constructor(numVertices: number, data32PerVertex: number);
-        public glBuffer : WebGLBuffer;
-        public data32PerVertex : number;
-        public uploadFromVector(data: number[], startVertex: number, numVertices: number): void;
-        public dispose(): void;
-    }
-}
-declare module stagl {
-    class IndexBuffer3D {
-        public numIndices: number;
-        private _data;
-        private _glBuffer;
-        constructor(numIndices: number);
-        public glBuffer : WebGLBuffer;
-        public uploadFromVector(data: number[], startOffset: number, count: number): void;
-        public dispose(): void;
-    }
-}
-declare module stagl {
-    class Texture {
-        private _glTexture;
-        private _streamingLevels;
-        constructor(streamingLevels: number);
-        public uploadFromBitmapData(source: HTMLImageElement, miplevel?: number): void;
-        public uploadFromImage(source: HTMLImageElement, miplevel?: number): void;
-    }
-}
-declare module stagl {
-    class Context3DBlendFactor {
-        static ONE: number;
-        static ZERO: number;
-        static SOURCE_COLOR: number;
-        static DESTINATION_COLOR: number;
-        static SOURCE_ALPHA: number;
-        static DESTINATION_ALPHA: number;
-        static ONE_MINUS_SOURCE_COLOR: number;
-        static ONE_MINUS_DESTINATION_COLOR: number;
-        static ONE_MINUS_SOURCE_ALPHA: number;
-        static ONE_MINUS_DESTINATION_ALPHA: number;
-        static init(): void;
-    }
-}
-declare module stagl {
-    class Context3DVertexBufferFormat {
-        static BYTES_4: string;
-        static FLOAT_1: string;
-        static FLOAT_2: string;
-        static FLOAT_3: string;
-        static FLOAT_4: string;
-    }
-}
-declare module stagl {
-    class Context3DCompareMode {
-        static ALWAYS: string;
-        static EQUAL: string;
-        static GREATER: string;
-        static GREATER_EQUAL: string;
-        static LESS: string;
-        static LESS_EQUAL: string;
-        static NEVER: string;
-        static NOT_EQUAL: string;
-    }
-}
-declare module stagl {
-    class Context3DTriangleFace {
-        static BACK: string;
-        static FRONT: string;
-        static FRONT_AND_BACK: string;
-        static NONE: string;
     }
 }

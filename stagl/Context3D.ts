@@ -45,20 +45,57 @@ module stagl
         }
 
         /**
-        * @width and @height are not need.
-        * @format only support rgba
+        * @format only support Context3DTextureFormat.BGRA
         * @optimizeForRenderToTexture not implement
         */
-        public createTexture(streamingLevels: number/* int */ = 0): Texture
+        public createTexture(width: number/* int */, height: number/* int */, format: string, optimizeForRenderToTexture: boolean, streamingLevels: number/* int */ = 0): Texture
         {
-            // public createTexture(width: number/* int */, height: number/* int */, format: string, optimizeForRenderToTexture: bool, streamingLevels: number/* int */ = 0): Texture
-            return new Texture(streamingLevels);
+            return new Texture(width,height,format,optimizeForRenderToTexture,streamingLevels);
+        }
+
+        private _rttFramebuffer:WebGLFramebuffer;
+        public setRenderToTexture(texture:Texture, enableDepthAndStencil:boolean = false, antiAlias:number = 0, surfaceSelector:number /*int*/ = 0, colorOutputIndex:number/*int*/ = 0):void
+        {
+            if (enableDepthAndStencil)
+            {
+                this._clearBit = Context3D.GL.COLOR_BUFFER_BIT | Context3D.GL.DEPTH_BUFFER_BIT | Context3D.GL.STENCIL_BUFFER_BIT;
+                Context3D.GL.enable(Context3D.GL.DEPTH_TEST);
+                Context3D.GL.enable(Context3D.GL.STENCIL_TEST);
+            } else {
+                this._clearBit = Context3D.GL.COLOR_BUFFER_BIT;
+                Context3D.GL.disable(Context3D.GL.DEPTH_TEST);
+                Context3D.GL.disable(Context3D.GL.STENCIL_TEST);
+            }
+
+            //TODO: antiAlias surfaceSelector colorOutputIndex
+            if(!this._rttFramebuffer)
+            {
+                this._rttFramebuffer = Context3D.GL.createFramebuffer();
+                Context3D.GL.bindFramebuffer(Context3D.GL.FRAMEBUFFER , this._rttFramebuffer);
+
+                var renderbuffer:WebGLRenderbuffer = Context3D.GL.createRenderbuffer();
+                Context3D.GL.bindRenderbuffer(Context3D.GL.RENDERBUFFER , renderbuffer);
+                Context3D.GL.renderbufferStorage(Context3D.GL.RENDERBUFFER , Context3D.GL.DEPTH_COMPONENT16 ,512,512); //force 512
+
+                Context3D.GL.framebufferRenderbuffer(Context3D.GL.FRAMEBUFFER, Context3D.GL.DEPTH_ATTACHMENT, Context3D.GL.RENDERBUFFER, renderbuffer);
+                Context3D.GL.framebufferTexture2D(Context3D.GL.FRAMEBUFFER, Context3D.GL.COLOR_ATTACHMENT0, Context3D.GL.TEXTURE_2D, texture.__getGLTexture(), 0);
+            }
+            Context3D.GL.bindFramebuffer(Context3D.GL.FRAMEBUFFER , this._rttFramebuffer);
+
+        }
+
+        public setRenderToBackBuffer():void
+        {
+            Context3D.GL.bindFramebuffer(Context3D.GL.FRAMEBUFFER, null);
         }
 
         public createProgram(): Program3D
         {
             return new Program3D();
         }
+
+
+
 
         /**
         * private  setVertexBufferAt
@@ -171,7 +208,7 @@ module stagl
             if (transposedMatrix)
                 matrix.transpose();
 
-            Context3D.GL.uniformMatrix4fv(index, false, matrix.rawData); // bug:��2��������Ϊtrue
+            Context3D.GL.uniformMatrix4fv(index, false, matrix.rawData); // bug:the second parameter must be false
         }
 
         public setTextureAt(sampler: string, texture: Texture): void
@@ -179,9 +216,9 @@ module stagl
             if (this._linkedProgram == null) {
                 console.log("err")
             }
-            //Context3D.GL.activeTexture(Context3D.GL.TEXTURE0);
+            Context3D.GL.activeTexture(Context3D.GL.TEXTURE0);
             var l: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, sampler);
-            Context3D.GL.uniform1i(l, 0); // TODO:���texture
+            Context3D.GL.uniform1i(l, 0); // TODO:multiple textures
         }
 
 

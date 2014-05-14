@@ -1,10 +1,9 @@
 ///<reference path="stagl.d.ts"/>
 var test;
 (function (test) {
-    (function (textureTriangle) {
+    (function (render2Texture) {
         var stage3d;
         var context3d;
-
         var bitmapdata;
 
         /**
@@ -13,7 +12,7 @@ var test;
         function main() {
             prepareImage(init);
         }
-        textureTriangle.main = main;
+        render2Texture.main = main;
 
         function prepareImage(p_callBack) {
             bitmapdata = new Image();
@@ -31,58 +30,64 @@ var test;
             stage3d.requestContext3D();
         }
 
-        function onCreated() {
+        function onCreated(e) {
             context3d = stage3d.context3D;
             context3d.configureBackBuffer(stage3d.stageWidth, stage3d.stageHeight, 2, true);
 
-            //-----------------
-            //init shader
-            //-----------------
             var program = context3d.createProgram();
-            program.upload("shader-vs", "shader-fs"); // shader are in html file
+            program.upload("shader-vs", "shader-fs"); // shaders are in html file
             context3d.setProgram(program);
 
-            //-----------------
-            //init buffers
-            //-----------------
-            var vertexBuffer = context3d.createVertexBuffer(3, 5);
+            //initBuffers
+            var vertexBuffer = context3d.createVertexBuffer(4, 5);
             vertexBuffer.uploadFromVector([
                 -1, 1, 0, 0, 0,
                 1, 1, 0, 1, 0,
-                0, -1, 0, 0.5, 1], 0, 3);
+                -1, -1, 0, 0, 1,
+                1, -1, 0, 1, 1], 0, 4);
 
-            /**
-            *    (-1,1) -----------(1,1)
-            *            \       /
-            *             \     /
-            *              \   /
-            *               \ /
-            *             (0,-1)
+            /*
+            *  0-------1
+            *  |       |
+            *  |       |
+            *  2-------3
             */
             context3d.setVertexBufferAt("va0", vertexBuffer, 0, stagl.Context3DVertexBufferFormat.FLOAT_3);
             context3d.setVertexBufferAt("va1", vertexBuffer, 3, stagl.Context3DVertexBufferFormat.FLOAT_2);
 
-            var indexBuffer = context3d.createIndexBuffer(3);
+            var indexBuffer = context3d.createIndexBuffer(6);
             indexBuffer.uploadFromVector([
-                0, 1, 2
-            ], 0, 3);
+                0, 1, 2, 2, 1, 3
+            ], 0, 6);
 
-            //--------------
-            // init texture
-            //--------------
+            //init texture
             var texture = context3d.createTexture(bitmapdata.width, bitmapdata.height, stagl.Context3DTextureFormat.BGRA, false);
             texture.uploadFromBitmapData(bitmapdata);
             context3d.setTextureAt("fs0", texture);
 
-            //--------------
-            // draw it
-            //---------------
-            context3d.clear(1.0, 1.0, 1.0, 1.0);
+            //----------------------------------------------render to texture
+            // Setup scene texture
+            var sceneTexture = context3d.createTexture(512, 512, stagl.Context3DTextureFormat.BGRA, true);
+
+            // Render the scene to the scene texture
+            context3d.setRenderToTexture(sceneTexture, true);
+            context3d.clear(1.0, 0.0, 0.0, 1.0);
+            context3d.drawTriangles(indexBuffer);
+            context3d.setRenderToBackBuffer();
+
+            //-----------------
+            //init post effect shader
+            //-----------------
+            var redOnlyProgram = context3d.createProgram();
+            redOnlyProgram.upload("shader-vs", "redOnly-shader-fs"); //vertex shader not change
+            context3d.setProgram(redOnlyProgram);
+
+            context3d.clear(0.0, 0.0, 0.0, 1.0);
             context3d.drawTriangles(indexBuffer);
             context3d.present();
         }
-    })(test.textureTriangle || (test.textureTriangle = {}));
-    var textureTriangle = test.textureTriangle;
+    })(test.render2Texture || (test.render2Texture = {}));
+    var render2Texture = test.render2Texture;
 })(test || (test = {}));
 
-window.onload = test.textureTriangle.main;
+window.onload = test.render2Texture.main;

@@ -1410,6 +1410,357 @@ var stagl;
 ///<reference path="_definitions.ts"/>
 var stagl;
 (function (stagl) {
+    var Context3DVertexBufferFormat = (function () {
+        function Context3DVertexBufferFormat() {
+        }
+        Context3DVertexBufferFormat.BYTES_4 = "bytes4";
+        Context3DVertexBufferFormat.FLOAT_1 = "float1";
+        Context3DVertexBufferFormat.FLOAT_2 = "float2";
+        Context3DVertexBufferFormat.FLOAT_3 = "float3";
+        Context3DVertexBufferFormat.FLOAT_4 = "float4";
+        return Context3DVertexBufferFormat;
+    })();
+    stagl.Context3DVertexBufferFormat = Context3DVertexBufferFormat;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts" />
+var stagl;
+(function (stagl) {
+    var Context3DTextureFormat = (function () {
+        function Context3DTextureFormat() {
+        }
+        Context3DTextureFormat.BGRA = "bgra";
+        return Context3DTextureFormat;
+    })();
+    stagl.Context3DTextureFormat = Context3DTextureFormat;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts" />
+var stagl;
+(function (stagl) {
+    var Context3DCompareMode = (function () {
+        function Context3DCompareMode() {
+        }
+        Context3DCompareMode.ALWAYS = "always";
+        Context3DCompareMode.EQUAL = "equal";
+        Context3DCompareMode.GREATER = "greater";
+        Context3DCompareMode.GREATER_EQUAL = "greaterEqual";
+        Context3DCompareMode.LESS = "less";
+        Context3DCompareMode.LESS_EQUAL = "lessEqual";
+        Context3DCompareMode.NEVER = "never";
+        Context3DCompareMode.NOT_EQUAL = "notEqual";
+        return Context3DCompareMode;
+    })();
+    stagl.Context3DCompareMode = Context3DCompareMode;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts"/>
+var stagl;
+(function (stagl) {
+    var Context3DBlendFactor = (function () {
+        function Context3DBlendFactor() {
+        }
+        Context3DBlendFactor.init = function () {
+            Context3DBlendFactor.ONE = stagl.Context3D.GL.ONE;
+            Context3DBlendFactor.ZERO = stagl.Context3D.GL.ZERO;
+            Context3DBlendFactor.SOURCE_COLOR = stagl.Context3D.GL.SRC_COLOR;
+            Context3DBlendFactor.DESTINATION_COLOR = stagl.Context3D.GL.DST_COLOR;
+            Context3DBlendFactor.SOURCE_ALPHA = stagl.Context3D.GL.SRC_ALPHA;
+            Context3DBlendFactor.DESTINATION_ALPHA = stagl.Context3D.GL.DST_ALPHA;
+            Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR = stagl.Context3D.GL.ONE_MINUS_SRC_COLOR;
+            Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR = stagl.Context3D.GL.ONE_MINUS_DST_COLOR;
+            Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA = stagl.Context3D.GL.ONE_MINUS_SRC_ALPHA;
+            Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA = stagl.Context3D.GL.ONE_MINUS_DST_ALPHA;
+            //CONSTANT_COLOR
+            //ONE_MINUS_CONSTANT_COLOR
+            //ONE_MINUS_CONSTANT_ALPHA
+        };
+        return Context3DBlendFactor;
+    })();
+    stagl.Context3DBlendFactor = Context3DBlendFactor;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts" />
+var stagl;
+(function (stagl) {
+    var Context3DTriangleFace = (function () {
+        function Context3DTriangleFace() {
+        }
+        Context3DTriangleFace.BACK = "back";
+        Context3DTriangleFace.FRONT = "front";
+        Context3DTriangleFace.FRONT_AND_BACK = "frontAndBack";
+        Context3DTriangleFace.NONE = "none";
+        return Context3DTriangleFace;
+    })();
+    stagl.Context3DTriangleFace = Context3DTriangleFace;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts"/>
+var stagl;
+(function (stagl) {
+    var VertexBuffer3D = (function () {
+        function VertexBuffer3D(numVertices, data32PerVertex) {
+            this._numVertices = numVertices;
+            this._data32PerVertex = data32PerVertex;
+
+            this._glBuffer = stagl.Context3D.GL.createBuffer();
+            if (!this._glBuffer)
+                throw new Error("Failed to create buffer");
+            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, this._glBuffer);
+        }
+        Object.defineProperty(VertexBuffer3D.prototype, "glBuffer", {
+            get: function () {
+                return this._glBuffer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(VertexBuffer3D.prototype, "data32PerVertex", {
+            get: function () {
+                return this._data32PerVertex;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        VertexBuffer3D.prototype.uploadFromVector = function (data, startVertex /* int */ , numVertices /* int */ ) {
+            this._data = data;
+
+            if (startVertex != 0 || numVertices != this._numVertices) {
+                data = data.slice(startVertex * this._data32PerVertex, (numVertices * this._data32PerVertex));
+            }
+
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, this._glBuffer);
+            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ARRAY_BUFFER, new Float32Array(data), stagl.Context3D.GL.STATIC_DRAW);
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, null);
+        };
+
+        VertexBuffer3D.prototype.dispose = function () {
+            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
+            this._glBuffer = null;
+            this._data.length = 0;
+            this._numVertices = 0;
+            this._data32PerVertex = 0;
+        };
+        return VertexBuffer3D;
+    })();
+    stagl.VertexBuffer3D = VertexBuffer3D;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts" />
+var stagl;
+(function (stagl) {
+    var IndexBuffer3D = (function () {
+        function IndexBuffer3D(numIndices /* int */ ) {
+            this.numIndices = numIndices;
+            this._glBuffer = stagl.Context3D.GL.createBuffer();
+            //Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, this._glBuffer);
+        }
+        Object.defineProperty(IndexBuffer3D.prototype, "glBuffer", {
+            get: function () {
+                return this._glBuffer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        IndexBuffer3D.prototype.uploadFromVector = function (data /* Vector.<uint> */ , startOffset /* int */ , count /* int */ ) {
+            this._data = data;
+
+            if (startOffset != 0 || count != this.numIndices) {
+                data = data.slice(startOffset, startOffset + count);
+            }
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ELEMENT_ARRAY_BUFFER, this._glBuffer);
+            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), stagl.Context3D.GL.STATIC_DRAW);
+            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ELEMENT_ARRAY_BUFFER, null);
+        };
+
+        IndexBuffer3D.prototype.dispose = function () {
+            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
+            this._glBuffer = null;
+            this.numIndices = 0;
+            this._data.length = 0;
+        };
+        return IndexBuffer3D;
+    })();
+    stagl.IndexBuffer3D = IndexBuffer3D;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts" />
+var stagl;
+(function (stagl) {
+    //TODO:cube texture
+    var Texture = (function () {
+        function Texture(width, height, format, optimizeForRenderToTexture, streamingLevels) {
+            this._glTexture = stagl.Context3D.GL.createTexture();
+            this._streamingLevels = streamingLevels;
+
+            //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            //rtt needs these properties
+            this._width = width;
+            this._height = height;
+            this._format = format;
+            this._forRTT = optimizeForRenderToTexture;
+
+            if (this._forRTT) {
+                stagl.Context3D.GL.bindTexture(stagl.Context3D.GL.TEXTURE_2D, this._glTexture);
+                stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MAG_FILTER, stagl.Context3D.GL.LINEAR);
+                stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MIN_FILTER, stagl.Context3D.GL.LINEAR_MIPMAP_NEAREST);
+
+                // Context3D.GL.generateMipmap(Context3D.GL.TEXTURE_2D);
+                stagl.Context3D.GL.texImage2D(stagl.Context3D.GL.TEXTURE_2D, 0, stagl.Context3D.GL.RGBA, 512, 512, 0, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.UNSIGNED_BYTE, null);
+
+                if (Texture._bindingTexture)
+                    stagl.Context3D.GL.bindTexture(stagl.Context3D.GL.TEXTURE_2D, Texture._bindingTexture);
+                else
+                    stagl.Context3D.GL.bindTexture(stagl.Context3D.GL.TEXTURE_2D, null);
+
+                stagl.Context3D.GL.bindRenderbuffer(stagl.Context3D.GL.RENDERBUFFER, null);
+                stagl.Context3D.GL.bindFramebuffer(stagl.Context3D.GL.FRAMEBUFFER, null);
+            }
+        }
+        Texture.prototype.__getGLTexture = function () {
+            return this._glTexture;
+        };
+
+        Texture.prototype.uploadFromBitmapData = function (source, miplevel) {
+            if (typeof miplevel === "undefined") { miplevel = 0; }
+            if (this._forRTT)
+                console.error("rtt texture");
+            this.uploadFromImage(source, miplevel);
+        };
+        Texture.prototype.uploadFromImage = function (source, miplevel) {
+            if (typeof miplevel === "undefined") { miplevel = 0; }
+            stagl.Context3D.GL.bindTexture(stagl.Context3D.GL.TEXTURE_2D, this._glTexture);
+            Texture._bindingTexture = this._glTexture;
+
+            // Context3D.GL.pixelStorei(Context3D.GL.UNPACK_FLIP_Y_WEBGL, 1);
+            stagl.Context3D.GL.texImage2D(stagl.Context3D.GL.TEXTURE_2D, miplevel, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.UNSIGNED_BYTE, source);
+
+            //TODO: set texture's filter mode
+            stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MAG_FILTER, stagl.Context3D.GL.LINEAR); //放大,速度慢效果好
+            if (this._streamingLevels == 0) {
+                stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MIN_FILTER, stagl.Context3D.GL.LINEAR);
+            } else {
+                stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MIN_FILTER, stagl.Context3D.GL.LINEAR_MIPMAP_LINEAR); //linnear生成mipmap,缩放也linear
+                stagl.Context3D.GL.generateMipmap(stagl.Context3D.GL.TEXTURE_2D);
+            }
+
+            if (!stagl.Context3D.GL.isTexture(this._glTexture)) {
+                throw new Error("Error:Texture is invalid");
+            }
+            //bind null 会不显示贴图
+            //Context3D.GL.bindTexture(Context3D.GL.TEXTURE_2D, null);
+        };
+
+        Texture.prototype.dispose = function () {
+            stagl.Context3D.GL.bindTexture(stagl.Context3D.GL.TEXTURE_2D, null);
+            Texture._bindingTexture = null;
+            stagl.Context3D.GL.deleteTexture(this._glTexture);
+            this._glTexture = null;
+            this._streamingLevels = 0;
+        };
+        return Texture;
+    })();
+    stagl.Texture = Texture;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts"/>
+var stagl;
+(function (stagl) {
+    var Program3D = (function () {
+        function Program3D() {
+            this._glProgram = stagl.Context3D.GL.createProgram();
+        }
+        Object.defineProperty(Program3D.prototype, "glProgram", {
+            get: function () {
+                return this._glProgram;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Program3D.prototype.dispose = function () {
+            if (this._vShader) {
+                stagl.Context3D.GL.detachShader(this._glProgram, this._vShader);
+                stagl.Context3D.GL.deleteShader(this._vShader);
+                this._vShader = null;
+            }
+
+            if (this._fShader) {
+                stagl.Context3D.GL.detachShader(this._glProgram, this._fShader);
+                stagl.Context3D.GL.deleteShader(this._fShader);
+                this._fShader = null;
+            }
+            stagl.Context3D.GL.deleteProgram(this._glProgram);
+            this._glProgram = null;
+        };
+
+        Program3D.prototype.upload = function (vertexProgramId, fragmentProgramId) {
+            if (typeof vertexProgramId === "undefined") { vertexProgramId = "shader-vs"; }
+            if (typeof fragmentProgramId === "undefined") { fragmentProgramId = "shader-fs"; }
+            this._vShader = this.loadShader(vertexProgramId, stagl.Context3D.GL.VERTEX_SHADER);
+            this._fShader = this.loadShader(fragmentProgramId, stagl.Context3D.GL.FRAGMENT_SHADER);
+
+            if (!this._fShader || !this._vShader)
+                throw new Error("loadShader error");
+
+            stagl.Context3D.GL.attachShader(this._glProgram, this._vShader);
+            stagl.Context3D.GL.attachShader(this._glProgram, this._fShader);
+        };
+
+        /*
+        * load shader from html file by document.getElementById
+        */
+        Program3D.prototype.loadShader = function (elementId, type) {
+            var script = document.getElementById(elementId);
+            if (!script)
+                throw new Error("cant find elementId: " + elementId);
+            var shader = stagl.Context3D.GL.createShader(type);
+            stagl.Context3D.GL.shaderSource(shader, script.innerHTML);
+            stagl.Context3D.GL.compileShader(shader);
+
+            // Check the result of compilation
+            if (!stagl.Context3D.GL.getShaderParameter(shader, stagl.Context3D.GL.COMPILE_STATUS)) {
+                throw new Error(stagl.Context3D.GL.getShaderInfoLog(shader));
+            }
+            return shader;
+        };
+
+        /**
+        *   to delete .......
+        */
+        Program3D.prototype.getShader2 = function (elementId) {
+            var script = document.getElementById(elementId);
+            if (!script)
+                return null;
+
+            var str = "";
+            var k = script.firstChild;
+            while (k) {
+                if (k.nodeType == 3) {
+                    str += k.textContent;
+                }
+                k = k.nextSibling;
+            }
+
+            var shader;
+            if (script.type == "x-shader/x-fragment") {
+                shader = stagl.Context3D.GL.createShader(stagl.Context3D.GL.FRAGMENT_SHADER);
+            } else if (script.type == "x-shader/x-vertex") {
+                shader = stagl.Context3D.GL.createShader(stagl.Context3D.GL.VERTEX_SHADER);
+            } else {
+                return null;
+            }
+            stagl.Context3D.GL.shaderSource(shader, str);
+            stagl.Context3D.GL.compileShader(shader);
+
+            if (!stagl.Context3D.GL.getShaderParameter(shader, stagl.Context3D.GL.COMPILE_STATUS)) {
+                console.log("error getShader() :" + stagl.Context3D.GL.getShaderInfoLog(shader));
+                return null;
+            }
+            return shader;
+        };
+        return Program3D;
+    })();
+    stagl.Program3D = Program3D;
+})(stagl || (stagl = {}));
+///<reference path="_definitions.ts"/>
+var stagl;
+(function (stagl) {
     stagl.VERSION = 0.001;
 
     var Stage3D = (function (_super) {
@@ -1536,14 +1887,46 @@ var stagl;
         };
 
         /**
-        * @width and @height are not need.
-        * @format only support rgba
+        * @format only support Context3DTextureFormat.BGRA
         * @optimizeForRenderToTexture not implement
         */
-        Context3D.prototype.createTexture = function (streamingLevels) {
+        Context3D.prototype.createTexture = function (width /* int */ , height /* int */ , format, optimizeForRenderToTexture, streamingLevels) {
             if (typeof streamingLevels === "undefined") { streamingLevels = 0; }
-            // public createTexture(width: number/* int */, height: number/* int */, format: string, optimizeForRenderToTexture: bool, streamingLevels: number/* int */ = 0): Texture
-            return new stagl.Texture(streamingLevels);
+            return new stagl.Texture(width, height, format, optimizeForRenderToTexture, streamingLevels);
+        };
+
+        Context3D.prototype.setRenderToTexture = function (texture, enableDepthAndStencil, antiAlias, surfaceSelector, colorOutputIndex) {
+            if (typeof enableDepthAndStencil === "undefined") { enableDepthAndStencil = false; }
+            if (typeof antiAlias === "undefined") { antiAlias = 0; }
+            if (typeof surfaceSelector === "undefined") { surfaceSelector = 0; }
+            if (typeof colorOutputIndex === "undefined") { colorOutputIndex = 0; }
+            if (enableDepthAndStencil) {
+                this._clearBit = Context3D.GL.COLOR_BUFFER_BIT | Context3D.GL.DEPTH_BUFFER_BIT | Context3D.GL.STENCIL_BUFFER_BIT;
+                Context3D.GL.enable(Context3D.GL.DEPTH_TEST);
+                Context3D.GL.enable(Context3D.GL.STENCIL_TEST);
+            } else {
+                this._clearBit = Context3D.GL.COLOR_BUFFER_BIT;
+                Context3D.GL.disable(Context3D.GL.DEPTH_TEST);
+                Context3D.GL.disable(Context3D.GL.STENCIL_TEST);
+            }
+
+            //TODO: antiAlias surfaceSelector colorOutputIndex
+            if (!this._rttFramebuffer) {
+                this._rttFramebuffer = Context3D.GL.createFramebuffer();
+                Context3D.GL.bindFramebuffer(Context3D.GL.FRAMEBUFFER, this._rttFramebuffer);
+
+                var renderbuffer = Context3D.GL.createRenderbuffer();
+                Context3D.GL.bindRenderbuffer(Context3D.GL.RENDERBUFFER, renderbuffer);
+                Context3D.GL.renderbufferStorage(Context3D.GL.RENDERBUFFER, Context3D.GL.DEPTH_COMPONENT16, 512, 512); //force 512
+
+                Context3D.GL.framebufferRenderbuffer(Context3D.GL.FRAMEBUFFER, Context3D.GL.DEPTH_ATTACHMENT, Context3D.GL.RENDERBUFFER, renderbuffer);
+                Context3D.GL.framebufferTexture2D(Context3D.GL.FRAMEBUFFER, Context3D.GL.COLOR_ATTACHMENT0, Context3D.GL.TEXTURE_2D, texture.__getGLTexture(), 0);
+            }
+            Context3D.GL.bindFramebuffer(Context3D.GL.FRAMEBUFFER, this._rttFramebuffer);
+        };
+
+        Context3D.prototype.setRenderToBackBuffer = function () {
+            Context3D.GL.bindFramebuffer(Context3D.GL.FRAMEBUFFER, null);
         };
 
         Context3D.prototype.createProgram = function () {
@@ -1648,17 +2031,16 @@ var stagl;
             if (transposedMatrix)
                 matrix.transpose();
 
-            Context3D.GL.uniformMatrix4fv(index, false, matrix.rawData); // bug:��2��������Ϊtrue
+            Context3D.GL.uniformMatrix4fv(index, false, matrix.rawData); // bug:the second parameter must be false
         };
 
         Context3D.prototype.setTextureAt = function (sampler, texture) {
             if (this._linkedProgram == null) {
                 console.log("err");
             }
-
-            //Context3D.GL.activeTexture(Context3D.GL.TEXTURE0);
+            Context3D.GL.activeTexture(Context3D.GL.TEXTURE0);
             var l = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, sampler);
-            Context3D.GL.uniform1i(l, 0); // TODO:���texture
+            Context3D.GL.uniform1i(l, 0); // TODO:multiple textures
         };
 
         Context3D.prototype.setProgram = function (program) {
@@ -1841,307 +2223,6 @@ var stagl;
     })();
     stagl.Context3D = Context3D;
 })(stagl || (stagl = {}));
-///<reference path="_definitions.ts"/>
-var stagl;
-(function (stagl) {
-    var Program3D = (function () {
-        function Program3D() {
-            this._glProgram = stagl.Context3D.GL.createProgram();
-        }
-        Object.defineProperty(Program3D.prototype, "glProgram", {
-            get: function () {
-                return this._glProgram;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Program3D.prototype.dispose = function () {
-            if (this._vShader) {
-                stagl.Context3D.GL.detachShader(this._glProgram, this._vShader);
-                stagl.Context3D.GL.deleteShader(this._vShader);
-                this._vShader = null;
-            }
-
-            if (this._fShader) {
-                stagl.Context3D.GL.detachShader(this._glProgram, this._fShader);
-                stagl.Context3D.GL.deleteShader(this._fShader);
-                this._fShader = null;
-            }
-            stagl.Context3D.GL.deleteProgram(this._glProgram);
-            this._glProgram = null;
-        };
-
-        Program3D.prototype.upload = function (vertexProgramId, fragmentProgramId) {
-            if (typeof vertexProgramId === "undefined") { vertexProgramId = "shader-vs"; }
-            if (typeof fragmentProgramId === "undefined") { fragmentProgramId = "shader-fs"; }
-            this._vShader = this.loadShader(vertexProgramId, stagl.Context3D.GL.VERTEX_SHADER);
-            this._fShader = this.loadShader(fragmentProgramId, stagl.Context3D.GL.FRAGMENT_SHADER);
-
-            if (!this._fShader || !this._vShader)
-                throw new Error("loadShader error");
-
-            stagl.Context3D.GL.attachShader(this._glProgram, this._vShader);
-            stagl.Context3D.GL.attachShader(this._glProgram, this._fShader);
-        };
-
-        /*
-        * load shader from html file by document.getElementById
-        */
-        Program3D.prototype.loadShader = function (elementId, type) {
-            var script = document.getElementById(elementId);
-            if (!script)
-                throw new Error("cant find elementId: " + elementId);
-            var shader = stagl.Context3D.GL.createShader(type);
-            stagl.Context3D.GL.shaderSource(shader, script.innerHTML);
-            stagl.Context3D.GL.compileShader(shader);
-
-            // Check the result of compilation
-            if (!stagl.Context3D.GL.getShaderParameter(shader, stagl.Context3D.GL.COMPILE_STATUS)) {
-                throw new Error(stagl.Context3D.GL.getShaderInfoLog(shader));
-            }
-            return shader;
-        };
-
-        /**
-        *   to delete .......
-        */
-        Program3D.prototype.getShader2 = function (elementId) {
-            var script = document.getElementById(elementId);
-            if (!script)
-                return null;
-
-            var str = "";
-            var k = script.firstChild;
-            while (k) {
-                if (k.nodeType == 3) {
-                    str += k.textContent;
-                }
-                k = k.nextSibling;
-            }
-
-            var shader;
-            if (script.type == "x-shader/x-fragment") {
-                shader = stagl.Context3D.GL.createShader(stagl.Context3D.GL.FRAGMENT_SHADER);
-            } else if (script.type == "x-shader/x-vertex") {
-                shader = stagl.Context3D.GL.createShader(stagl.Context3D.GL.VERTEX_SHADER);
-            } else {
-                return null;
-            }
-            stagl.Context3D.GL.shaderSource(shader, str);
-            stagl.Context3D.GL.compileShader(shader);
-
-            if (!stagl.Context3D.GL.getShaderParameter(shader, stagl.Context3D.GL.COMPILE_STATUS)) {
-                console.log("error getShader() :" + stagl.Context3D.GL.getShaderInfoLog(shader));
-                return null;
-            }
-            return shader;
-        };
-        return Program3D;
-    })();
-    stagl.Program3D = Program3D;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts"/>
-var stagl;
-(function (stagl) {
-    var VertexBuffer3D = (function () {
-        function VertexBuffer3D(numVertices, data32PerVertex) {
-            this._numVertices = numVertices;
-            this._data32PerVertex = data32PerVertex;
-
-            this._glBuffer = stagl.Context3D.GL.createBuffer();
-            if (!this._glBuffer)
-                throw new Error("Failed to create buffer");
-            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, this._glBuffer);
-        }
-        Object.defineProperty(VertexBuffer3D.prototype, "glBuffer", {
-            get: function () {
-                return this._glBuffer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(VertexBuffer3D.prototype, "data32PerVertex", {
-            get: function () {
-                return this._data32PerVertex;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        VertexBuffer3D.prototype.uploadFromVector = function (data, startVertex /* int */ , numVertices /* int */ ) {
-            this._data = data;
-
-            if (startVertex != 0 || numVertices != this._numVertices) {
-                data = data.slice(startVertex * this._data32PerVertex, (numVertices * this._data32PerVertex));
-            }
-
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, this._glBuffer);
-            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ARRAY_BUFFER, new Float32Array(data), stagl.Context3D.GL.STATIC_DRAW);
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ARRAY_BUFFER, null);
-        };
-
-        VertexBuffer3D.prototype.dispose = function () {
-            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
-            this._glBuffer = null;
-            this._data.length = 0;
-            this._numVertices = 0;
-            this._data32PerVertex = 0;
-        };
-        return VertexBuffer3D;
-    })();
-    stagl.VertexBuffer3D = VertexBuffer3D;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts" />
-var stagl;
-(function (stagl) {
-    var IndexBuffer3D = (function () {
-        function IndexBuffer3D(numIndices /* int */ ) {
-            this.numIndices = numIndices;
-            this._glBuffer = stagl.Context3D.GL.createBuffer();
-            //Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, this._glBuffer);
-        }
-        Object.defineProperty(IndexBuffer3D.prototype, "glBuffer", {
-            get: function () {
-                return this._glBuffer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        IndexBuffer3D.prototype.uploadFromVector = function (data /* Vector.<uint> */ , startOffset /* int */ , count /* int */ ) {
-            this._data = data;
-
-            if (startOffset != 0 || count != this.numIndices) {
-                data = data.slice(startOffset, startOffset + count);
-            }
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ELEMENT_ARRAY_BUFFER, this._glBuffer);
-            stagl.Context3D.GL.bufferData(stagl.Context3D.GL.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), stagl.Context3D.GL.STATIC_DRAW);
-            stagl.Context3D.GL.bindBuffer(stagl.Context3D.GL.ELEMENT_ARRAY_BUFFER, null);
-        };
-
-        IndexBuffer3D.prototype.dispose = function () {
-            stagl.Context3D.GL.deleteBuffer(this._glBuffer);
-            this._glBuffer = null;
-            this.numIndices = 0;
-            this._data.length = 0;
-        };
-        return IndexBuffer3D;
-    })();
-    stagl.IndexBuffer3D = IndexBuffer3D;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts" />
-var stagl;
-(function (stagl) {
-    var Texture = (function () {
-        function Texture(streamingLevels) {
-            this._glTexture = stagl.Context3D.GL.createTexture();
-            this._streamingLevels = streamingLevels;
-        }
-        Texture.prototype.uploadFromBitmapData = function (source, miplevel) {
-            if (typeof miplevel === "undefined") { miplevel = 0; }
-            this.uploadFromImage(source, miplevel);
-        };
-        Texture.prototype.uploadFromImage = function (source, miplevel) {
-            if (typeof miplevel === "undefined") { miplevel = 0; }
-            stagl.Context3D.GL.bindTexture(stagl.Context3D.GL.TEXTURE_2D, this._glTexture);
-
-            // Context3D.GL.pixelStorei(Context3D.GL.UNPACK_FLIP_Y_WEBGL, 1);
-            stagl.Context3D.GL.texImage2D(stagl.Context3D.GL.TEXTURE_2D, miplevel, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.UNSIGNED_BYTE, source);
-
-            //�Ŵ�
-            stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MAG_FILTER, stagl.Context3D.GL.LINEAR); //�ٶ���Ч����
-            if (this._streamingLevels == 0) {
-                //��С
-                stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MIN_FILTER, stagl.Context3D.GL.LINEAR);
-            } else {
-                stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MIN_FILTER, stagl.Context3D.GL.LINEAR_MIPMAP_LINEAR); //linnear����mipmap,����Ҳlinear
-                stagl.Context3D.GL.generateMipmap(stagl.Context3D.GL.TEXTURE_2D);
-            }
-
-            if (!stagl.Context3D.GL.isTexture(this._glTexture)) {
-                throw new Error("Error:Texture is invalid");
-            }
-            //bind null �᲻��ʾ��ͼ
-            //Context3D.GL.bindTexture(Context3D.GL.TEXTURE_2D, null);
-        };
-        return Texture;
-    })();
-    stagl.Texture = Texture;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts"/>
-var stagl;
-(function (stagl) {
-    var Context3DBlendFactor = (function () {
-        function Context3DBlendFactor() {
-        }
-        Context3DBlendFactor.init = function () {
-            Context3DBlendFactor.ONE = stagl.Context3D.GL.ONE;
-            Context3DBlendFactor.ZERO = stagl.Context3D.GL.ZERO;
-            Context3DBlendFactor.SOURCE_COLOR = stagl.Context3D.GL.SRC_COLOR;
-            Context3DBlendFactor.DESTINATION_COLOR = stagl.Context3D.GL.DST_COLOR;
-            Context3DBlendFactor.SOURCE_ALPHA = stagl.Context3D.GL.SRC_ALPHA;
-            Context3DBlendFactor.DESTINATION_ALPHA = stagl.Context3D.GL.DST_ALPHA;
-            Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR = stagl.Context3D.GL.ONE_MINUS_SRC_COLOR;
-            Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR = stagl.Context3D.GL.ONE_MINUS_DST_COLOR;
-            Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA = stagl.Context3D.GL.ONE_MINUS_SRC_ALPHA;
-            Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA = stagl.Context3D.GL.ONE_MINUS_DST_ALPHA;
-            //CONSTANT_COLOR
-            //ONE_MINUS_CONSTANT_COLOR
-            //ONE_MINUS_CONSTANT_ALPHA
-        };
-        return Context3DBlendFactor;
-    })();
-    stagl.Context3DBlendFactor = Context3DBlendFactor;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts"/>
-var stagl;
-(function (stagl) {
-    var Context3DVertexBufferFormat = (function () {
-        function Context3DVertexBufferFormat() {
-        }
-        Context3DVertexBufferFormat.BYTES_4 = "bytes4";
-        Context3DVertexBufferFormat.FLOAT_1 = "float1";
-        Context3DVertexBufferFormat.FLOAT_2 = "float2";
-        Context3DVertexBufferFormat.FLOAT_3 = "float3";
-        Context3DVertexBufferFormat.FLOAT_4 = "float4";
-        return Context3DVertexBufferFormat;
-    })();
-    stagl.Context3DVertexBufferFormat = Context3DVertexBufferFormat;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts" />
-var stagl;
-(function (stagl) {
-    var Context3DCompareMode = (function () {
-        function Context3DCompareMode() {
-        }
-        Context3DCompareMode.ALWAYS = "always";
-        Context3DCompareMode.EQUAL = "equal";
-        Context3DCompareMode.GREATER = "greater";
-        Context3DCompareMode.GREATER_EQUAL = "greaterEqual";
-        Context3DCompareMode.LESS = "less";
-        Context3DCompareMode.LESS_EQUAL = "lessEqual";
-        Context3DCompareMode.NEVER = "never";
-        Context3DCompareMode.NOT_EQUAL = "notEqual";
-        return Context3DCompareMode;
-    })();
-    stagl.Context3DCompareMode = Context3DCompareMode;
-})(stagl || (stagl = {}));
-///<reference path="_definitions.ts" />
-var stagl;
-(function (stagl) {
-    var Context3DTriangleFace = (function () {
-        function Context3DTriangleFace() {
-        }
-        Context3DTriangleFace.BACK = "back";
-        Context3DTriangleFace.FRONT = "front";
-        Context3DTriangleFace.FRONT_AND_BACK = "frontAndBack";
-        Context3DTriangleFace.NONE = "none";
-        return Context3DTriangleFace;
-    })();
-    stagl.Context3DTriangleFace = Context3DTriangleFace;
-})(stagl || (stagl = {}));
 ///<reference path="events/Event.ts"/>
 ///<reference path="events/ErrorEvent.ts"/>
 ///<reference path="events/EventDispatcher.ts"/>
@@ -2150,15 +2231,15 @@ var stagl;
 ///<reference path="geom/Quaternion.ts"/>
 ///<reference path="geom/Matrix3D.ts"/>
 ///<reference path="geom/PerspectiveMatrix3D.ts"/>
-///<reference path="Stage3D.ts"/>
-///<reference path="Context3D.ts"/>
-///<reference path="Program3D.ts"/>
+///<reference path="Context3DVertexBufferFormat.ts"/>
+///<reference path="Context3DTextureFormat.ts"/>
+///<reference path="Context3DCompareMode.ts"/>
+///<reference path="Context3DBlendFactor.ts"/>
+///<reference path="Context3DTriangleFace.ts"/>
 ///<reference path="VertexBuffer3D.ts"/>
 ///<reference path="IndexBuffer3D.ts"/>
 ///<reference path="Texture.ts"/>
-///<reference path="Context3DBlendFactor.ts"/>
-///<reference path="Context3DVertexBufferFormat.ts" />
-///<reference path="Context3DVertexBufferFormat.ts"/>
-///<reference path="Context3DCompareMode.ts"/>
-///<reference path="Context3DTriangleFace.ts"/>
+///<reference path="Program3D.ts"/>
+///<reference path="Stage3D.ts"/>
+///<reference path="Context3D.ts"/>
 //# sourceMappingURL=stagl.js.map

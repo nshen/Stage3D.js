@@ -328,133 +328,6 @@ declare module stagl.geom {
     }
 }
 declare module stagl.geom {
-    class Matrix3D {
-        private static DEG_2_RAD;
-        /**
-        * [read-only] A Number that determines whether a matrix is invertible.
-        */
-        public determinant : number;
-        public position : Vector3D;
-        /**
-        * A Vector of 16 Numbers, where every four elements is a column of a 4x4 matrix.
-        *
-        * <p>An exception is thrown if the rawData property is set to a matrix that is not invertible. The Matrix3D
-        * object must be invertible. If a non-invertible matrix is needed, create a subclass of the Matrix3D object.</p>
-        */
-        public rawData: Float32Array;
-        /**
-        * Creates a Matrix3D object.
-        */
-        constructor(v?: number[]);
-        /**
-        * Appends the matrix by multiplying another Matrix3D object by the current Matrix3D object.
-        * Apply a transform after this transform
-        */
-        public append(lhs: Matrix3D): void;
-        /**
-        * Prepends a matrix by multiplying the current Matrix3D object by another Matrix3D object.
-        */
-        public prepend(rhs: Matrix3D): void;
-        /**
-        * Appends an incremental rotation to a Matrix3D object.
-        */
-        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
-        /**
-        * Appends an incremental scale change along the x, y, and z axes to a Matrix3D object.
-        */
-        public appendScale(xScale: number, yScale: number, zScale: number): void;
-        /**
-        * Appends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
-        */
-        public appendTranslation(x: number, y: number, z: number): void;
-        /**
-        * Prepends an incremental rotation to a Matrix3D object.
-        */
-        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
-        /**
-        * Prepends an incremental scale change along the x, y, and z axes to a Matrix3D object.
-        */
-        public prependScale(xScale: number, yScale: number, zScale: number): void;
-        /**
-        * Prepends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
-        */
-        public prependTranslation(x: number, y: number, z: number): void;
-        /**
-        * Returns a new Matrix3D object that is an exact copy of the current Matrix3D object.
-        */
-        public clone(): Matrix3D;
-        /**
-        *  Copies a Vector3D object into specific column of the calling Matrix3D object.
-        */
-        public copyColumnFrom(column: number, vector3D: Vector3D): void;
-        /**
-        * Copies specific column of the calling Matrix3D object into the Vector3D object.
-        */
-        public copyColumnTo(column: number, vector3D: Vector3D): void;
-        /**
-        * Copies all of the matrix data from the source Matrix3D object into the calling Matrix3D object.
-        */
-        public copyFrom(sourceMatrix3D: Matrix3D): void;
-        /**
-        * Copies all of the vector data from the source vector object into the calling Matrix3D object.
-        */
-        public copyRawDataFrom(vector: number[], index?: number, transpose?: boolean): void;
-        /**
-        * Copies all of the matrix data from the calling Matrix3D object into the provided vector.
-        */
-        public copyRawDataTo(vector: number[], index?: number, transpose?: boolean): void;
-        /**
-        * Copies a Vector3D object into specific row of the calling Matrix3D object.
-        */
-        public copyRowFrom(row: number, vector3D: Vector3D): void;
-        /**
-        * Copies specific row of the calling Matrix3D object into the Vector3D object.
-        */
-        public copyRowTo(row: number, vector3D: Vector3D): void;
-        public copyToMatrix3D(dest: Matrix3D): void;
-        /**
-        * Returns the transformation matrix's translation, rotation, and scale settings as a Vector of three Vector3D objects.
-        */
-        public decompose(orientationStyle?: String): Vector3D[];
-        /**
-        * Converts the current matrix to an identity or unit matrix.
-        */
-        public identity(): void;
-        static interpolate(thisMat: Matrix3D, toMat: Matrix3D, percent: number): Matrix3D;
-        public interpolateTo(toMat: Matrix3D, percent: number): void;
-        /**
-        * Inverts the current matrix.
-        */
-        public invert(): boolean;
-        /**
-        * Rotates the display object so that it faces a specified position.
-        */
-        public pointAt(pos: Vector3D, at?: Vector3D, up?: Vector3D): void;
-        /**
-        * Sets the transformation matrix's translation, rotation, and scale settings.
-        */
-        public recompose(components: Vector3D[], orientationStyle?: String): boolean;
-        /**
-        * Uses the transformation matrix to transform a Vector3D object from one space coordinate to another.
-        */
-        public transformVector(v: Vector3D): Vector3D;
-        /**
-        * Uses the transformation matrix without its translation elements to transform a Vector3D object from one space coordinate to another.
-        */
-        public deltaTransformVector(v: Vector3D): Vector3D;
-        /**
-        * Uses the transformation matrix to transform a Vector of Numbers from one coordinate space to another.
-        */
-        public transformVectors(vin: number[], vout: number[]): void;
-        /**
-        * Converts the current Matrix3D object to a matrix where the rows and columns are swapped.
-        */
-        public transpose(): void;
-        public toString(): string;
-        private getRotateMatrix(axis, radians);
-    }
-}
-declare module stagl.geom {
     class Quaternion {
         public x: number;
         public y: number;
@@ -673,5 +546,132 @@ declare module stagl {
         *   In webgl we dont need to call present , browser will do this for us.
         */
         public present(): void;
+    }
+}
+declare module stagl.geom {
+    class Matrix3D {
+        private static DEG_2_RAD;
+        /**
+        * [read-only] A Number that determines whether a matrix is invertible.
+        */
+        public determinant : number;
+        public position : Vector3D;
+        /**
+        * A Vector of 16 Numbers, where every four elements is a column of a 4x4 matrix.
+        *
+        * <p>An exception is thrown if the rawData property is set to a matrix that is not invertible. The Matrix3D
+        * object must be invertible. If a non-invertible matrix is needed, create a subclass of the Matrix3D object.</p>
+        */
+        public rawData: Float32Array;
+        /**
+        * Creates a Matrix3D object.
+        */
+        constructor(v?: number[]);
+        /**
+        * Appends the matrix by multiplying another Matrix3D object by the current Matrix3D object.
+        * Apply a transform after this transform
+        */
+        public append(lhs: Matrix3D): void;
+        /**
+        * Prepends a matrix by multiplying the current Matrix3D object by another Matrix3D object.
+        */
+        public prepend(rhs: Matrix3D): void;
+        /**
+        * Appends an incremental rotation to a Matrix3D object.
+        */
+        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        /**
+        * Appends an incremental scale change along the x, y, and z axes to a Matrix3D object.
+        */
+        public appendScale(xScale: number, yScale: number, zScale: number): void;
+        /**
+        * Appends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
+        */
+        public appendTranslation(x: number, y: number, z: number): void;
+        /**
+        * Prepends an incremental rotation to a Matrix3D object.
+        */
+        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        /**
+        * Prepends an incremental scale change along the x, y, and z axes to a Matrix3D object.
+        */
+        public prependScale(xScale: number, yScale: number, zScale: number): void;
+        /**
+        * Prepends an incremental translation, a repositioning along the x, y, and z axes, to a Matrix3D object.
+        */
+        public prependTranslation(x: number, y: number, z: number): void;
+        /**
+        * Returns a new Matrix3D object that is an exact copy of the current Matrix3D object.
+        */
+        public clone(): Matrix3D;
+        /**
+        *  Copies a Vector3D object into specific column of the calling Matrix3D object.
+        */
+        public copyColumnFrom(column: number, vector3D: Vector3D): void;
+        /**
+        * Copies specific column of the calling Matrix3D object into the Vector3D object.
+        */
+        public copyColumnTo(column: number, vector3D: Vector3D): void;
+        /**
+        * Copies all of the matrix data from the source Matrix3D object into the calling Matrix3D object.
+        */
+        public copyFrom(sourceMatrix3D: Matrix3D): void;
+        /**
+        * Copies all of the vector data from the source vector object into the calling Matrix3D object.
+        */
+        public copyRawDataFrom(vector: number[], index?: number, transpose?: boolean): void;
+        /**
+        * Copies all of the matrix data from the calling Matrix3D object into the provided vector.
+        */
+        public copyRawDataTo(vector: number[], index?: number, transpose?: boolean): void;
+        /**
+        * Copies a Vector3D object into specific row of the calling Matrix3D object.
+        */
+        public copyRowFrom(row: number, vector3D: Vector3D): void;
+        /**
+        * Copies specific row of the calling Matrix3D object into the Vector3D object.
+        */
+        public copyRowTo(row: number, vector3D: Vector3D): void;
+        public copyToMatrix3D(dest: Matrix3D): void;
+        /**
+        * Returns the transformation matrix's translation, rotation, and scale settings as a Vector of three Vector3D objects.
+        */
+        public decompose(orientationStyle?: String): Vector3D[];
+        /**
+        * Converts the current matrix to an identity or unit matrix.
+        */
+        public identity(): void;
+        static interpolate(thisMat: Matrix3D, toMat: Matrix3D, percent: number): Matrix3D;
+        public interpolateTo(toMat: Matrix3D, percent: number): void;
+        /**
+        * Inverts the current matrix.
+        */
+        public invert(): boolean;
+        /**
+        * Rotates the display object so that it faces a specified position.
+        */
+        public pointAt(pos: Vector3D, at?: Vector3D, up?: Vector3D): void;
+        /**
+        * Sets the transformation matrix's translation, rotation, and scale settings.
+        */
+        public recompose(components: Vector3D[], orientationStyle?: String): boolean;
+        /**
+        * Uses the transformation matrix to transform a Vector3D object from one space coordinate to another.
+        */
+        public transformVector(v: Vector3D): Vector3D;
+        /**
+        * Uses the transformation matrix without its translation elements to transform a Vector3D object from one space coordinate to another.
+        */
+        public deltaTransformVector(v: Vector3D): Vector3D;
+        /**
+        * Uses the transformation matrix to transform a Vector of Numbers from one coordinate space to another.
+        */
+        public transformVectors(vin: number[], vout: number[]): void;
+        /**
+        * Converts the current Matrix3D object to a matrix where the rows and columns are swapped.
+        */
+        public transpose(): void;
+        public toString(): string;
+        private getRotateMatrix(axis, radians);
     }
 }

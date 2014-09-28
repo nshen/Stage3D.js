@@ -357,7 +357,7 @@ module stagl.geom
          */
         public decompose(orientationStyle: String = "eulerAngles"):Vector3D[]
         {
-            // Initial Tests - Not OK
+            // http://www.gamedev.net/topic/467665-decomposing-rotationtranslationscale-from-matrix/
 
             var vec:Vector3D[] = [];
             var m = this.clone();

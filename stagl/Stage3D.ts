@@ -13,7 +13,9 @@ module stagl
  
         constructor(canvas:HTMLCanvasElement)
         {
+
             super();
+
             this._canvas = canvas;
             this._stageWidth = canvas.width;
             this._stageHeight = canvas.height;
@@ -49,26 +51,29 @@ module stagl
             if (this._canvas.addEventListener)
                 this._canvas.addEventListener("webglcontextcreationerror", this.onCreationError, false);
             
-            var names: string[] = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-            Context3D.GL = null;
-            for (var i = 0; i < names.length; i++)
-            {
-                try {
-
-                    Context3D.GL = <WebGLRenderingContext> this._canvas.getContext(names[i]);
-                } catch (e) { }
-
-                if (Context3D.GL) break;
-            }
+            Context3D.GL = this.create3DContext();
 
             if (Context3D.GL == null)
                 return this.onCreationError(null);
-
 
             this._context3D = new stagl.Context3D();
             return this.onCreateSuccess();
         }
 
+        private create3DContext():WebGLRenderingContext
+        {
+            var names: string[] = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
+            var context:WebGLRenderingContext = null;
+            for (var i = 0; i < names.length; i++)
+            {
+                try {
+                    context = <WebGLRenderingContext> this._canvas.getContext(names[i]);
+                } catch (e) { }
+
+                if (context) break;
+            }
+            return context;
+        }
 
         private onCreationError(e: Event = null): void
         {

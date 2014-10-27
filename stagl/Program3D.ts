@@ -13,7 +13,7 @@ module stagl
         {
             this._glProgram = Context3D.GL.createProgram();
         }
-
+ 
 
         get glProgram(): WebGLProgram
         {
@@ -43,7 +43,7 @@ module stagl
         public upload(vertexProgramId: string = "shader-vs", fragmentProgramId: string = "shader-fs"): void
         {
             this._vShader = this.loadShader(vertexProgramId, Context3D.GL.VERTEX_SHADER);
-            this._fShader = this.loadShader(fragmentProgramId, Context3D.GL.FRAGMENT_SHADER)
+            this._fShader = this.loadShader(fragmentProgramId, Context3D.GL.FRAGMENT_SHADER);
 
             if (!this._fShader || !this._vShader)
                 throw new Error("loadShader error");
@@ -66,46 +66,46 @@ module stagl
             // Check the result of compilation
             if (!Context3D.GL.getShaderParameter(shader, Context3D.GL.COMPILE_STATUS))
             {
-                //this.dispose();
                 throw new Error(Context3D.GL.getShaderInfoLog(shader));
+                Context3D.GL.deleteShader(shader);
             }
             return shader;
         }
 
         /**
-        *   to delete .......
+        *   delete .......
         */
-        public getShader2(elementId: string): WebGLShader {
-            var script: HTMLObjectElement = <HTMLObjectElement>document.getElementById(elementId);
-            if (!script)
-                return null;
-
-            var str = "";
-            var k = script.firstChild;
-            while (k) {
-                if (k.nodeType == 3) {
-                    str += k.textContent;
-                }
-                k = k.nextSibling;
-            }
-
-            var shader: WebGLShader;
-            if (script.type == "x-shader/x-fragment") {
-                shader = Context3D.GL.createShader(Context3D.GL.FRAGMENT_SHADER);
-            } else if (script.type == "x-shader/x-vertex") {
-                shader = Context3D.GL.createShader(Context3D.GL.VERTEX_SHADER);
-            } else {
-                return null;
-            }
-            Context3D.GL.shaderSource(shader, str);
-            Context3D.GL.compileShader(shader);
-
-            if (!Context3D.GL.getShaderParameter(shader, Context3D.GL.COMPILE_STATUS)) {
-                console.log("error getShader() :" + Context3D.GL.getShaderInfoLog(shader));
-                return null;
-            }
-            return shader;
-        }
+//        public getShader2(elementId: string): WebGLShader {
+//            var script: HTMLObjectElement = <HTMLObjectElement>document.getElementById(elementId);
+//            if (!script)
+//                return null;
+//
+//            var str = "";
+//            var k = script.firstChild;
+//            while (k) {
+//                if (k.nodeType == 3) {
+//                    str += k.textContent;
+//                }
+//                k = k.nextSibling;
+//            }
+//
+//            var shader: WebGLShader;
+//            if (script.type == "x-shader/x-fragment") {
+//                shader = Context3D.GL.createShader(Context3D.GL.FRAGMENT_SHADER);
+//            } else if (script.type == "x-shader/x-vertex") {
+//                shader = Context3D.GL.createShader(Context3D.GL.VERTEX_SHADER);
+//            } else {
+//                return null;
+//            }
+//            Context3D.GL.shaderSource(shader, str);
+//            Context3D.GL.compileShader(shader);
+//
+//            if (!Context3D.GL.getShaderParameter(shader, Context3D.GL.COMPILE_STATUS)) {
+//                console.log("error getShader() :" + Context3D.GL.getShaderInfoLog(shader));
+//                return null;
+//            }
+//            return shader;
+//        }
 
     }
 } 

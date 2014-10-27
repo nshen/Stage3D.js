@@ -5,7 +5,7 @@ module stagl
     export class Context3D
     {
         static GL: WebGLRenderingContext; //set by Stage3D
-        //enableErrorChecking
+        //todo:enableErrorChecking https://www.khronos.org/webgl/wiki/Debugging
 
         private _clearBit: number;
 
@@ -226,12 +226,16 @@ module stagl
         private _linkedProgram: Program3D;
         public setProgram(program: Program3D): void
         {
+            if(program == null || program == this._linkedProgram)
+                return;
+
             Context3D.GL.linkProgram(program.glProgram);
 
             if (!Context3D.GL.getProgramParameter(program.glProgram, Context3D.GL.LINK_STATUS))
             {
+                throw new Error(Context3D.GL.getProgramInfoLog(program.glProgram));
                 program.dispose();
-                throw new Error("Unable to initialize the shader program.");
+                this._linkedProgram = null;
             }
 
             Context3D.GL.useProgram(program.glProgram);

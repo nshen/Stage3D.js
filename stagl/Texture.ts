@@ -59,13 +59,22 @@ module stagl
             return this._glTexture;
         }
 
-        public uploadFromBitmapData(source: HTMLImageElement, miplevel: number /* uint */ = 0): void
+        public uploadFromBitmapData(source:stagl.BitmapData, miplevel: number): void;
+        public uploadFromBitmapData(source:HTMLImageElement, miplevel: number): void;
+        public uploadFromBitmapData(source:any, miplevel: number /* uint */ = 0): void
         {
             if(this._forRTT)
                 console.error("rtt texture");
-            this.uploadFromImage(source, miplevel);
+            if(source instanceof stagl.BitmapData)
+            {
+                this.uploadFromImage(<stagl.BitmapData>source.imageData,miplevel);
+            }else
+            {
+                this.uploadFromImage(source, miplevel);
+            }
         }
-        public uploadFromImage(source: HTMLImageElement, miplevel: number /* uint */ = 0): void
+
+        public uploadFromImage(source: any, miplevel: number /* uint */ = 0): void
         {
             Context3D.GL.bindTexture(Context3D.GL.TEXTURE_2D, this._glTexture);
             Texture._bindingTexture = this._glTexture;
@@ -91,7 +100,7 @@ module stagl
             if (!Context3D.GL.isTexture(this._glTexture)) {
                 throw new Error("Error:Texture is invalid");
             }
-            //bind null 会不显示贴图
+            //bind null 会不显示贴图 why?
             //Context3D.GL.bindTexture(Context3D.GL.TEXTURE_2D, null);
         }
 

@@ -1,4 +1,5 @@
 
+///<reference path="BitmapData.ts"/>
 
 ///<reference path="events/Event.ts"/>
 ///<reference path="events/ErrorEvent.ts"/>

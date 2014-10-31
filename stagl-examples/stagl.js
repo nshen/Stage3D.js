@@ -1425,8 +1425,10 @@ var stagl;
 (function (stagl) {
     var Context3D = (function () {
         function Context3D() {
-            this._attributesToEnable = new Array();
-            this._constantsToEnable = new Array();
+            this._vaCache = {};
+            this._vcCache = {};
+            this._vcMCache = {};
+            this._linkedProgram = null;
             Context3D.GL.enable(Context3D.GL.BLEND);
             stagl.Context3DBlendFactor.init();
         }
@@ -1489,16 +1491,7 @@ var stagl;
         Context3D.prototype.setVertexBufferAt = function (variable, buffer, bufferOffset, format) {
             if (bufferOffset === void 0) { bufferOffset = 0; }
             if (format === void 0) { format = "float4"; }
-            if (this._linkedProgram == null) {
-                this._attributesToEnable.push([variable, buffer, bufferOffset, format]);
-                return;
-            }
-            var location = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, variable);
-            if (location < 0) {
-                throw new Error("Fail to get the storage location of" + variable);
-                return;
-            }
-            var size;
+            var size = 0;
             switch (format) {
                 case stagl.Context3DVertexBufferFormat.FLOAT_4:
                     size = 4;
@@ -1516,34 +1509,49 @@ var stagl;
                     size = 4;
                     break;
             }
-            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, buffer.glBuffer);
-            Context3D.GL.vertexAttribPointer(location, size, Context3D.GL.FLOAT, false, (buffer.data32PerVertex * 4), (bufferOffset * 4));
-            Context3D.GL.enableVertexAttribArray(location);
+            if (size <= 0)
+                throw new Error("vertexBuffer format error");
+            this._vaCache[variable] = { size: size, buffer: buffer.glBuffer, stride: buffer.data32PerVertex * 4, offset: bufferOffset * 4 };
+            if (this._linkedProgram)
+                this.enableVA(variable);
         };
         Context3D.prototype.setProgramConstantsFromVector = function (variable, data) {
             if (data.length > 4)
                 throw new Error("data length > 4");
-            if (this._linkedProgram == null) {
-                this._constantsToEnable.push([variable, data]);
-                return;
-            }
-            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, variable);
-            if (index == null) {
-                throw new Error("Fail to get uniform " + variable);
-                return;
-            }
-            Context3D.GL["uniform" + data.length + "fv"](index, data);
+            this._vcCache[variable] = data;
+            if (this._linkedProgram)
+                this.enableVC(variable);
         };
         Context3D.prototype.setProgramConstantsFromMatrix = function (variable, matrix, transposedMatrix) {
             if (transposedMatrix === void 0) { transposedMatrix = false; }
-            if (this._linkedProgram == null) {
-                this._constantsToEnable.push([variable, matrix, transposedMatrix]);
-                return;
-            }
-            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, variable);
             if (transposedMatrix)
                 matrix.transpose();
-            Context3D.GL.uniformMatrix4fv(index, false, matrix.rawData);
+            this._vcMCache[variable] = matrix.rawData;
+            if (this._linkedProgram)
+                this.enableVCM(variable);
+        };
+        Context3D.prototype.enableVA = function (keyInCache) {
+            var location = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, keyInCache);
+            if (location < 0) {
+                throw new Error("Fail to get the storage location of" + keyInCache);
+            }
+            var va = this._vaCache[keyInCache];
+            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, va.buffer);
+            Context3D.GL.vertexAttribPointer(location, va.size, Context3D.GL.FLOAT, false, va.stride, va.offset);
+            Context3D.GL.enableVertexAttribArray(location);
+        };
+        Context3D.prototype.enableVC = function (keyInCache) {
+            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if (!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+            var vc = this._vcCache[keyInCache];
+            Context3D.GL["uniform" + vc.length + "fv"](index, vc);
+        };
+        Context3D.prototype.enableVCM = function (keyInCache) {
+            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if (!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+            Context3D.GL.uniformMatrix4fv(index, false, this._vcMCache[keyInCache]);
         };
         Context3D.prototype.setTextureAt = function (sampler, texture) {
             if (this._linkedProgram == null) {
@@ -1556,28 +1564,20 @@ var stagl;
         Context3D.prototype.setProgram = function (program) {
             if (program == null || program == this._linkedProgram)
                 return;
+            this._linkedProgram = program;
             Context3D.GL.linkProgram(program.glProgram);
             if (!Context3D.GL.getProgramParameter(program.glProgram, Context3D.GL.LINK_STATUS)) {
                 throw new Error(Context3D.GL.getProgramInfoLog(program.glProgram));
                 program.dispose();
-                this._linkedProgram = null;
             }
             Context3D.GL.useProgram(program.glProgram);
-            this._linkedProgram = program;
-            var arr;
-            while (this._attributesToEnable.length > 0) {
-                arr = this._attributesToEnable.pop();
-                this.setVertexBufferAt(arr[0], arr[1], arr[2], arr[3]);
-            }
-            while (this._constantsToEnable.length > 0) {
-                arr = this._constantsToEnable.pop();
-                if (arr.length == 2 || arr[1].length == 4) {
-                    this.setProgramConstantsFromVector(arr[0], arr[1]);
-                }
-                else {
-                    this.setProgramConstantsFromMatrix(arr[0], arr[1], arr[2]);
-                }
-            }
+            var k;
+            for (k in this._vaCache)
+                this.enableVA(k);
+            for (k in this._vcCache)
+                this.enableVC(k);
+            for (k in this._vcMCache)
+                this.enableVCM(k);
         };
         Context3D.prototype.clear = function (red, green, blue, alpha, depth, stencil, mask) {
             if (red === void 0) { red = 0.0; }

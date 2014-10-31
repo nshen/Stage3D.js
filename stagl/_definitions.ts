@@ -23,5 +23,3 @@
 ///<reference path="Program3D.ts"/>
 ///<reference path="Stage3D.ts"/>
 ///<reference path="Context3D.ts"/>
-
-

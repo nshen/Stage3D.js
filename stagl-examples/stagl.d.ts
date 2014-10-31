@@ -303,11 +303,15 @@ declare module stagl {
         setRenderToTexture(texture: Texture, enableDepthAndStencil?: boolean, antiAlias?: number, surfaceSelector?: number, colorOutputIndex?: number): void;
         setRenderToBackBuffer(): void;
         createProgram(): Program3D;
-        private _attributesToEnable;
         setVertexBufferAt(variable: string, buffer: VertexBuffer3D, bufferOffset?: number, format?: String): void;
-        private _constantsToEnable;
         setProgramConstantsFromVector(variable: string, data: number[]): void;
         setProgramConstantsFromMatrix(variable: string, matrix: geom.Matrix3D, transposedMatrix?: boolean): void;
+        private _vaCache;
+        private enableVA(keyInCache);
+        private _vcCache;
+        private enableVC(keyInCache);
+        private _vcMCache;
+        private enableVCM(keyInCache);
         setTextureAt(sampler: string, texture: Texture): void;
         private _linkedProgram;
         setProgram(program: Program3D): void;

@@ -96,34 +96,13 @@ module stagl
 
 
 
-
-        /**
-        * private  setVertexBufferAt
-        */
-        private _attributesToEnable:any[][] = new Array();
         /**
         *  @variable must predefined in glsl
         */
         public setVertexBufferAt(variable: string, buffer: VertexBuffer3D, bufferOffset: number/* int */ = 0, format: String = "float4"): void
         {
 
-            //��setProgram֮ǰ���õ�setVertexBufferAt ������setProgramʱһ��set
-            if (this._linkedProgram == null)
-            {
-                this._attributesToEnable.push([variable, buffer, bufferOffset, format]);
-                return;
-            }
-
-
-            var location: number = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, variable);
-
-            if (location < 0)
-            {
-                throw new Error("Fail to get the storage location of" + variable);             
-                return;   
-            }
-
-            var size: number;
+            var size:number = 0;
             switch (format)
             {
                 case Context3DVertexBufferFormat.FLOAT_4:
@@ -143,17 +122,20 @@ module stagl
                     break;
             }
 
-          
-            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, buffer.glBuffer);// Bind the buffer object to a target
+            if(size <= 0 ) throw new Error("vertexBuffer format error");
 
+            //We need glProgram to enable vertex attribute , so we cache it , when setProgram() be callled  we enable them all.
+            this._vaCache[variable] = { size:size,
+                                        buffer:buffer.glBuffer,
+                                        stride:buffer.data32PerVertex * 4,
+                                        offset:bufferOffset * 4}; //* 4 bytes per value(Float32Array.BYTES_PER_ELEMENT)
             //http://blog.tojicode.com/2011/05/interleaved-array-basics.html
-            Context3D.GL.vertexAttribPointer(location, size, Context3D.GL.FLOAT, false, (buffer.data32PerVertex * 4), (bufferOffset * 4));  //  * 4 bytes per value
-            Context3D.GL.enableVertexAttribArray(location);
-           // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, null);
+
+            if(this._linkedProgram)
+                this.enableVA(variable);
+
         }
 
-
-        private _constantsToEnable: any[][] = new Array();
         /**
         *  @variable must predefined in glsl
         */
@@ -161,54 +143,59 @@ module stagl
         {
             if (data.length > 4) throw new Error("data length > 4");
 
-            if (this._linkedProgram == null) {
-                this._constantsToEnable.push([variable, data]);
-                return;
-            }
-            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, variable);
-
-            if (index == null) {
-                throw new Error("Fail to get uniform " + variable);
-                return;
-            }
-
-            Context3D.GL["uniform" + data.length + "fv"](index, data);
-            /*
-            switch (data.length)
-            {
-                case 1:
-                    Context3D.GL.uniform1fv(index, data);
-                    break;
-                case 2:
-                    Context3D.GL.uniform2fv(index, data);
-                    break;
-                case 3:
-                    Context3D.GL.uniform3fv(index, data);
-                    break;
-                case 4:
-                    Context3D.GL.uniform4fv(index, data);
-            }
-           */
+            this._vcCache[variable] = data;
+            if(this._linkedProgram)
+                this.enableVC(variable);
         }
 
-
-        //programType: String, firstRegister: int, matrix: Matrix3D, transposedMatrix: Boolean = false): void
         /**
         *  @variable must predefined in glsl
         */
         public setProgramConstantsFromMatrix(variable: string, matrix:geom.Matrix3D, transposedMatrix: boolean = false): void
         {
-            if (this._linkedProgram == null)
-            {
-                this._constantsToEnable.push([variable, matrix, transposedMatrix]);
-                return;
-            }
-
-            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, variable);
-            if (transposedMatrix)
+            if(transposedMatrix)
                 matrix.transpose();
 
-            Context3D.GL.uniformMatrix4fv(index, false, matrix.rawData); // bug:the second parameter must be false
+            this._vcMCache[variable] = matrix.rawData;
+            if(this._linkedProgram)
+                this.enableVCM(variable);
+        }
+
+
+        private _vaCache:{} = {};
+        private enableVA(keyInCache:string):void
+        {
+            var location:number = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, keyInCache);
+            if (location < 0){
+                throw new Error("Fail to get the storage location of" + keyInCache);}
+            var va:{size:number;buffer:WebGLBuffer;stride:number;offset:number} = this._vaCache[keyInCache];
+
+            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, va.buffer);// Bind the buffer object to a target
+            Context3D.GL.vertexAttribPointer(location, va.size, Context3D.GL.FLOAT, false, va.stride, va.offset);
+            Context3D.GL.enableVertexAttribArray(location);
+            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, null);
+        }
+
+
+        private _vcCache:{} = {}; // {variable:array}
+        private enableVC(keyInCache:string):void
+        {
+            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if (!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+
+            var vc:number[] = this._vcCache[keyInCache];
+            Context3D.GL["uniform" + vc.length + "fv"](index, vc);
+        }
+
+        private _vcMCache:{} = {};
+        private enableVCM(keyInCache:string):void
+        {
+            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if(!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+
+            Context3D.GL.uniformMatrix4fv(index, false, this._vcMCache[keyInCache]); // bug:the second parameter must be false
         }
 
         public setTextureAt(sampler: string, texture: Texture): void
@@ -223,11 +210,13 @@ module stagl
 
 
 
-        private _linkedProgram: Program3D;
+        private _linkedProgram: Program3D = null;
         public setProgram(program: Program3D): void
         {
-            if(program == null || program == this._linkedProgram)
+            if(program == null ||  program == this._linkedProgram)
                 return;
+
+            this._linkedProgram = program;
 
             Context3D.GL.linkProgram(program.glProgram);
 
@@ -235,29 +224,18 @@ module stagl
             {
                 throw new Error(Context3D.GL.getProgramInfoLog(program.glProgram));
                 program.dispose();
-                this._linkedProgram = null;
             }
-
             Context3D.GL.useProgram(program.glProgram);
-            this._linkedProgram = program;
-            
-            //��setProgram֮ǰ�Ѿ�setVertexBufferAt��buffer����
-            var arr: any[];
-            while (this._attributesToEnable.length > 0)
-            {
-                arr = this._attributesToEnable.pop();
-                this.setVertexBufferAt(arr[0], arr[1], arr[2], arr[3]);
-            }
-            while (this._constantsToEnable.length > 0)
-            {
-                arr = this._constantsToEnable.pop();
-                if (arr.length == 2 || arr[1].length == 4) {
-                    this.setProgramConstantsFromVector(arr[0], arr[1]);
-                } else {
-                    this.setProgramConstantsFromMatrix(arr[0], arr[1], arr[2]);
-                }
 
-            }
+            var k:string;
+            for (k in this._vaCache)
+                this.enableVA(k);
+
+            for(k in this._vcCache)
+                this.enableVC(k);
+
+            for(k in this._vcMCache)
+                this.enableVCM(k);
 
         }
 
@@ -266,7 +244,7 @@ module stagl
              
             Context3D.GL.clearColor(red, green, blue, alpha); 
             Context3D.GL.clearDepth(depth);// TODO:dont need to call this every time
-            Context3D.GL.clearStencil(stencil);//stencil buffer ����
+            Context3D.GL.clearStencil(stencil);//stencil buffer
 
             Context3D.GL.clear(this._clearBit);
         }
@@ -274,12 +252,12 @@ module stagl
 
         public setCulling(triangleFaceToCull: string): void
         {
-            Context3D.GL.frontFace(Context3D.GL.CW);//˳ʱ��Ϊ����
+            Context3D.GL.frontFace(Context3D.GL.CW);
             switch (triangleFaceToCull) {
                 case Context3DTriangleFace.NONE:
                     Context3D.GL.disable(Context3D.GL.CULL_FACE);
                     break;
-                case Context3DTriangleFace.BACK: //�ü����棬Ҳ������ʱ�벻��ʾ
+                case Context3DTriangleFace.BACK:
                     Context3D.GL.enable(Context3D.GL.CULL_FACE)
                     Context3D.GL.cullFace(Context3D.GL.BACK);
                     break;
@@ -336,6 +314,7 @@ module stagl
 
         public drawTriangles(indexBuffer: IndexBuffer3D, firstIndex: number /* int */ = 0, numTriangles: number/* int */ = -1): void
         {
+
             Context3D.GL.bindBuffer(Context3D.GL.ELEMENT_ARRAY_BUFFER, indexBuffer.glBuffer);
             Context3D.GL.drawElements(Context3D.GL.TRIANGLES, numTriangles < 0 ? indexBuffer.numIndices : numTriangles * 3, Context3D.GL.UNSIGNED_SHORT, firstIndex * 2);
         }

@@ -94,8 +94,6 @@ module stagl
             return new Program3D();
         }
 
-
-
         /**
         *  @variable must predefined in glsl
         */
@@ -161,53 +159,14 @@ module stagl
                 this.enableVCM(variable);
         }
 
-
-        private _vaCache:{} = {};
-        private enableVA(keyInCache:string):void
-        {
-            var location:number = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, keyInCache);
-            if (location < 0){
-                throw new Error("Fail to get the storage location of" + keyInCache);}
-            var va:{size:number;buffer:WebGLBuffer;stride:number;offset:number} = this._vaCache[keyInCache];
-
-            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, va.buffer);// Bind the buffer object to a target
-            Context3D.GL.vertexAttribPointer(location, va.size, Context3D.GL.FLOAT, false, va.stride, va.offset);
-            Context3D.GL.enableVertexAttribArray(location);
-            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, null);
-        }
-
-
-        private _vcCache:{} = {}; // {variable:array}
-        private enableVC(keyInCache:string):void
-        {
-            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
-            if (!index)
-                throw new Error("Fail to get uniform " + keyInCache);
-
-            var vc:number[] = this._vcCache[keyInCache];
-            Context3D.GL["uniform" + vc.length + "fv"](index, vc);
-        }
-
-        private _vcMCache:{} = {};
-        private enableVCM(keyInCache:string):void
-        {
-            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
-            if(!index)
-                throw new Error("Fail to get uniform " + keyInCache);
-
-            Context3D.GL.uniformMatrix4fv(index, false, this._vcMCache[keyInCache]); // bug:the second parameter must be false
-        }
-
         public setTextureAt(sampler: string, texture: Texture): void
         {
-            if (this._linkedProgram == null) {
-                console.log("err")
-            }
-            Context3D.GL.activeTexture(Context3D.GL.TEXTURE0);
-            var l: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, sampler);
-            Context3D.GL.uniform1i(l, 0); // TODO:multiple textures
-        }
+            this._texCache[sampler] = texture;
 
+            if (this._linkedProgram )
+                this.enableTex(sampler);
+
+        }
 
 
         private _linkedProgram: Program3D = null;
@@ -237,6 +196,9 @@ module stagl
             for(k in this._vcMCache)
                 this.enableVCM(k);
 
+            for(k in this._texCache)
+                this.enableTex(k);
+
         }
 
         public clear(red: number = 0.0, green: number = 0.0, blue: number = 0.0, alpha: number = 1.0, depth: number = 1.0, stencil: number/*uint*/ = 0, mask: number /* uint */ = 0xffffffff): void
@@ -248,7 +210,6 @@ module stagl
 
             Context3D.GL.clear(this._clearBit);
         }
-
 
         public setCulling(triangleFaceToCull: string): void
         {
@@ -271,7 +232,6 @@ module stagl
                     break;
             }
         }
-
 
         public setDepthTest(depthMask: boolean, passCompareMode: string): void
         {
@@ -390,5 +350,49 @@ module stagl
 
         }
 
+        private _vaCache:{} = {};
+        private enableVA(keyInCache:string):void
+        {
+            var location:number = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, keyInCache);
+            if (location < 0){
+                throw new Error("Fail to get the storage location of" + keyInCache);}
+            var va:{size:number;buffer:WebGLBuffer;stride:number;offset:number} = this._vaCache[keyInCache];
+
+            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, va.buffer);// Bind the buffer object to a target
+            Context3D.GL.vertexAttribPointer(location, va.size, Context3D.GL.FLOAT, false, va.stride, va.offset);
+            Context3D.GL.enableVertexAttribArray(location);
+            // Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, null);
+        }
+
+
+        private _vcCache:{} = {}; // {variable:array}
+        private enableVC(keyInCache:string):void
+        {
+            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if (!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+
+            var vc:number[] = this._vcCache[keyInCache];
+            Context3D.GL["uniform" + vc.length + "fv"](index, vc);
+        }
+
+        private _vcMCache:{} = {};
+        private enableVCM(keyInCache:string):void
+        {
+            var index: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if(!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+
+            Context3D.GL.uniformMatrix4fv(index, false, this._vcMCache[keyInCache]); // bug:the second parameter must be false
+        }
+
+        private _texCache:{} = {};//{sampler:Texture}
+        private enableTex(keyInCache):void
+        {
+            var tex:Texture = this._texCache[keyInCache];
+            Context3D.GL.activeTexture(Context3D.GL["TEXTURE"+tex.textureUnit]);
+            var l: WebGLUniformLocation = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            Context3D.GL.uniform1i(l, tex.textureUnit); // TODO:multiple textures
+        }
     }
 }

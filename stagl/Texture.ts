@@ -13,12 +13,16 @@ module stagl
         private _forRTT:boolean;
 
         private static _bindingTexture:WebGLTexture;
+        private static __texUnit:number = 0;
+
+        private _textureUnit:number;
 
         constructor(width:number,height:number,format:string,optimizeForRenderToTexture:boolean,streamingLevels:number)
         {
             this._glTexture = Context3D.GL.createTexture();
             this._streamingLevels = streamingLevels;
-            //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+            this._textureUnit = Texture.__texUnit ++;
 
             //rtt needs these properties
             this._width = width;
@@ -59,6 +63,11 @@ module stagl
             return this._glTexture;
         }
 
+        public get textureUnit():number
+        {
+            return this._textureUnit;
+        }
+
         public uploadFromBitmapData(source:stagl.BitmapData, miplevel: number): void;
         public uploadFromBitmapData(source:HTMLImageElement, miplevel: number): void;
         public uploadFromBitmapData(source:any, miplevel: number /* uint */ = 0): void
@@ -76,18 +85,14 @@ module stagl
 
         public uploadFromImage(source: any, miplevel: number /* uint */ = 0): void
         {
+            //Context3D.GL.pixelStorei(Context3D.GL.UNPACK_FLIP_Y_WEBGL, 1); //uv原点在左下角，v朝上时时才需翻转
+            Context3D.GL.activeTexture(Context3D.GL["TEXTURE"+this.textureUnit]);
             Context3D.GL.bindTexture(Context3D.GL.TEXTURE_2D, this._glTexture);
-            Texture._bindingTexture = this._glTexture;
-            // Context3D.GL.pixelStorei(Context3D.GL.UNPACK_FLIP_Y_WEBGL, 1);
-            Context3D.GL.texImage2D(Context3D.GL.TEXTURE_2D,
-                miplevel,
-                Context3D.GL.RGBA,
-                Context3D.GL.RGBA,
-                Context3D.GL.UNSIGNED_BYTE,
-                source);
 
-            //TODO: set texture's filter mode
-            Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MAG_FILTER, Context3D.GL.LINEAR); //放大,速度慢效果好
+            Texture._bindingTexture = this._glTexture;
+
+            //TODO: set filter mode API
+            //Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MAG_FILTER, Context3D.GL.LINEAR); //this is the default setting
             if (this._streamingLevels == 0)
             {
                 Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MIN_FILTER, Context3D.GL.LINEAR);
@@ -96,6 +101,12 @@ module stagl
                 Context3D.GL.generateMipmap(Context3D.GL.TEXTURE_2D);
             }
 
+            Context3D.GL.texImage2D(Context3D.GL.TEXTURE_2D,
+                miplevel,
+                Context3D.GL.RGBA,
+                Context3D.GL.RGBA,
+                Context3D.GL.UNSIGNED_BYTE,
+                source);
 
             if (!Context3D.GL.isTexture(this._glTexture)) {
                 throw new Error("Error:Texture is invalid");

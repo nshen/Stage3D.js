@@ -1229,6 +1229,7 @@ var stagl;
         function Texture(width, height, format, optimizeForRenderToTexture, streamingLevels) {
             this._glTexture = stagl.Context3D.GL.createTexture();
             this._streamingLevels = streamingLevels;
+            this._textureUnit = Texture.__texUnit++;
             this._width = width;
             this._height = height;
             this._format = format;
@@ -1249,6 +1250,13 @@ var stagl;
         Texture.prototype.__getGLTexture = function () {
             return this._glTexture;
         };
+        Object.defineProperty(Texture.prototype, "textureUnit", {
+            get: function () {
+                return this._textureUnit;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Texture.prototype.uploadFromBitmapData = function (source, miplevel) {
             if (miplevel === void 0) { miplevel = 0; }
             if (this._forRTT)
@@ -1262,10 +1270,9 @@ var stagl;
         };
         Texture.prototype.uploadFromImage = function (source, miplevel) {
             if (miplevel === void 0) { miplevel = 0; }
+            stagl.Context3D.GL.activeTexture(stagl.Context3D.GL["TEXTURE" + this.textureUnit]);
             stagl.Context3D.GL.bindTexture(stagl.Context3D.GL.TEXTURE_2D, this._glTexture);
             Texture._bindingTexture = this._glTexture;
-            stagl.Context3D.GL.texImage2D(stagl.Context3D.GL.TEXTURE_2D, miplevel, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.UNSIGNED_BYTE, source);
-            stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MAG_FILTER, stagl.Context3D.GL.LINEAR);
             if (this._streamingLevels == 0) {
                 stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MIN_FILTER, stagl.Context3D.GL.LINEAR);
             }
@@ -1273,6 +1280,7 @@ var stagl;
                 stagl.Context3D.GL.texParameteri(stagl.Context3D.GL.TEXTURE_2D, stagl.Context3D.GL.TEXTURE_MIN_FILTER, stagl.Context3D.GL.LINEAR_MIPMAP_LINEAR);
                 stagl.Context3D.GL.generateMipmap(stagl.Context3D.GL.TEXTURE_2D);
             }
+            stagl.Context3D.GL.texImage2D(stagl.Context3D.GL.TEXTURE_2D, miplevel, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.RGBA, stagl.Context3D.GL.UNSIGNED_BYTE, source);
             if (!stagl.Context3D.GL.isTexture(this._glTexture)) {
                 throw new Error("Error:Texture is invalid");
             }
@@ -1284,6 +1292,7 @@ var stagl;
             this._glTexture = null;
             this._streamingLevels = 0;
         };
+        Texture.__texUnit = 0;
         return Texture;
     })();
     stagl.Texture = Texture;
@@ -1425,10 +1434,11 @@ var stagl;
 (function (stagl) {
     var Context3D = (function () {
         function Context3D() {
+            this._linkedProgram = null;
             this._vaCache = {};
             this._vcCache = {};
             this._vcMCache = {};
-            this._linkedProgram = null;
+            this._texCache = {};
             Context3D.GL.enable(Context3D.GL.BLEND);
             stagl.Context3DBlendFactor.init();
         }
@@ -1530,36 +1540,10 @@ var stagl;
             if (this._linkedProgram)
                 this.enableVCM(variable);
         };
-        Context3D.prototype.enableVA = function (keyInCache) {
-            var location = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, keyInCache);
-            if (location < 0) {
-                throw new Error("Fail to get the storage location of" + keyInCache);
-            }
-            var va = this._vaCache[keyInCache];
-            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, va.buffer);
-            Context3D.GL.vertexAttribPointer(location, va.size, Context3D.GL.FLOAT, false, va.stride, va.offset);
-            Context3D.GL.enableVertexAttribArray(location);
-        };
-        Context3D.prototype.enableVC = function (keyInCache) {
-            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
-            if (!index)
-                throw new Error("Fail to get uniform " + keyInCache);
-            var vc = this._vcCache[keyInCache];
-            Context3D.GL["uniform" + vc.length + "fv"](index, vc);
-        };
-        Context3D.prototype.enableVCM = function (keyInCache) {
-            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
-            if (!index)
-                throw new Error("Fail to get uniform " + keyInCache);
-            Context3D.GL.uniformMatrix4fv(index, false, this._vcMCache[keyInCache]);
-        };
         Context3D.prototype.setTextureAt = function (sampler, texture) {
-            if (this._linkedProgram == null) {
-                console.log("err");
-            }
-            Context3D.GL.activeTexture(Context3D.GL.TEXTURE0);
-            var l = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, sampler);
-            Context3D.GL.uniform1i(l, 0);
+            this._texCache[sampler] = texture;
+            if (this._linkedProgram)
+                this.enableTex(sampler);
         };
         Context3D.prototype.setProgram = function (program) {
             if (program == null || program == this._linkedProgram)
@@ -1578,6 +1562,8 @@ var stagl;
                 this.enableVC(k);
             for (k in this._vcMCache)
                 this.enableVCM(k);
+            for (k in this._texCache)
+                this.enableTex(k);
         };
         Context3D.prototype.clear = function (red, green, blue, alpha, depth, stencil, mask) {
             if (red === void 0) { red = 0.0; }
@@ -1683,6 +1669,35 @@ var stagl;
             Context3D.GL.drawElements(Context3D.GL.TRIANGLE_FAN, indexBuffer.numIndices, Context3D.GL.UNSIGNED_SHORT, 0);
         };
         Context3D.prototype.present = function () {
+        };
+        Context3D.prototype.enableVA = function (keyInCache) {
+            var location = Context3D.GL.getAttribLocation(this._linkedProgram.glProgram, keyInCache);
+            if (location < 0) {
+                throw new Error("Fail to get the storage location of" + keyInCache);
+            }
+            var va = this._vaCache[keyInCache];
+            Context3D.GL.bindBuffer(Context3D.GL.ARRAY_BUFFER, va.buffer);
+            Context3D.GL.vertexAttribPointer(location, va.size, Context3D.GL.FLOAT, false, va.stride, va.offset);
+            Context3D.GL.enableVertexAttribArray(location);
+        };
+        Context3D.prototype.enableVC = function (keyInCache) {
+            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if (!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+            var vc = this._vcCache[keyInCache];
+            Context3D.GL["uniform" + vc.length + "fv"](index, vc);
+        };
+        Context3D.prototype.enableVCM = function (keyInCache) {
+            var index = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            if (!index)
+                throw new Error("Fail to get uniform " + keyInCache);
+            Context3D.GL.uniformMatrix4fv(index, false, this._vcMCache[keyInCache]);
+        };
+        Context3D.prototype.enableTex = function (keyInCache) {
+            var tex = this._texCache[keyInCache];
+            Context3D.GL.activeTexture(Context3D.GL["TEXTURE" + tex.textureUnit]);
+            var l = Context3D.GL.getUniformLocation(this._linkedProgram.glProgram, keyInCache);
+            Context3D.GL.uniform1i(l, tex.textureUnit);
         };
         return Context3D;
     })();

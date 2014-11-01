@@ -253,8 +253,11 @@ declare module stagl {
         private _format;
         private _forRTT;
         private static _bindingTexture;
+        private static __texUnit;
+        private _textureUnit;
         constructor(width: number, height: number, format: string, optimizeForRenderToTexture: boolean, streamingLevels: number);
         __getGLTexture(): WebGLTexture;
+        textureUnit: number;
         uploadFromBitmapData(source: BitmapData, miplevel: number): void;
         uploadFromBitmapData(source: HTMLImageElement, miplevel: number): void;
         uploadFromImage(source: any, miplevel?: number): void;
@@ -306,12 +309,6 @@ declare module stagl {
         setVertexBufferAt(variable: string, buffer: VertexBuffer3D, bufferOffset?: number, format?: String): void;
         setProgramConstantsFromVector(variable: string, data: number[]): void;
         setProgramConstantsFromMatrix(variable: string, matrix: geom.Matrix3D, transposedMatrix?: boolean): void;
-        private _vaCache;
-        private enableVA(keyInCache);
-        private _vcCache;
-        private enableVC(keyInCache);
-        private _vcMCache;
-        private enableVCM(keyInCache);
         setTextureAt(sampler: string, texture: Texture): void;
         private _linkedProgram;
         setProgram(program: Program3D): void;
@@ -327,5 +324,13 @@ declare module stagl {
         drawTriangleStrip(indexBuffer: IndexBuffer3D): void;
         drawTriangleFan(indexBuffer: IndexBuffer3D): void;
         present(): void;
+        private _vaCache;
+        private enableVA(keyInCache);
+        private _vcCache;
+        private enableVC(keyInCache);
+        private _vcMCache;
+        private enableVCM(keyInCache);
+        private _texCache;
+        private enableTex(keyInCache);
     }
 }

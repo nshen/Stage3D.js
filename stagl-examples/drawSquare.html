@@ -10,18 +10,26 @@
 
     <!-- Fragment Shader //-->
     <script id="shader-fs" type="x-shader/x-fragment">
-
+        varying highp vec2 v0;
+        uniform sampler2D fs0;
         void main(void) {
-        gl_FragColor = vec4(0.5,0.5,1.0, 1.0);
+         //gl_FragColor = vec4(0.5,0.5,1.0, 1.0);
+         gl_FragColor = texture2D( fs0, vec2(v0.x, v0.y) );
         }
+
+
     </script>
 
     <!-- Vertex Shader //-->
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 va0;
+        attribute vec2 va1;
+
+        varying vec2 v0;
 
         void main(void) {
-        gl_Position = vec4(va0,1.0);
+            gl_Position = vec4(va0,1.0);
+            v0= va1;
         }
     </script>
 

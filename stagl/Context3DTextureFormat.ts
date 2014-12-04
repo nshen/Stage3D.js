@@ -1,4 +1,4 @@
-///<reference path="_definitions.ts" />
+///<reference path="reference.ts" />
 module stagl
 {
     export class Context3DTextureFormat

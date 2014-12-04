@@ -1,4 +1,4 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="../reference.ts"/>
 module stagl.events {
 
     /**

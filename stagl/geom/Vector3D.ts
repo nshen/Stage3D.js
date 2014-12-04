@@ -1,4 +1,4 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="../reference.ts"/>
 module stagl.geom
 {
     export class Vector3D

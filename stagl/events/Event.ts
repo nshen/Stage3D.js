@@ -1,4 +1,4 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="../reference.ts"/>
 /**
  * Base event class
  * @class stagl.events.Event

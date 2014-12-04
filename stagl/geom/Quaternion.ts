@@ -1,4 +1,4 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="../reference.ts"/>
 ///<reference path="Matrix3D.ts"/>
 module stagl.geom
 {

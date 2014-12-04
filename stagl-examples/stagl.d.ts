@@ -167,6 +167,16 @@ declare module stagl.geom {
 }
 declare module stagl.geom {
     class PerspectiveMatrix3D extends Matrix3D {
+        lookAtLH(eye: Vector3D, at: Vector3D, up: Vector3D): void;
+        lookAtRH(eye: Vector3D, at: Vector3D, up: Vector3D): void;
+        perspectiveLH(width: number, height: number, zNear: number, zFar: number): void;
+        perspectiveRH(width: number, height: number, zNear: number, zFar: number): void;
+        perspectiveOffCenterLH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        perspectiveOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        orthoLH(width: number, height: number, zNear: number, zFar: number): void;
+        orthoRH(width: number, height: number, zNear: number, zFar: number): void;
+        orthoOffCenterLH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        orthoOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
         perspectiveFieldOfViewRH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
         perspectiveFieldOfViewLH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
     }

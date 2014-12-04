@@ -1,20 +1,20 @@
 {
-  "name": "stagl",
+  "name": "Stage3D.js",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nshen/stagl.git"
+    "url": "https://github.com/nshen/Stage3D.js"
   },
   "keywords": [
     "webgl",
     "stage3d"
   ],
-  "author": "nshen.net",
+  "author": "nshen",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nshen/stagl/issues"
+    "url": "https://github.com/nshen/Stage3D.js/issues"
   },
-  "homepage": "https://github.com/nshen/stagl",
+  "homepage": "https://github.com/nshen/Stage3D.js",
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-copy": "^0.7.0",

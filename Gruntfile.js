@@ -17,10 +17,10 @@
             // a particular target
             build: 
             {
-                src: ["stagl/reference.ts"],  
-                // reference: 'stagl/reference.ts',  //create reference.ts
-                out: './build/stagl.js', 
-                // watch: 'stagl',  
+                src: ["stageJS/reference.ts"],  
+                // reference: 'stage3d/reference.ts',  //create reference.ts
+                out: './build/stage3d.js', 
+                // watch: 'stage3d',  
             }
         },
 
@@ -29,13 +29,13 @@
         {
             min: 
             {
-              files: {'build/stagl.min.js': ['build/stagl.js']}
+              files: {'build/stage3d.min.js': ['build/stage3d.js']}
             }
         },
 
         copy:
         {
-           builds: {expand: true, cwd: 'build/', src: '*', dest: 'stagl-examples/'}
+           builds: {expand: true, cwd: 'build/', src: '*', dest: 'examples/'}
         }
 
     });

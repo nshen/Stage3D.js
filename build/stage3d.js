@@ -1116,6 +1116,17 @@ var stageJS;
 })(stageJS || (stageJS = {}));
 var stageJS;
 (function (stageJS) {
+    var Context3DProgramType = (function () {
+        function Context3DProgramType() {
+        }
+        Context3DProgramType.FRAGMENT = "fragment";
+        Context3DProgramType.VERTEX = "vertex";
+        return Context3DProgramType;
+    })();
+    stageJS.Context3DProgramType = Context3DProgramType;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
     var Context3DTextureFormat = (function () {
         function Context3DTextureFormat() {
         }
@@ -1377,11 +1388,16 @@ var stageJS;
             this._glProgram = null;
         };
 
-        Program3D.prototype.upload = function (vertexProgramId, fragmentProgramId) {
-            if (typeof vertexProgramId === "undefined") { vertexProgramId = "shader-vs"; }
-            if (typeof fragmentProgramId === "undefined") { fragmentProgramId = "shader-fs"; }
-            this._vShader = this.loadShader(vertexProgramId, stageJS.Context3D.GL.VERTEX_SHADER);
-            this._fShader = this.loadShader(fragmentProgramId, stageJS.Context3D.GL.FRAGMENT_SHADER);
+        Program3D.prototype.uploadAGAL = function (vertexProgram, fragmentProgram) {
+            if (!this._tokenizer) {
+                this._tokenizer = new stageJS.utils.AGALTokenizer();
+                this._agalParser = new stageJS.utils.AGLSLParser();
+            }
+            var v_glsl = this._agalParser.parse(this._tokenizer.decribeAGALByteArray(vertexProgram));
+            var f_glsl = this._agalParser.parse(this._tokenizer.decribeAGALByteArray(fragmentProgram));
+
+            this._vShader = this.createShader(v_glsl, stageJS.Context3D.GL.VERTEX_SHADER);
+            this._fShader = this.createShader(f_glsl, stageJS.Context3D.GL.FRAGMENT_SHADER);
 
             if (!this._fShader || !this._vShader)
                 throw new Error("loadShader error");
@@ -1390,12 +1406,22 @@ var stageJS;
             stageJS.Context3D.GL.attachShader(this._glProgram, this._fShader);
         };
 
-        Program3D.prototype.loadShader = function (elementId, type) {
-            var script = document.getElementById(elementId);
-            if (!script)
-                throw new Error("cant find elementId: " + elementId);
+        Program3D.prototype.upload = function (vertexProgramId, fragmentProgramId) {
+            if (typeof vertexProgramId === "undefined") { vertexProgramId = "shader-vs"; }
+            if (typeof fragmentProgramId === "undefined") { fragmentProgramId = "shader-fs"; }
+            this._vShader = this.createShader(this.loadGLSL(vertexProgramId), stageJS.Context3D.GL.VERTEX_SHADER);
+            this._fShader = this.createShader(this.loadGLSL(fragmentProgramId), stageJS.Context3D.GL.FRAGMENT_SHADER);
+
+            if (!this._fShader || !this._vShader)
+                throw new Error("loadShader error");
+
+            stageJS.Context3D.GL.attachShader(this._glProgram, this._vShader);
+            stageJS.Context3D.GL.attachShader(this._glProgram, this._fShader);
+        };
+
+        Program3D.prototype.createShader = function (glsl, type) {
             var shader = stageJS.Context3D.GL.createShader(type);
-            stageJS.Context3D.GL.shaderSource(shader, script.innerHTML);
+            stageJS.Context3D.GL.shaderSource(shader, glsl);
             stageJS.Context3D.GL.compileShader(shader);
 
             if (!stageJS.Context3D.GL.getShaderParameter(shader, stageJS.Context3D.GL.COMPILE_STATUS)) {
@@ -1403,6 +1429,13 @@ var stageJS;
                 stageJS.Context3D.GL.deleteShader(shader);
             }
             return shader;
+        };
+
+        Program3D.prototype.loadGLSL = function (elementId) {
+            var script = document.getElementById(elementId);
+            if (!script)
+                throw new Error("cant find elementId: " + elementId);
+            return script.innerHTML;
         };
         return Program3D;
     })();
@@ -2532,25 +2565,26 @@ var stageJS;
                     this.r = {};
                     this.cur = new assembler.Part();
                 }
-                AGALMiniAssembler.prototype.assemble = function (source, ext_part, ext_version) {
-                    if (typeof ext_part === "undefined") { ext_part = null; }
-                    if (typeof ext_version === "undefined") { ext_version = null; }
-                    if (!ext_version) {
-                        ext_version = 1;
-                    }
-
-                    if (ext_part) {
-                        this.addHeader(ext_part, ext_version);
-                    }
+                AGALMiniAssembler.prototype.assemble = function (mode, source) {
+                    this.addHeader(mode, 1);
 
                     var lines = source.replace(/[\f\n\r\v]+/g, "\n").split("\n");
+                    lines.push("endpart");
 
                     for (var i in lines) {
                         this.processLine(lines[i], i);
                     }
 
-                    return this.r;
+                    this._agalcode = this.r[mode].data;
                 };
+
+                Object.defineProperty(AGALMiniAssembler.prototype, "agalcode", {
+                    get: function () {
+                        return this._agalcode;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
 
                 AGALMiniAssembler.prototype.processLine = function (line, linenr) {
                     var startcomment = line.search("//");
@@ -2577,9 +2611,6 @@ var stageJS;
                     }
 
                     switch (tokens[0]) {
-                        case "part":
-                            this.addHeader(tokens[1], Number(tokens[2]));
-                            break;
                         case "endpart":
                             if (!this.cur) {
                                 throw "Unexpected endpart";

@@ -12,6 +12,7 @@
 ///<reference path="geom/PerspectiveMatrix3D.ts"/>
 
 ///<reference path="Context3DVertexBufferFormat.ts"/>
+///<reference path="Context3DProgramType.ts"/>
 ///<reference path="Context3DTextureFormat.ts"/>
 ///<reference path="Context3DCompareMode.ts"/>
 ///<reference path="Context3DBlendFactor.ts"/>

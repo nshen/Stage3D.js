@@ -17,22 +17,33 @@ module stageJS.utils.assembler {
 			this.cur = new Part();
 		}
 
-		public assemble(source:string, ext_part = null, ext_version = null) {
-			if (!ext_version) {
-				ext_version = 1;
-			}
+		public assemble( mode:string, source:string ) :void
+		{
+			//if (!ext_version) {
+			//	ext_version = 1;
+			//}
 
-			if (ext_part) {
-				this.addHeader(ext_part, ext_version);
-			}
+			//if (ext_part) {
+			//	this.addHeader(ext_part, ext_version);
+			//}
+
+			this.addHeader(mode, 1);
 
 			var lines = source.replace(/[\f\n\r\v]+/g, "\n").split("\n"); // handle breaks, then split into lines
+			lines.push("endpart");
 
 			for (var i in lines) {
 				this.processLine(lines[i], i);
 			}
 
-			return this.r;
+			this._agalcode = this.r[mode].data;
+			//return this.r[mode].data;
+		}
+
+		private _agalcode:utils.ByteArray;
+		public get agalcode():utils.ByteArray
+		{
+			return this._agalcode;
 		}
 
 		private processLine(line, linenr) {
@@ -62,9 +73,9 @@ module stageJS.utils.assembler {
 
 			//console.log ( linenr, line, cur, tokens );
 			switch (tokens[0]) {
-				case "part":
-					this.addHeader(tokens[1], Number(tokens[2]));
-					break;
+				//case "part":
+				//	this.addHeader(tokens[1], Number(tokens[2]));
+				//	break;
 				case "endpart":
 					if (!this.cur) {
 						throw "Unexpected endpart";

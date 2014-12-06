@@ -181,6 +181,12 @@ declare module stageJS {
     }
 }
 declare module stageJS {
+    class Context3DProgramType {
+        static FRAGMENT: string;
+        static VERTEX: string;
+    }
+}
+declare module stageJS {
     class Context3DTextureFormat {
         static BGRA: string;
     }
@@ -272,8 +278,12 @@ declare module stageJS {
         constructor();
         public glProgram : WebGLProgram;
         public dispose(): void;
+        private _tokenizer;
+        private _agalParser;
+        public uploadAGAL(vertexProgram: utils.ByteArray, fragmentProgram: utils.ByteArray): void;
         public upload(vertexProgramId?: string, fragmentProgramId?: string): void;
-        private loadShader(elementId, type);
+        private createShader(glsl, type);
+        private loadGLSL(elementId);
     }
 }
 declare module stageJS {
@@ -455,7 +465,9 @@ declare module stageJS.utils.assembler {
         public r: Object;
         public cur: Part;
         constructor();
-        public assemble(source: string, ext_part?: any, ext_version?: any): Object;
+        public assemble(mode: string, source: string): void;
+        private _agalcode;
+        public agalcode : ByteArray;
         private processLine(line, linenr);
         public emitHeader(pr: Part): void;
         public emitOpcode(pr: Part, opcode: any): void;

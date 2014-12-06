@@ -39,6 +39,11 @@ module stageJS
             this._glProgram = null;
         }
 
+        public uploadAGAL(ertexProgram:utils.ByteArray, fragmentProgram:utils.ByteArray):void
+        {
+
+        }
+        //public upload
 
         public upload(vertexProgramId: string = "shader-vs", fragmentProgramId: string = "shader-fs"): void
         {

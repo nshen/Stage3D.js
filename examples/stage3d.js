@@ -1825,4 +1825,1524 @@ var stageJS;
     })();
     stageJS.Context3D = Context3D;
 })(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var ByteArrayBase = (function () {
+            function ByteArrayBase() {
+                this.position = 0;
+                this.length = 0;
+                this._mode = "";
+            }
+            ByteArrayBase.prototype.writeByte = function (b) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.readByte = function () {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.writeUnsignedByte = function (b) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.readUnsignedByte = function () {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.writeUnsignedShort = function (b) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.readUnsignedShort = function () {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.writeUnsignedInt = function (b) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.readUnsignedInt = function () {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.writeFloat = function (b) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.toFloatBits = function (x) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.readFloat = function (b) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.fromFloatBits = function (x) {
+                throw "Virtual method";
+            };
+
+            ByteArrayBase.prototype.getBytesAvailable = function () {
+                throw new Error('not implemented');
+            };
+
+            ByteArrayBase.prototype.toString = function () {
+                return "[ByteArray] ( " + this._mode + " ) position=" + this.position + " length=" + this.length;
+            };
+
+            ByteArrayBase.prototype.compareEqual = function (other, count) {
+                if (count == null || count > this.length - this.position)
+                    count = this.length - this.position;
+                if (count > other.length - other.position)
+                    count = other.length - other.position;
+                var co0 = count;
+                var r = true;
+                while (r && count >= 4) {
+                    count -= 4;
+                    if (this.readUnsignedInt() != other.readUnsignedInt())
+                        r = false;
+                }
+                while (r && count >= 1) {
+                    count--;
+                    if (this.readUnsignedByte() != other.readUnsignedByte())
+                        r = false;
+                }
+                var c0;
+                this.position -= (c0 - count);
+                other.position -= (c0 - count);
+                return r;
+            };
+
+            ByteArrayBase.prototype.writeBase64String = function (s) {
+                for (var i = 0; i < s.length; i++) {
+                    var v = s.charAt(i);
+                }
+            };
+
+            ByteArrayBase.prototype.dumpToConsole = function () {
+                var oldpos = this.position;
+                this.position = 0;
+                var nstep = 8;
+
+                function asHexString(x, digits) {
+                    var lut = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
+                    var sh = "";
+                    for (var d = 0; d < digits; d++) {
+                        sh = lut[(x >> (d << 2)) & 0xf] + sh;
+                    }
+                    return sh;
+                }
+
+                for (var i = 0; i < this.length; i += nstep) {
+                    var s = asHexString(i, 4) + ":";
+                    for (var j = 0; j < nstep && i + j < this.length; j++) {
+                        s += " " + asHexString(this.readUnsignedByte(), 2);
+                    }
+                    console.log(s);
+                }
+                this.position = oldpos;
+            };
+
+            ByteArrayBase.prototype.readBase64String = function (count) {
+                if (count == null || count > this.length - this.position)
+                    count = this.length - this.position;
+                if (!(count > 0))
+                    return "";
+
+                return ByteArrayBase.internalGetBase64String(count, this.readUnsignedByte, this);
+            };
+
+            ByteArrayBase.internalGetBase64String = function (count, getUnsignedByteFunc, self) {
+                var r = "";
+                var b0, b1, b2, enc1, enc2, enc3, enc4;
+                var base64Key = ByteArrayBase.Base64Key;
+                while (count >= 3) {
+                    b0 = getUnsignedByteFunc.apply(self);
+                    b1 = getUnsignedByteFunc.apply(self);
+                    b2 = getUnsignedByteFunc.apply(self);
+                    enc1 = b0 >> 2;
+                    enc2 = ((b0 & 3) << 4) | (b1 >> 4);
+                    enc3 = ((b1 & 15) << 2) | (b2 >> 6);
+                    enc4 = b2 & 63;
+                    r += base64Key.charAt(enc1) + base64Key.charAt(enc2) + base64Key.charAt(enc3) + base64Key.charAt(enc4);
+                    count -= 3;
+                }
+
+                if (count == 2) {
+                    b0 = getUnsignedByteFunc.apply(self);
+                    b1 = getUnsignedByteFunc.apply(self);
+                    enc1 = b0 >> 2;
+                    enc2 = ((b0 & 3) << 4) | (b1 >> 4);
+                    enc3 = ((b1 & 15) << 2);
+                    r += base64Key.charAt(enc1) + base64Key.charAt(enc2) + base64Key.charAt(enc3) + "=";
+                } else if (count == 1) {
+                    b0 = getUnsignedByteFunc.apply(self);
+                    enc1 = b0 >> 2;
+                    enc2 = ((b0 & 3) << 4);
+                    r += base64Key.charAt(enc1) + base64Key.charAt(enc2) + "==";
+                }
+                return r;
+            };
+            ByteArrayBase.Base64Key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            return ByteArrayBase;
+        })();
+        utils.ByteArrayBase = ByteArrayBase;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var ByteArray = (function (_super) {
+            __extends(ByteArray, _super);
+            function ByteArray() {
+                _super.call(this);
+                this.maxlength = 0;
+                this._mode = "Typed array";
+                this.maxlength = 4;
+                this.arraybytes = new ArrayBuffer(this.maxlength);
+                this.unalignedarraybytestemp = new ArrayBuffer(16);
+            }
+            ByteArray.prototype.ensureWriteableSpace = function (n) {
+                this.ensureSpace(n + this.position);
+            };
+
+            ByteArray.prototype.setArrayBuffer = function (aBuffer) {
+                this.ensureSpace(aBuffer.byteLength);
+
+                this.length = aBuffer.byteLength;
+
+                var inInt8AView = new Int8Array(aBuffer);
+                var localInt8View = new Int8Array(this.arraybytes, 0, this.length);
+
+                localInt8View.set(inInt8AView);
+
+                this.position = 0;
+            };
+
+            ByteArray.prototype.getBytesAvailable = function () {
+                return (this.length) - (this.position);
+            };
+
+            ByteArray.prototype.ensureSpace = function (n) {
+                if (n > this.maxlength) {
+                    var newmaxlength = (n + 255) & (~255);
+                    var newarraybuffer = new ArrayBuffer(newmaxlength);
+                    var view = new Uint8Array(this.arraybytes, 0, this.length);
+                    var newview = new Uint8Array(newarraybuffer, 0, this.length);
+                    newview.set(view);
+                    this.arraybytes = newarraybuffer;
+                    this.maxlength = newmaxlength;
+                }
+            };
+
+            ByteArray.prototype.writeByte = function (b) {
+                this.ensureWriteableSpace(1);
+                var view = new Int8Array(this.arraybytes);
+                view[this.position++] = (~~b);
+                if (this.position > this.length) {
+                    this.length = this.position;
+                }
+            };
+
+            ByteArray.prototype.readByte = function () {
+                if (this.position >= this.length) {
+                    throw "ByteArray out of bounds read. Positon=" + this.position + ", Length=" + this.length;
+                }
+                var view = new Int8Array(this.arraybytes);
+
+                return view[this.position++];
+            };
+
+            ByteArray.prototype.readBytes = function (bytes, offset, length) {
+                if (typeof offset === "undefined") { offset = 0; }
+                if (typeof length === "undefined") { length = 0; }
+                if (length == null) {
+                    length = bytes.length;
+                }
+
+                bytes.ensureWriteableSpace(offset + length);
+
+                var byteView = new Int8Array(bytes.arraybytes);
+                var localByteView = new Int8Array(this.arraybytes);
+
+                byteView.set(localByteView.subarray(this.position, this.position + length), offset);
+
+                this.position += length;
+
+                if (length + offset > bytes.length) {
+                    bytes.length += (length + offset) - bytes.length;
+                }
+            };
+
+            ByteArray.prototype.writeUnsignedByte = function (b) {
+                this.ensureWriteableSpace(1);
+                var view = new Uint8Array(this.arraybytes);
+                view[this.position++] = (~~b) & 0xff;
+                if (this.position > this.length) {
+                    this.length = this.position;
+                }
+            };
+
+            ByteArray.prototype.readUnsignedByte = function () {
+                if (this.position >= this.length) {
+                    throw "ByteArray out of bounds read. Positon=" + this.position + ", Length=" + this.length;
+                }
+                var view = new Uint8Array(this.arraybytes);
+                return view[this.position++];
+            };
+
+            ByteArray.prototype.writeUnsignedShort = function (b) {
+                this.ensureWriteableSpace(2);
+                if ((this.position & 1) == 0) {
+                    var view = new Uint16Array(this.arraybytes);
+                    view[this.position >> 1] = (~~b) & 0xffff;
+                } else {
+                    var view = new Uint16Array(this.unalignedarraybytestemp, 0, 1);
+                    view[0] = (~~b) & 0xffff;
+                    var view2 = new Uint8Array(this.arraybytes, this.position, 2);
+                    var view3 = new Uint8Array(this.unalignedarraybytestemp, 0, 2);
+                    view2.set(view3);
+                }
+                this.position += 2;
+                if (this.position > this.length) {
+                    this.length = this.position;
+                }
+            };
+
+            ByteArray.prototype.readUTFBytes = function (len) {
+                var value = "";
+                var max = this.position + len;
+                var data = new DataView(this.arraybytes);
+
+                while (this.position < max) {
+                    var c = data.getUint8(this.position++);
+
+                    if (c < 0x80) {
+                        if (c == 0)
+                            break;
+                        value += String.fromCharCode(c);
+                    } else if (c < 0xE0) {
+                        value += String.fromCharCode(((c & 0x3F) << 6) | (data.getUint8(this.position++) & 0x7F));
+                    } else if (c < 0xF0) {
+                        var c2 = data.getUint8(this.position++);
+                        value += String.fromCharCode(((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | (data.getUint8(this.position++) & 0x7F));
+                    } else {
+                        var c2 = data.getUint8(this.position++);
+                        var c3 = data.getUint8(this.position++);
+
+                        value += String.fromCharCode(((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (data.getUint8(this.position++) & 0x7F));
+                    }
+                }
+
+                return value;
+            };
+
+            ByteArray.prototype.readInt = function () {
+                var data = new DataView(this.arraybytes);
+                var int = data.getInt32(this.position, true);
+
+                this.position += 4;
+
+                return int;
+            };
+
+            ByteArray.prototype.readShort = function () {
+                var data = new DataView(this.arraybytes);
+                var short = data.getInt16(this.position, true);
+
+                this.position += 2;
+                return short;
+            };
+
+            ByteArray.prototype.readDouble = function () {
+                var data = new DataView(this.arraybytes);
+                var double = data.getFloat64(this.position, true);
+
+                this.position += 8;
+                return double;
+            };
+
+            ByteArray.prototype.readUnsignedShort = function () {
+                if (this.position > this.length + 2) {
+                    throw "ByteArray out of bounds read. Position=" + this.position + ", Length=" + this.length;
+                }
+                if ((this.position & 1) == 0) {
+                    var view = new Uint16Array(this.arraybytes);
+                    var pa = this.position >> 1;
+                    this.position += 2;
+                    return view[pa];
+                } else {
+                    var view = new Uint16Array(this.unalignedarraybytestemp, 0, 1);
+                    var view2 = new Uint8Array(this.arraybytes, this.position, 2);
+                    var view3 = new Uint8Array(this.unalignedarraybytestemp, 0, 2);
+                    view3.set(view2);
+                    this.position += 2;
+                    return view[0];
+                }
+            };
+
+            ByteArray.prototype.writeUnsignedInt = function (b) {
+                this.ensureWriteableSpace(4);
+                if ((this.position & 3) == 0) {
+                    var view = new Uint32Array(this.arraybytes);
+                    view[this.position >> 2] = (~~b) & 0xffffffff;
+                } else {
+                    var view = new Uint32Array(this.unalignedarraybytestemp, 0, 1);
+                    view[0] = (~~b) & 0xffffffff;
+                    var view2 = new Uint8Array(this.arraybytes, this.position, 4);
+                    var view3 = new Uint8Array(this.unalignedarraybytestemp, 0, 4);
+                    view2.set(view3);
+                }
+                this.position += 4;
+                if (this.position > this.length) {
+                    this.length = this.position;
+                }
+            };
+
+            ByteArray.prototype.readUnsignedInt = function () {
+                if (this.position > this.length + 4) {
+                    throw "ByteArray out of bounds read. Position=" + this.position + ", Length=" + this.length;
+                }
+                if ((this.position & 3) == 0) {
+                    var view = new Uint32Array(this.arraybytes);
+                    var pa = this.position >> 2;
+                    this.position += 4;
+                    return view[pa];
+                } else {
+                    var view = new Uint32Array(this.unalignedarraybytestemp, 0, 1);
+                    var view2 = new Uint8Array(this.arraybytes, this.position, 4);
+                    var view3 = new Uint8Array(this.unalignedarraybytestemp, 0, 4);
+                    view3.set(view2);
+                    this.position += 4;
+                    return view[0];
+                }
+            };
+
+            ByteArray.prototype.writeFloat = function (b) {
+                this.ensureWriteableSpace(4);
+                if ((this.position & 3) == 0) {
+                    var view = new Float32Array(this.arraybytes);
+                    view[this.position >> 2] = b;
+                } else {
+                    var view = new Float32Array(this.unalignedarraybytestemp, 0, 1);
+                    view[0] = b;
+                    var view2 = new Uint8Array(this.arraybytes, this.position, 4);
+                    var view3 = new Uint8Array(this.unalignedarraybytestemp, 0, 4);
+                    view2.set(view3);
+                }
+                this.position += 4;
+                if (this.position > this.length) {
+                    this.length = this.position;
+                }
+            };
+
+            ByteArray.prototype.readFloat = function () {
+                if (this.position > this.length + 4) {
+                    throw "ByteArray out of bounds read. Positon=" + this.position + ", Length=" + this.length;
+                }
+                if ((this.position & 3) == 0) {
+                    var view = new Float32Array(this.arraybytes);
+                    var pa = this.position >> 2;
+                    this.position += 4;
+                    return view[pa];
+                } else {
+                    var view = new Float32Array(this.unalignedarraybytestemp, 0, 1);
+                    var view2 = new Uint8Array(this.arraybytes, this.position, 4);
+                    var view3 = new Uint8Array(this.unalignedarraybytestemp, 0, 4);
+                    view3.set(view2);
+                    this.position += 4;
+                    return view[0];
+                }
+            };
+            return ByteArray;
+        })(utils.ByteArrayBase);
+        utils.ByteArray = ByteArray;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var Flags = (function () {
+                function Flags() {
+                }
+                return Flags;
+            })();
+            assembler.Flags = Flags;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var FS = (function () {
+                function FS() {
+                }
+                return FS;
+            })();
+            assembler.FS = FS;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var Opcode = (function () {
+                function Opcode(dest, aformat, asize, bformat, bsize, opcode, simple, horizontal, fragonly, matrix) {
+                    this.a = new assembler.FS();
+                    this.b = new assembler.FS();
+                    this.flags = new assembler.Flags();
+
+                    this.dest = dest;
+                    this.a.format = aformat;
+                    this.a.size = asize;
+                    this.b.format = bformat;
+                    this.b.size = bsize;
+                    this.opcode = opcode;
+                    this.flags.simple = simple;
+                    this.flags.horizontal = horizontal;
+                    this.flags.fragonly = fragonly;
+                    this.flags.matrix = matrix;
+                }
+                return Opcode;
+            })();
+            assembler.Opcode = Opcode;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var OpcodeMap = (function () {
+                function OpcodeMap() {
+                }
+                Object.defineProperty(OpcodeMap, "map", {
+                    get: function () {
+                        if (!OpcodeMap._map) {
+                            OpcodeMap._map = new Array();
+                            OpcodeMap._map['mov'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x00, true, null, null, null);
+                            OpcodeMap._map['add'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x01, true, null, null, null);
+                            OpcodeMap._map['sub'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x02, true, null, null, null);
+                            OpcodeMap._map['mul'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x03, true, null, null, null);
+                            OpcodeMap._map['div'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x04, true, null, null, null);
+                            OpcodeMap._map['rcp'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x05, true, null, null, null);
+                            OpcodeMap._map['min'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x06, true, null, null, null);
+                            OpcodeMap._map['max'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x07, true, null, null, null);
+                            OpcodeMap._map['frc'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x08, true, null, null, null);
+                            OpcodeMap._map['sqt'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x09, true, null, null, null);
+                            OpcodeMap._map['rsq'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x0a, true, null, null, null);
+                            OpcodeMap._map['pow'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x0b, true, null, null, null);
+                            OpcodeMap._map['log'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x0c, true, null, null, null);
+                            OpcodeMap._map['exp'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x0d, true, null, null, null);
+                            OpcodeMap._map['nrm'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x0e, true, null, null, null);
+                            OpcodeMap._map['sin'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x0f, true, null, null, null);
+                            OpcodeMap._map['cos'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x10, true, null, null, null);
+                            OpcodeMap._map['crs'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x11, true, true, null, null);
+                            OpcodeMap._map['dp3'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x12, true, true, null, null);
+                            OpcodeMap._map['dp4'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x13, true, true, null, null);
+                            OpcodeMap._map['abs'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x14, true, null, null, null);
+                            OpcodeMap._map['neg'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x15, true, null, null, null);
+                            OpcodeMap._map['sat'] = new assembler.Opcode("vector", "vector", 4, "none", 0, 0x16, true, null, null, null);
+
+                            OpcodeMap._map['ted'] = new assembler.Opcode("vector", "vector", 4, "sampler", 1, 0x26, true, null, true, null);
+                            OpcodeMap._map['kil'] = new assembler.Opcode("none", "scalar", 1, "none", 0, 0x27, true, null, true, null);
+                            OpcodeMap._map['tex'] = new assembler.Opcode("vector", "vector", 4, "sampler", 1, 0x28, true, null, true, null);
+
+                            OpcodeMap._map['m33'] = new assembler.Opcode("vector", "matrix", 3, "vector", 3, 0x17, true, null, null, true);
+                            OpcodeMap._map['m44'] = new assembler.Opcode("vector", "matrix", 4, "vector", 4, 0x18, true, null, null, true);
+                            OpcodeMap._map['m43'] = new assembler.Opcode("vector", "matrix", 3, "vector", 4, 0x19, true, null, null, true);
+
+                            OpcodeMap._map['sge'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x29, true, null, null, null);
+                            OpcodeMap._map['slt'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x2a, true, null, null, null);
+                            OpcodeMap._map['sgn'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x2b, true, null, null, null);
+                            OpcodeMap._map['seq'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x2c, true, null, null, null);
+                            OpcodeMap._map['sne'] = new assembler.Opcode("vector", "vector", 4, "vector", 4, 0x2d, true, null, null, null);
+                        }
+
+                        return OpcodeMap._map;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return OpcodeMap;
+            })();
+            assembler.OpcodeMap = OpcodeMap;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var Part = (function () {
+                function Part(name, version) {
+                    if (typeof name === "undefined") { name = null; }
+                    if (typeof version === "undefined") { version = null; }
+                    this.name = "";
+                    this.version = 0;
+                    this.name = name;
+                    this.version = version;
+                    this.data = new utils.ByteArray();
+                }
+                return Part;
+            })();
+            assembler.Part = Part;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var Reg = (function () {
+                function Reg(code, desc) {
+                    this.code = code;
+                    this.desc = desc;
+                }
+                return Reg;
+            })();
+
+            var RegMap = (function () {
+                function RegMap() {
+                }
+                Object.defineProperty(RegMap, "map", {
+                    get: function () {
+                        if (!RegMap._map) {
+                            RegMap._map = new Array();
+                            RegMap._map['va'] = new Reg(0x00, "vertex attribute");
+                            RegMap._map['fc'] = new Reg(0x01, "fragment constant");
+                            RegMap._map['vc'] = new Reg(0x01, "vertex constant");
+                            RegMap._map['ft'] = new Reg(0x02, "fragment temporary");
+                            RegMap._map['vt'] = new Reg(0x02, "vertex temporary");
+                            RegMap._map['vo'] = new Reg(0x03, "vertex output");
+                            RegMap._map['op'] = new Reg(0x03, "vertex output");
+                            RegMap._map['fd'] = new Reg(0x03, "fragment depth output");
+                            RegMap._map['fo'] = new Reg(0x03, "fragment output");
+                            RegMap._map['oc'] = new Reg(0x03, "fragment output");
+                            RegMap._map['v'] = new Reg(0x04, "varying");
+                            RegMap._map['vi'] = new Reg(0x04, "varying output");
+                            RegMap._map['fi'] = new Reg(0x04, "varying input");
+                            RegMap._map['fs'] = new Reg(0x05, "sampler");
+                        }
+
+                        return RegMap._map;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return RegMap;
+            })();
+            assembler.RegMap = RegMap;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var Sampler = (function () {
+                function Sampler(shift, mask, value) {
+                    this.shift = shift;
+                    this.mask = mask;
+                    this.value = value;
+                }
+                return Sampler;
+            })();
+            assembler.Sampler = Sampler;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var SamplerMap = (function () {
+                function SamplerMap() {
+                }
+                Object.defineProperty(SamplerMap, "map", {
+                    get: function () {
+                        if (!SamplerMap._map) {
+                            SamplerMap._map = new Array();
+                            SamplerMap._map['rgba'] = new assembler.Sampler(8, 0xf, 0);
+                            SamplerMap._map['rg'] = new assembler.Sampler(8, 0xf, 5);
+                            SamplerMap._map['r'] = new assembler.Sampler(8, 0xf, 4);
+                            SamplerMap._map['compressed'] = new assembler.Sampler(8, 0xf, 1);
+                            SamplerMap._map['compressed_alpha'] = new assembler.Sampler(8, 0xf, 2);
+                            SamplerMap._map['dxt1'] = new assembler.Sampler(8, 0xf, 1);
+                            SamplerMap._map['dxt5'] = new assembler.Sampler(8, 0xf, 2);
+
+                            SamplerMap._map['2d'] = new assembler.Sampler(12, 0xf, 0);
+                            SamplerMap._map['cube'] = new assembler.Sampler(12, 0xf, 1);
+                            SamplerMap._map['3d'] = new assembler.Sampler(12, 0xf, 2);
+
+                            SamplerMap._map['centroid'] = new assembler.Sampler(16, 1, 1);
+                            SamplerMap._map['ignoresampler'] = new assembler.Sampler(16, 4, 4);
+
+                            SamplerMap._map['clamp'] = new assembler.Sampler(20, 0xf, 0);
+                            SamplerMap._map['repeat'] = new assembler.Sampler(20, 0xf, 1);
+                            SamplerMap._map['wrap'] = new assembler.Sampler(20, 0xf, 1);
+
+                            SamplerMap._map['nomip'] = new assembler.Sampler(24, 0xf, 0);
+                            SamplerMap._map['mipnone'] = new assembler.Sampler(24, 0xf, 0);
+                            SamplerMap._map['mipnearest'] = new assembler.Sampler(24, 0xf, 1);
+                            SamplerMap._map['miplinear'] = new assembler.Sampler(24, 0xf, 2);
+
+                            SamplerMap._map['nearest'] = new assembler.Sampler(28, 0xf, 0);
+                            SamplerMap._map['linear'] = new assembler.Sampler(28, 0xf, 1);
+                        }
+
+                        return SamplerMap._map;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return SamplerMap;
+            })();
+            assembler.SamplerMap = SamplerMap;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        (function (assembler) {
+            var AGALMiniAssembler = (function () {
+                function AGALMiniAssembler() {
+                    this.r = {};
+                    this.cur = new assembler.Part();
+                }
+                AGALMiniAssembler.prototype.assemble = function (source, ext_part, ext_version) {
+                    if (typeof ext_part === "undefined") { ext_part = null; }
+                    if (typeof ext_version === "undefined") { ext_version = null; }
+                    if (!ext_version) {
+                        ext_version = 1;
+                    }
+
+                    if (ext_part) {
+                        this.addHeader(ext_part, ext_version);
+                    }
+
+                    var lines = source.replace(/[\f\n\r\v]+/g, "\n").split("\n");
+
+                    for (var i in lines) {
+                        this.processLine(lines[i], i);
+                    }
+
+                    return this.r;
+                };
+
+                AGALMiniAssembler.prototype.processLine = function (line, linenr) {
+                    var startcomment = line.search("//");
+                    if (startcomment != -1) {
+                        line = line.slice(0, startcomment);
+                    }
+                    line = line.replace(/^\s+|\s+$/g, "");
+                    if (!(line.length > 0)) {
+                        return;
+                    }
+                    var optsi = line.search(/<.*>/g);
+                    var opts = null;
+                    if (optsi != -1) {
+                        opts = line.slice(optsi).match(/([\w\.\-\+]+)/gi);
+                        line = line.slice(0, optsi);
+                    }
+
+                    var tokens = line.match(/([\w\.\+\[\]]+)/gi);
+                    if (!tokens || tokens.length < 1) {
+                        if (line.length >= 3) {
+                            console.log("Warning: bad line " + linenr + ": " + line);
+                        }
+                        return;
+                    }
+
+                    switch (tokens[0]) {
+                        case "part":
+                            this.addHeader(tokens[1], Number(tokens[2]));
+                            break;
+                        case "endpart":
+                            if (!this.cur) {
+                                throw "Unexpected endpart";
+                            }
+                            this.cur.data.position = 0;
+                            this.cur = null;
+                            return;
+                        default:
+                            if (!this.cur) {
+                                console.log("Warning: bad line " + linenr + ": " + line + " (Outside of any part definition)");
+                                return;
+                            }
+                            if (this.cur.name == "comment") {
+                                return;
+                            }
+                            var op = assembler.OpcodeMap.map[tokens[0]];
+                            if (!op) {
+                                throw "Bad opcode " + tokens[0] + " " + linenr + ": " + line;
+                            }
+
+                            this.emitOpcode(this.cur, op.opcode);
+                            var ti = 1;
+                            if (op.dest && op.dest != "none") {
+                                if (!this.emitDest(this.cur, tokens[ti++], op.dest)) {
+                                    throw "Bad destination register " + tokens[ti - 1] + " " + linenr + ": " + line;
+                                }
+                            } else {
+                                this.emitZeroDword(this.cur);
+                            }
+
+                            if (op.a && op.a.format != "none") {
+                                if (!this.emitSource(this.cur, tokens[ti++], op.a))
+                                    throw "Bad source register " + tokens[ti - 1] + " " + linenr + ": " + line;
+                            } else {
+                                this.emitZeroQword(this.cur);
+                            }
+
+                            if (op.b && op.b.format != "none") {
+                                if (op.b.format == "sampler") {
+                                    if (!this.emitSampler(this.cur, tokens[ti++], op.b, opts)) {
+                                        throw "Bad sampler register " + tokens[ti - 1] + " " + linenr + ": " + line;
+                                    }
+                                } else {
+                                    if (!this.emitSource(this.cur, tokens[ti++], op.b)) {
+                                        throw "Bad source register " + tokens[ti - 1] + " " + linenr + ": " + line;
+                                    }
+                                }
+                            } else {
+                                this.emitZeroQword(this.cur);
+                            }
+                            break;
+                    }
+                };
+
+                AGALMiniAssembler.prototype.emitHeader = function (pr) {
+                    pr.data.writeUnsignedByte(0xa0);
+                    pr.data.writeUnsignedInt(pr.version);
+                    if (pr.version >= 0x10) {
+                        pr.data.writeUnsignedByte(0);
+                    }
+                    pr.data.writeUnsignedByte(0xa1);
+                    switch (pr.name) {
+                        case "fragment":
+                            pr.data.writeUnsignedByte(1);
+                            break;
+                        case "vertex":
+                            pr.data.writeUnsignedByte(0);
+                            break;
+                        case "cpu":
+                            pr.data.writeUnsignedByte(2);
+                            break;
+                        default:
+                            pr.data.writeUnsignedByte(0xff);
+                            break;
+                    }
+                };
+
+                AGALMiniAssembler.prototype.emitOpcode = function (pr, opcode) {
+                    pr.data.writeUnsignedInt(opcode);
+                };
+
+                AGALMiniAssembler.prototype.emitZeroDword = function (pr) {
+                    pr.data.writeUnsignedInt(0);
+                };
+
+                AGALMiniAssembler.prototype.emitZeroQword = function (pr) {
+                    pr.data.writeUnsignedInt(0);
+                    pr.data.writeUnsignedInt(0);
+                };
+
+                AGALMiniAssembler.prototype.emitDest = function (pr, token, opdest) {
+                    var reg = token.match(/([fov]?[tpocidavs])(\d*)(\.[xyzw]{1,4})?/i);
+
+                    console.log('AGALMiniAssembler', 'emitDest', 'reg', reg, reg[1], assembler.RegMap.map[reg[1]]);
+
+                    if (!assembler.RegMap.map[reg[1]])
+                        return false;
+                    var em = { num: reg[2] ? reg[2] : 0, code: assembler.RegMap.map[reg[1]].code, mask: this.stringToMask(reg[3]) };
+                    pr.data.writeUnsignedShort(em.num);
+                    pr.data.writeUnsignedByte(em.mask);
+                    pr.data.writeUnsignedByte(em.code);
+
+                    return true;
+                };
+
+                AGALMiniAssembler.prototype.stringToMask = function (s) {
+                    if (!s)
+                        return 0xf;
+                    var r = 0;
+                    if (s.indexOf("x") != -1)
+                        r |= 1;
+                    if (s.indexOf("y") != -1)
+                        r |= 2;
+                    if (s.indexOf("z") != -1)
+                        r |= 4;
+                    if (s.indexOf("w") != -1)
+                        r |= 8;
+                    return r;
+                };
+
+                AGALMiniAssembler.prototype.stringToSwizzle = function (s) {
+                    if (!s) {
+                        return 0xe4;
+                    }
+                    var chartoindex = { x: 0, y: 1, z: 2, w: 3 };
+                    var sw = 0;
+
+                    if (s.charAt(0) != ".") {
+                        throw "Missing . for swizzle";
+                    }
+
+                    if (s.length > 1) {
+                        sw |= chartoindex[s.charAt(1)];
+                    }
+
+                    if (s.length > 2) {
+                        sw |= chartoindex[s.charAt(2)] << 2;
+                    } else {
+                        sw |= (sw & 3) << 2;
+                    }
+
+                    if (s.length > 3) {
+                        sw |= chartoindex[s.charAt(3)] << 4;
+                    } else {
+                        sw |= (sw & (3 << 2)) << 2;
+                    }
+
+                    if (s.length > 4) {
+                        sw |= chartoindex[s.charAt(4)] << 6;
+                    } else {
+                        sw |= (sw & (3 << 4)) << 2;
+                    }
+
+                    return sw;
+                };
+
+                AGALMiniAssembler.prototype.emitSampler = function (pr, token, opsrc, opts) {
+                    var reg = token.match(/fs(\d*)/i);
+                    if (!reg || !reg[1]) {
+                        return false;
+                    }
+                    pr.data.writeUnsignedShort(parseInt(reg[1]));
+                    pr.data.writeUnsignedByte(0);
+                    pr.data.writeUnsignedByte(0);
+
+                    var samplerbits = 0x5;
+                    var sampleroptset = 0;
+                    for (var i = 0; i < opts.length; i++) {
+                        var o = assembler.SamplerMap.map[opts[i].toLowerCase()];
+
+                        if (o) {
+                            if (((sampleroptset >> o.shift) & o.mask) != 0) {
+                                console.log("Warning, duplicate sampler option");
+                            }
+                            sampleroptset |= o.mask << o.shift;
+                            samplerbits &= ~(o.mask << o.shift);
+                            samplerbits |= o.value << o.shift;
+                        } else {
+                            console.log("Warning, unknown sampler option: ", opts[i]);
+                        }
+                    }
+                    pr.data.writeUnsignedInt(samplerbits);
+                    return true;
+                };
+
+                AGALMiniAssembler.prototype.emitSource = function (pr, token, opsrc) {
+                    var indexed = token.match(/vc\[(v[tcai])(\d+)\.([xyzw])([\+\-]\d+)?\](\.[xyzw]{1,4})?/i);
+                    var reg;
+                    if (indexed) {
+                        if (!assembler.RegMap.map[indexed[1]]) {
+                            return false;
+                        }
+                        var selindex = { x: 0, y: 1, z: 2, w: 3 };
+                        var em = {
+                            num: indexed[2] | 0,
+                            code: assembler.RegMap.map[indexed[1]].code,
+                            swizzle: this.stringToSwizzle(indexed[5]),
+                            select: selindex[indexed[3]],
+                            offset: indexed[4] | 0
+                        };
+                        pr.data.writeUnsignedShort(em.num);
+                        pr.data.writeByte(em.offset);
+                        pr.data.writeUnsignedByte(em.swizzle);
+                        pr.data.writeUnsignedByte(0x1);
+                        pr.data.writeUnsignedByte(em.code);
+                        pr.data.writeUnsignedByte(em.select);
+                        pr.data.writeUnsignedByte(1 << 7);
+                    } else {
+                        reg = token.match(/([fov]?[tpocidavs])(\d*)(\.[xyzw]{1,4})?/i);
+                        if (!assembler.RegMap.map[reg[1]]) {
+                            return false;
+                        }
+                        var em = { num: reg[2] | 0, code: assembler.RegMap.map[reg[1]].code, swizzle: this.stringToSwizzle(reg[3]) };
+                        pr.data.writeUnsignedShort(em.num);
+                        pr.data.writeUnsignedByte(0);
+                        pr.data.writeUnsignedByte(em.swizzle);
+                        pr.data.writeUnsignedByte(em.code);
+                        pr.data.writeUnsignedByte(0);
+                        pr.data.writeUnsignedByte(0);
+                        pr.data.writeUnsignedByte(0);
+                    }
+                    return true;
+                };
+
+                AGALMiniAssembler.prototype.addHeader = function (partname, version) {
+                    if (!version) {
+                        version = 1;
+                    }
+                    if (this.r[partname] == null) {
+                        this.r[partname] = new assembler.Part(partname, version);
+                        this.emitHeader(this.r[partname]);
+                    } else if (this.r[partname].version != version) {
+                        throw "Multiple versions for part " + partname;
+                    }
+                    this.cur = this.r[partname];
+                };
+                return AGALMiniAssembler;
+            })();
+            assembler.AGALMiniAssembler = AGALMiniAssembler;
+        })(utils.assembler || (utils.assembler = {}));
+        var assembler = utils.assembler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var Header = (function () {
+            function Header() {
+                this.progid = 0;
+                this.version = 0;
+                this.type = "";
+            }
+            return Header;
+        })();
+        utils.Header = Header;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var Destination = (function () {
+            function Destination() {
+                this.mask = 0;
+                this.regnum = 0;
+                this.regtype = 0;
+                this.dim = 0;
+            }
+            return Destination;
+        })();
+        utils.Destination = Destination;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var Token = (function () {
+            function Token() {
+                this.dest = new utils.Destination();
+                this.opcode = 0;
+                this.a = new utils.Destination();
+                this.b = new utils.Destination();
+            }
+            return Token;
+        })();
+        utils.Token = Token;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var Description = (function () {
+            function Description() {
+                this.regread = [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    []
+                ];
+                this.regwrite = [
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    []
+                ];
+                this.hasindirect = false;
+                this.writedepth = false;
+                this.hasmatrix = false;
+                this.samplers = [];
+                this.tokens = [];
+                this.header = new utils.Header();
+            }
+            return Description;
+        })();
+        utils.Description = Description;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var OpLUT = (function () {
+            function OpLUT(s, flags, dest, a, b, matrixwidth, matrixheight, ndwm, scaler, dm, lod) {
+                this.s = s;
+                this.flags = flags;
+                this.dest = dest;
+                this.a = a;
+                this.b = b;
+                this.matrixwidth = matrixwidth;
+                this.matrixheight = matrixheight;
+                this.ndwm = ndwm;
+                this.scalar = scaler;
+                this.dm = dm;
+                this.lod = lod;
+            }
+            return OpLUT;
+        })();
+        utils.OpLUT = OpLUT;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var Mapping = (function () {
+            function Mapping(include) {
+            }
+            Mapping.agal2glsllut = [
+                new utils.OpLUT("%dest = %cast(%a);\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(%a + %b);\n", 0, true, true, true, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(%a - %b);\n", 0, true, true, true, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(%a * %b);\n", 0, true, true, true, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(%a / %b);\n", 0, true, true, true, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(1.0) / %a;\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(min(%a,%b));\n", 0, true, true, true, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(max(%a,%b));\n", 0, true, true, true, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(fract(%a));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(sqrt(abs(%a)));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(inversesqrt(abs(%a)));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(pow(abs(%a),%b));\n", 0, true, true, true, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(log2(abs(%a)));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(exp2(%a));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(normalize(vec3( %a ) ));\n", 0, true, true, false, null, null, true, null, null, null),
+                new utils.OpLUT("%dest = %cast(sin(%a));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(cos(%a));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(cross(vec3(%a),vec3(%b)));\n", 0, true, true, true, null, null, true, null, null, null),
+                new utils.OpLUT("%dest = %cast(dot(vec3(%a),vec3(%b)));\n", 0, true, true, true, null, null, true, null, null, null),
+                new utils.OpLUT("%dest = %cast(dot(vec4(%a),vec4(%b)));\n", 0, true, true, true, null, null, true, null, null, null),
+                new utils.OpLUT("%dest = %cast(abs(%a));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(%a * -1.0);\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(clamp(%a,0.0,1.0));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(dot(vec3(%a),vec3(%b)));\n", null, true, true, true, 3, 3, true, null, null, null),
+                new utils.OpLUT("%dest = %cast(dot(vec4(%a),vec4(%b)));\n", null, true, true, true, 4, 4, true, null, null, null),
+                new utils.OpLUT("%dest = %cast(dot(vec4(%a),vec4(%b)));\n", null, true, true, true, 4, 3, true, null, null, null),
+                new utils.OpLUT("%dest = %cast(dFdx(%a));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(dFdx(%a));\n", 0, true, true, false, null, null, null, null, null, null),
+                new utils.OpLUT("if (float(%a)==float(%b)) {;\n", 0, false, true, true, null, null, null, true, null, null), new utils.OpLUT("if (float(%a)!=float(%b)) {;\n", 0, false, true, true, null, null, null, true, null, null), new utils.OpLUT("if (float(%a)>=float(%b)) {;\n", 0, false, true, true, null, null, null, true, null, null), new utils.OpLUT("if (float(%a)<float(%b)) {;\n", 0, false, true, true, null, null, null, true, null, null), new utils.OpLUT("} else {;\n", 0, false, false, false, null, null, null, null, null, null), new utils.OpLUT("};\n", 0, false, false, false, null, null, null, null, null, null), new utils.OpLUT(null, null, null, null, false, null, null, null, null, null, null), new utils.OpLUT(null, null, null, null, false, null, null, null, null, null, null), new utils.OpLUT(null, null, null, null, false, null, null, null, null, null, null), new utils.OpLUT(null, null, null, null, false, null, null, null, null, null, null),
+                new utils.OpLUT("%dest = %cast(texture%texdimLod(%b,%texsize(%a)).%dm);\n", null, true, true, true, null, null, null, null, true, null), new utils.OpLUT("if ( float(%a)<0.0 ) discard;\n", null, false, true, false, null, null, null, true, null, null), new utils.OpLUT("%dest = %cast(texture%texdim(%b,%texsize(%a)%lod).%dm);\n", null, true, true, true, null, null, true, null, true, true), new utils.OpLUT("%dest = %cast(greaterThanEqual(%a,%b).%dm);\n", 0, true, true, true, null, null, true, null, true, null), new utils.OpLUT("%dest = %cast(lessThan(%a,%b).%dm);\n", 0, true, true, true, null, null, true, null, true, null), new utils.OpLUT("%dest = %cast(sign(%a));\n", 0, true, true, false, null, null, null, null, null, null), new utils.OpLUT("%dest = %cast(equal(%a,%b).%dm);\n", 0, true, true, true, null, null, true, null, true, null), new utils.OpLUT("%dest = %cast(notEqual(%a,%b).%dm);\n", 0, true, true, true, null, null, true, null, true, null)
+            ];
+            return Mapping;
+        })();
+        utils.Mapping = Mapping;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var Sampler = (function () {
+            function Sampler() {
+                this.lodbias = 0;
+                this.dim = 0;
+                this.readmode = 0;
+                this.special = 0;
+                this.wrap = 0;
+                this.mipmap = 0;
+                this.filter = 0;
+            }
+            return Sampler;
+        })();
+        utils.Sampler = Sampler;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var AGLSLParser = (function () {
+            function AGLSLParser() {
+            }
+            AGLSLParser.prototype.parse = function (desc) {
+                var header = "";
+                var body = "";
+
+                header += "precision highp float;\n";
+                var tag = desc.header.type[0];
+
+                if (desc.header.type == "vertex") {
+                    header += "uniform float yflip;\n";
+                }
+                if (!desc.hasindirect) {
+                    for (var i = 0; i < desc.regread[0x1].length; i++) {
+                        if (desc.regread[0x1][i]) {
+                            header += "uniform vec4 " + tag + "c" + i + ";\n";
+                        }
+                    }
+                } else {
+                    header += "uniform vec4 " + tag + "carrr[" + 128 + "];\n";
+                }
+
+                for (var i = 0; i < desc.regread[0x2].length || i < desc.regwrite[0x2].length; i++) {
+                    if (desc.regread[0x2][i] || desc.regwrite[0x2][i]) {
+                        header += "vec4 " + tag + "t" + i + ";\n";
+                    }
+                }
+
+                for (var i = 0; i < desc.regread[0x0].length; i++) {
+                    if (desc.regread[0x0][i]) {
+                        header += "attribute vec4 va" + i + ";\n";
+                    }
+                }
+
+                for (var i = 0; i < desc.regread[0x4].length || i < desc.regwrite[0x4].length; i++) {
+                    if (desc.regread[0x4][i] || desc.regwrite[0x4][i]) {
+                        header += "varying vec4 vi" + i + ";\n";
+                    }
+                }
+
+                var samptype = ["2D", "Cube", "3D", ""];
+                for (var i = 0; i < desc.samplers.length; i++) {
+                    if (desc.samplers[i]) {
+                        header += "uniform sampler" + samptype[desc.samplers[i].dim & 3] + " fs" + i + ";\n";
+                    }
+                }
+
+                if (desc.header.type == "vertex") {
+                    header += "vec4 outpos;\n";
+                }
+                if (desc.writedepth) {
+                    header += "vec4 tmp_FragDepth;\n";
+                }
+
+                body += "void main() {\n";
+
+                for (var i = 0; i < desc.tokens.length; i++) {
+                    var lutentry = utils.Mapping.agal2glsllut[desc.tokens[i].opcode];
+                    if (!lutentry) {
+                        throw "Opcode not valid or not implemented yet: ";
+                    }
+                    var sublines = lutentry.matrixheight || 1;
+
+                    for (var sl = 0; sl < sublines; sl++) {
+                        var line = "  " + lutentry.s;
+                        if (desc.tokens[i].dest) {
+                            if (lutentry.matrixheight) {
+                                if (((desc.tokens[i].dest.mask >> sl) & 1) != 1) {
+                                    continue;
+                                }
+                                var destregstring = this.regtostring(desc.tokens[i].dest.regtype, desc.tokens[i].dest.regnum, desc, tag);
+                                var destcaststring = "float";
+                                var destmaskstring = ["x", "y", "z", "w"][sl];
+                                destregstring += "." + destmaskstring;
+                            } else {
+                                var destregstring = this.regtostring(desc.tokens[i].dest.regtype, desc.tokens[i].dest.regnum, desc, tag);
+                                var destcaststring;
+                                var destmaskstring;
+                                if (desc.tokens[i].dest.mask != 0xf) {
+                                    var ndest = 0;
+                                    destmaskstring = "";
+                                    if (desc.tokens[i].dest.mask & 1) {
+                                        ndest++;
+                                        destmaskstring += "x";
+                                    }
+                                    if (desc.tokens[i].dest.mask & 2) {
+                                        ndest++;
+                                        destmaskstring += "y";
+                                    }
+                                    if (desc.tokens[i].dest.mask & 4) {
+                                        ndest++;
+                                        destmaskstring += "z";
+                                    }
+                                    if (desc.tokens[i].dest.mask & 8) {
+                                        ndest++;
+                                        destmaskstring += "w";
+                                    }
+                                    destregstring += "." + destmaskstring;
+                                    switch (ndest) {
+                                        case 1:
+                                            destcaststring = "float";
+                                            break;
+                                        case 2:
+                                            destcaststring = "vec2";
+                                            break;
+                                        case 3:
+                                            destcaststring = "vec3";
+                                            break;
+                                        default:
+                                            throw "Unexpected destination mask";
+                                    }
+                                } else {
+                                    destcaststring = "vec4";
+                                    destmaskstring = "xyzw";
+                                }
+                            }
+                            line = line.replace("%dest", destregstring);
+                            line = line.replace("%cast", destcaststring);
+                            line = line.replace("%dm", destmaskstring);
+                        }
+                        var dwm = 0xf;
+                        if (!lutentry.ndwm && lutentry.dest && desc.tokens[i].dest) {
+                            dwm = desc.tokens[i].dest.mask;
+                        }
+                        if (desc.tokens[i].a) {
+                            line = line.replace("%a", this.sourcetostring(desc.tokens[i].a, 0, dwm, lutentry.scalar, desc, tag));
+                        }
+                        if (desc.tokens[i].b) {
+                            line = line.replace("%b", this.sourcetostring(desc.tokens[i].b, sl, dwm, lutentry.scalar, desc, tag));
+                            if (desc.tokens[i].b.regtype == 0x5) {
+                                var texdim = ["2D", "Cube", "3D"][desc.tokens[i].b.dim];
+                                var texsize = ["vec2", "vec3", "vec3"][desc.tokens[i].b.dim];
+                                line = line.replace("%texdim", texdim);
+                                line = line.replace("%texsize", texsize);
+                                var texlod = "";
+                                line = line.replace("%lod", texlod);
+                            }
+                        }
+                        body += line;
+                    }
+                }
+
+                if (desc.header.type == "vertex") {
+                    body += "  gl_Position = vec4(outpos.x, outpos.y, outpos.z*2.0 - outpos.w, outpos.w);\n";
+                }
+
+                if (desc.writedepth) {
+                    body += "  gl_FragDepth = clamp(tmp_FragDepth,0.0,1.0);\n";
+                }
+
+                body += "}\n";
+
+                return header + body;
+            };
+
+            AGLSLParser.prototype.regtostring = function (regtype, regnum, desc, tag) {
+                switch (regtype) {
+                    case 0x0:
+                        return "va" + regnum;
+                    case 0x1:
+                        if (desc.hasindirect && desc.header.type == "vertex") {
+                            return "vcarrr[" + regnum + "]";
+                        } else {
+                            return tag + "c" + regnum;
+                        }
+                    case 0x2:
+                        return tag + "t" + regnum;
+                    case 0x3:
+                        return desc.header.type == "vertex" ? "outpos" : "gl_FragColor";
+                    case 0x4:
+                        return "vi" + regnum;
+                    case 0x5:
+                        return "fs" + regnum;
+                    case 0x6:
+                        return "tmp_FragDepth";
+                    default:
+                        throw "Unknown register type";
+                }
+            };
+
+            AGLSLParser.prototype.sourcetostring = function (s, subline, dwm, isscalar, desc, tag) {
+                var swiz = ["x", "y", "z", "w"];
+                var r;
+
+                if (s.indirectflag) {
+                    r = "vcarrr[int(" + this.regtostring(s.indexregtype, s.regnum, desc, tag) + "." + swiz[s.indexselect] + ")";
+                    var realofs = subline + s.indexoffset;
+                    if (realofs < 0)
+                        r += realofs.toString();
+                    if (realofs > 0)
+                        r += "+" + realofs.toString();
+                    r += "]";
+                } else {
+                    r = this.regtostring(s.regtype, s.regnum + subline, desc, tag);
+                }
+
+                if (s.regtype == 0x5) {
+                    return r;
+                }
+
+                if (isscalar) {
+                    return r + "." + swiz[(s.swizzle >> 0) & 3];
+                }
+
+                if (s.swizzle == 0xe4 && dwm == 0xf) {
+                    return r;
+                }
+
+                r += ".";
+                if (dwm & 1)
+                    r += swiz[(s.swizzle >> 0) & 3];
+                if (dwm & 2)
+                    r += swiz[(s.swizzle >> 2) & 3];
+                if (dwm & 4)
+                    r += swiz[(s.swizzle >> 4) & 3];
+                if (dwm & 8)
+                    r += swiz[(s.swizzle >> 6) & 3];
+                return r;
+            };
+            return AGLSLParser;
+        })();
+        utils.AGLSLParser = AGLSLParser;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
+var stageJS;
+(function (stageJS) {
+    (function (utils) {
+        var AGALTokenizer = (function () {
+            function AGALTokenizer() {
+            }
+            AGALTokenizer.prototype.decribeAGALByteArray = function (bytes) {
+                var header = new utils.Header();
+
+                if (bytes.readUnsignedByte() != 0xa0) {
+                    throw "Bad AGAL: Missing 0xa0 magic byte.";
+                }
+
+                header.version = bytes.readUnsignedInt();
+                if (header.version >= 0x10) {
+                    bytes.readUnsignedByte();
+                    header.version >>= 1;
+                }
+                if (bytes.readUnsignedByte() != 0xa1) {
+                    throw "Bad AGAL: Missing 0xa1 magic byte.";
+                }
+
+                header.progid = bytes.readUnsignedByte();
+                switch (header.progid) {
+                    case 1:
+                        header.type = "fragment";
+                        break;
+                    case 0:
+                        header.type = "vertex";
+                        break;
+                    case 2:
+                        header.type = "cpu";
+                        break;
+                    default:
+                        header.type = "";
+                        break;
+                }
+
+                var desc = new utils.Description();
+                var tokens = [];
+                while (bytes.position < bytes.length) {
+                    var token = new utils.Token();
+
+                    token.opcode = bytes.readUnsignedInt();
+                    var lutentry = utils.Mapping.agal2glsllut[token.opcode];
+                    if (!lutentry) {
+                        throw "Opcode not valid or not implemented yet: " + token.opcode;
+                    }
+                    if (lutentry.matrixheight) {
+                        desc.hasmatrix = true;
+                    }
+                    if (lutentry.dest) {
+                        token.dest.regnum = bytes.readUnsignedShort();
+                        token.dest.mask = bytes.readUnsignedByte();
+                        token.dest.regtype = bytes.readUnsignedByte();
+                        desc.regwrite[token.dest.regtype][token.dest.regnum] |= token.dest.mask;
+                    } else {
+                        token.dest = null;
+                        bytes.readUnsignedInt();
+                    }
+                    if (lutentry.a) {
+                        this.readReg(token.a, 1, desc, bytes);
+                    } else {
+                        token.a = null;
+                        bytes.readUnsignedInt();
+                        bytes.readUnsignedInt();
+                    }
+                    if (lutentry.b) {
+                        this.readReg(token.b, lutentry.matrixheight | 0, desc, bytes);
+                    } else {
+                        token.b = null;
+                        bytes.readUnsignedInt();
+                        bytes.readUnsignedInt();
+                    }
+                    tokens.push(token);
+                }
+                desc.header = header;
+                desc.tokens = tokens;
+
+                return desc;
+            };
+
+            AGALTokenizer.prototype.readReg = function (s, mh, desc, bytes) {
+                s.regnum = bytes.readUnsignedShort();
+                s.indexoffset = bytes.readByte();
+                s.swizzle = bytes.readUnsignedByte();
+                s.regtype = bytes.readUnsignedByte();
+                desc.regread[s.regtype][s.regnum] = 0xf;
+                if (s.regtype == 0x5) {
+                    s.lodbiad = s.indexoffset;
+                    s.indexoffset = null;
+                    s.swizzle = null;
+
+                    s.readmode = bytes.readUnsignedByte();
+                    s.dim = s.readmode >> 4;
+                    s.readmode &= 0xf;
+                    s.special = bytes.readUnsignedByte();
+                    s.wrap = s.special >> 4;
+                    s.special &= 0xf;
+                    s.mipmap = bytes.readUnsignedByte();
+                    s.filter = s.mipmap >> 4;
+                    s.mipmap &= 0xf;
+                    desc.samplers[s.regnum] = s;
+                } else {
+                    s.indexregtype = bytes.readUnsignedByte();
+                    s.indexselect = bytes.readUnsignedByte();
+                    s.indirectflag = bytes.readUnsignedByte();
+                }
+                if (s.indirectflag) {
+                    desc.hasindirect = true;
+                }
+                if (!s.indirectflag && mh) {
+                    for (var mhi = 0; mhi < mh; mhi++) {
+                        desc.regread[s.regtype][s.regnum + mhi] = desc.regread[s.regtype][s.regnum];
+                    }
+                }
+            };
+            return AGALTokenizer;
+        })();
+        utils.AGALTokenizer = AGALTokenizer;
+    })(stageJS.utils || (stageJS.utils = {}));
+    var utils = stageJS.utils;
+})(stageJS || (stageJS = {}));
 //# sourceMappingURL=stage3d.js.map

@@ -334,3 +334,225 @@ declare module stageJS {
         private enableTex(keyInCache);
     }
 }
+declare module stageJS.utils {
+    class ByteArrayBase {
+        public position: number;
+        public length: number;
+        public _mode: string;
+        static Base64Key: string;
+        constructor();
+        public writeByte(b: number): void;
+        public readByte(): number;
+        public writeUnsignedByte(b: number): void;
+        public readUnsignedByte(): number;
+        public writeUnsignedShort(b: number): void;
+        public readUnsignedShort(): number;
+        public writeUnsignedInt(b: number): void;
+        public readUnsignedInt(): number;
+        public writeFloat(b: number): void;
+        public toFloatBits(x: number): void;
+        public readFloat(b: number): void;
+        public fromFloatBits(x: number): void;
+        public getBytesAvailable(): number;
+        public toString(): string;
+        public compareEqual(other: any, count: any): boolean;
+        public writeBase64String(s: string): void;
+        public dumpToConsole(): void;
+        public readBase64String(count?: number): string;
+        static internalGetBase64String(count: any, getUnsignedByteFunc: any, self: any): string;
+    }
+}
+declare module stageJS.utils {
+    class ByteArray extends ByteArrayBase {
+        public maxlength: number;
+        public arraybytes: any;
+        public unalignedarraybytestemp: any;
+        constructor();
+        public ensureWriteableSpace(n: number): void;
+        public setArrayBuffer(aBuffer: ArrayBuffer): void;
+        public getBytesAvailable(): number;
+        public ensureSpace(n: number): void;
+        public writeByte(b: number): void;
+        public readByte(): number;
+        public readBytes(bytes: ByteArray, offset?: number, length?: number): void;
+        public writeUnsignedByte(b: number): void;
+        public readUnsignedByte(): number;
+        public writeUnsignedShort(b: number): void;
+        public readUTFBytes(len: number): string;
+        public readInt(): number;
+        public readShort(): number;
+        public readDouble(): number;
+        public readUnsignedShort(): number;
+        public writeUnsignedInt(b: number): void;
+        public readUnsignedInt(): number;
+        public writeFloat(b: number): void;
+        public readFloat(): number;
+    }
+}
+declare module stageJS.utils.assembler {
+    class Flags {
+        public simple: boolean;
+        public horizontal: boolean;
+        public fragonly: boolean;
+        public matrix: boolean;
+    }
+}
+declare module stageJS.utils.assembler {
+    class FS {
+        public format: string;
+        public size: number;
+    }
+}
+declare module stageJS.utils.assembler {
+    class Opcode {
+        public dest: string;
+        public a: FS;
+        public b: FS;
+        public opcode: number;
+        public flags: Flags;
+        constructor(dest: string, aformat: string, asize: number, bformat: string, bsize: number, opcode: number, simple: boolean, horizontal: boolean, fragonly: boolean, matrix: boolean);
+    }
+}
+declare module stageJS.utils.assembler {
+    class OpcodeMap {
+        private static _map;
+        static map : Object[];
+        constructor();
+    }
+}
+declare module stageJS.utils.assembler {
+    class Part {
+        public name: string;
+        public version: number;
+        public data: ByteArray;
+        constructor(name?: string, version?: number);
+    }
+}
+declare module stageJS.utils.assembler {
+    class RegMap {
+        private static _map;
+        static map : any[];
+        constructor();
+    }
+}
+declare module stageJS.utils.assembler {
+    class Sampler {
+        public shift: number;
+        public mask: number;
+        public value: number;
+        constructor(shift: number, mask: number, value: number);
+    }
+}
+declare module stageJS.utils.assembler {
+    class SamplerMap {
+        private static _map;
+        static map : Object[];
+        constructor();
+    }
+}
+declare module stageJS.utils.assembler {
+    class AGALMiniAssembler {
+        public r: Object;
+        public cur: Part;
+        constructor();
+        public assemble(source: string, ext_part?: any, ext_version?: any): Object;
+        private processLine(line, linenr);
+        public emitHeader(pr: Part): void;
+        public emitOpcode(pr: Part, opcode: any): void;
+        public emitZeroDword(pr: Part): void;
+        public emitZeroQword(pr: any): void;
+        public emitDest(pr: any, token: any, opdest: any): boolean;
+        public stringToMask(s: string): number;
+        public stringToSwizzle(s: any): number;
+        public emitSampler(pr: Part, token: any, opsrc: any, opts: any): boolean;
+        public emitSource(pr: any, token: any, opsrc: any): boolean;
+        public addHeader(partname: any, version: any): void;
+    }
+}
+declare module stageJS.utils {
+    class Header {
+        public progid: number;
+        public version: number;
+        public type: string;
+        constructor();
+    }
+}
+declare module stageJS.utils {
+    class Destination {
+        public mask: number;
+        public regnum: number;
+        public regtype: number;
+        public dim: number;
+        constructor();
+    }
+}
+declare module stageJS.utils {
+    class Token {
+        public dest: Destination;
+        public opcode: number;
+        public a: Destination;
+        public b: Destination;
+        constructor();
+    }
+}
+declare module stageJS.utils {
+    class Description {
+        public regread: any[];
+        public regwrite: any[];
+        public hasindirect: boolean;
+        public writedepth: boolean;
+        public hasmatrix: boolean;
+        public samplers: any[];
+        public tokens: Token[];
+        public header: Header;
+        constructor();
+    }
+}
+declare module stageJS.utils {
+    class OpLUT {
+        public s: string;
+        public flags: number;
+        public dest: boolean;
+        public a: boolean;
+        public b: boolean;
+        public matrixwidth: number;
+        public matrixheight: number;
+        public ndwm: boolean;
+        public scalar: boolean;
+        public dm: boolean;
+        public lod: boolean;
+        constructor(s: string, flags: number, dest: boolean, a: boolean, b: boolean, matrixwidth: number, matrixheight: number, ndwm: boolean, scaler: boolean, dm: boolean, lod: boolean);
+    }
+}
+declare module stageJS.utils {
+    class Mapping {
+        static agal2glsllut: OpLUT[];
+        constructor(include?: OpLUT);
+    }
+}
+declare module stageJS.utils {
+    class Sampler {
+        public lodbias: number;
+        public dim: number;
+        public readmode: number;
+        public special: number;
+        public wrap: number;
+        public mipmap: number;
+        public filter: number;
+        constructor();
+    }
+}
+declare module stageJS.utils {
+    class AGLSLParser {
+        public parse(desc: Description): string;
+        public regtostring(regtype: number, regnum: number, desc: Description, tag: any): string;
+        public sourcetostring(s: any, subline: any, dwm: any, isscalar: any, desc: any, tag: any): string;
+    }
+}
+declare module stageJS.utils {
+    class AGALTokenizer {
+        constructor();
+        public decribeAGALByteArray(bytes: ByteArray): Description;
+        public readReg(s: any, mh: any, desc: any, bytes: any): void;
+    }
+}

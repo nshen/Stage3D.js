@@ -25,3 +25,30 @@
 
 /// <reference path="Context3D.ts" />
 
+//------------------agal--------------------
+
+/// <reference path="utils/ByteArrayBase.ts" />
+/// <reference path="utils/ByteArray.ts" />
+
+/// <reference path="utils/assembler/Flags.ts" />
+/// <reference path="utils/assembler/FS.ts" />
+/// <reference path="utils/assembler/Opcode.ts" />
+/// <reference path="utils/assembler/OpcodeMap.ts" />
+/// <reference path="utils/assembler/Part.ts" />
+/// <reference path="utils/assembler/RegMap.ts" />
+/// <reference path="utils/assembler/Sampler.ts" />
+/// <reference path="utils/assembler/SamplerMap.ts" />
+/// <reference path="utils/assembler/AGALMiniAssembler.ts" />
+
+/// <reference path="utils/Header.ts" />
+/// <reference path="utils/Destination.ts" />
+/// <reference path="utils/Token.ts" />
+/// <reference path="utils/Description.ts" />
+
+/// <reference path="utils/OpLUT.ts" />
+/// <reference path="utils/Mapping.ts" />
+
+/// <reference path="utils/Sampler.ts" />
+/// <reference path="utils/AGLSLParser.ts" />
+
+/// <reference path="utils/AGALTokenizer.ts" />

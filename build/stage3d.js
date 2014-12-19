@@ -1321,8 +1321,9 @@ var stageJS;
 
             Texture._bindingTexture = this._glTexture;
 
+            stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MAG_FILTER, stageJS.Context3D.GL.NEAREST);
             if (this._streamingLevels == 0) {
-                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR);
+                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.NEAREST);
             } else {
                 stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR_MIPMAP_LINEAR);
                 stageJS.Context3D.GL.generateMipmap(stageJS.Context3D.GL.TEXTURE_2D);

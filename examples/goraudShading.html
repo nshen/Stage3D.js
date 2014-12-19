@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <title></title>
 
+    <script type="text/javascript" src="jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="stage3d.js"></script>
     <script type="text/javascript" src="goraudShading.js"></script>
+
 
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
@@ -37,8 +39,8 @@
          //diffuse term
          vec3 N = normalize(vec3(uNMatrix * vec4(aVertexNormal, 1.0))); //Transformed normal position
          vec3 L = normalize(uLightDirection);   //Normalize light to calculate lambertTerm
-         float lambertTerm = dot(N,-L);     //Lambert's cosine law
-         vec4 Id = uLightDiffuse * uMaterialDiffuse * lambertTerm;
+         float lambertTerm = dot(N,-L);     //Lambert's cosine law  (-L : The normalized direction to the light source)
+         vec4 Id = uMaterialDiffuse *  uLightDiffuse * lambertTerm;
 
          //Specular term
          vec4 vertex = uMVMatrix * vec4(aVertexPosition , 1.0);
@@ -55,7 +57,7 @@
           gl_Position = uPMatrix * vertex;
         }
     </script>
-
+    <!--////Ia + Id + Is-->
     <script id="shader-fs" type="x-shader/x-fragment">
         #ifdef GL_ES
          precision highp float;

@@ -92,10 +92,10 @@ module stageJS
             Texture._bindingTexture = this._glTexture;
 
             //TODO: set filter mode API
-            //Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MAG_FILTER, Context3D.GL.LINEAR); //this is the default setting
+            Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MAG_FILTER, Context3D.GL.NEAREST); //Context3D.GL.LINEAR
             if (this._streamingLevels == 0)
             {
-                Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MIN_FILTER, Context3D.GL.LINEAR);
+                Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MIN_FILTER, Context3D.GL.NEAREST);//Context3D.GL.LINEAR
             } else {
                 Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MIN_FILTER, Context3D.GL.LINEAR_MIPMAP_LINEAR); //linnear生成mipmap,缩放也linear
                 Context3D.GL.generateMipmap(Context3D.GL.TEXTURE_2D);

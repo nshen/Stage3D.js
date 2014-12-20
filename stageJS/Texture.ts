@@ -68,8 +68,8 @@ module stageJS
             return this._textureUnit;
         }
 
-        public uploadFromBitmapData(source:stageJS.BitmapData, miplevel: number): void;
-        public uploadFromBitmapData(source:HTMLImageElement, miplevel: number): void;
+        public uploadFromBitmapData(source:stageJS.BitmapData, miplevel?: number): void;
+        public uploadFromBitmapData(source:HTMLImageElement, miplevel?: number): void;
         public uploadFromBitmapData(source:any, miplevel: number /* uint */ = 0): void
         {
             if(this._forRTT)

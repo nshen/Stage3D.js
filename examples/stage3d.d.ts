@@ -258,8 +258,8 @@ declare module stageJS {
         constructor(width: number, height: number, format: string, optimizeForRenderToTexture: boolean, streamingLevels: number);
         public __getGLTexture(): WebGLTexture;
         public textureUnit : number;
-        public uploadFromBitmapData(source: BitmapData, miplevel: number): void;
-        public uploadFromBitmapData(source: HTMLImageElement, miplevel: number): void;
+        public uploadFromBitmapData(source: BitmapData, miplevel?: number): void;
+        public uploadFromBitmapData(source: HTMLImageElement, miplevel?: number): void;
         public uploadFromImage(source: any, miplevel?: number): void;
         public dispose(): void;
     }

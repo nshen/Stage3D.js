@@ -1,1 +1,4 @@
 */.idea/
+*/projectFilesBackup/
+/node_modules
+.tscache

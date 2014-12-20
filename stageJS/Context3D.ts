@@ -8,11 +8,22 @@ module stageJS
         //todo:enableErrorChecking https://www.khronos.org/webgl/wiki/Debugging
 
         private _clearBit: number;
+        private _uniformLocationNameDictionary:Object = {};
+        private _vertexBufferSizeDictionary:Object = {};
 
         constructor()
         {
             Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend?
             Context3DBlendFactor.init();
+
+            this._uniformLocationNameDictionary[Context3DProgramType.VERTEX] = "vc";
+            this._uniformLocationNameDictionary[Context3DProgramType.FRAGMENT] = "fc";
+
+            this._vertexBufferSizeDictionary[Context3DVertexBufferFormat.FLOAT_1] = 1;
+            this._vertexBufferSizeDictionary[Context3DVertexBufferFormat.FLOAT_2] = 2;
+            this._vertexBufferSizeDictionary[Context3DVertexBufferFormat.FLOAT_3] = 3;
+            this._vertexBufferSizeDictionary[Context3DVertexBufferFormat.FLOAT_4] = 4;
+            this._vertexBufferSizeDictionary[Context3DVertexBufferFormat.BYTES_4] = 4;
         }
 
         public configureBackBuffer(width: number/* int */, height: number/* int */, antiAlias: number/* int */, enableDepthAndStencil:boolean = true): void
@@ -94,74 +105,115 @@ module stageJS
             return new Program3D();
         }
 
-        /**
-        *  @variable must predefined in glsl
-        */
-        public setVertexBufferAt(variable: string, buffer: VertexBuffer3D, bufferOffset: number/* int */ = 0, format: String = "float4"): void
+        public setVertexBufferAt(index:number/* int */, buffer: VertexBuffer3D, bufferOffset: number/* int */ , format: string): void;
+        public setVertexBufferAt(index:string , buffer: VertexBuffer3D, bufferOffset: number/* int */ , format: string): void;
+        public setVertexBufferAt(index:any/* int */, buffer: VertexBuffer3D, bufferOffset: number/* int */ = 0, format: string = "float4"): void
         {
+            var variable:string;
+            if(typeof index === "number")
+                variable = "va"+index; //use agal
+            else
+                variable = index;
 
-            var size:number = 0;
-            switch (format)
-            {
-                case Context3DVertexBufferFormat.FLOAT_4:
-                    size = 4;
-                    break;
-                case Context3DVertexBufferFormat.FLOAT_3:
-                    size = 3;
-                    break;
-                case Context3DVertexBufferFormat.FLOAT_2:
-                    size = 2;
-                    break;
-                case Context3DVertexBufferFormat.FLOAT_1:
-                    size = 1;
-                    break;
-                case Context3DVertexBufferFormat.BYTES_4:
-                    size = 4;
-                    break;
-            }
-
-            if(size <= 0 ) throw new Error("vertexBuffer format error");
-
+            //todo: check max va number
             //We need glProgram to enable vertex attribute , so we cache it , when setProgram() be callled  we enable them all.
-            this._vaCache[variable] = { size:size,
+            this._vaCache[variable] = { size: this._vertexBufferSizeDictionary[format],
                                         buffer:buffer.glBuffer,
                                         stride:buffer.data32PerVertex * 4,
                                         offset:bufferOffset * 4}; //* 4 bytes per value(Float32Array.BYTES_PER_ELEMENT)
             //http://blog.tojicode.com/2011/05/interleaved-array-basics.html
 
-            if(this._linkedProgram)
+            if(this._linkedProgram) //todo: checkout whether the program uploaded
                 this.enableVA(variable);
 
         }
 
-        /**
-        *  @variable must predefined in glsl
-        */
-        public setProgramConstantsFromVector(variable: string, data: number[] /* Vector.<Number> */): void
+        public setProgramConstantsFromVector(programType:string, firstRegister:number/*int*/, data:number[]/*Vector.<Number>*/, numRegisters:number/*int*/ ):void;
+        public setProgramConstantsFromVector(variable: string, data: number[] /* Vector.<Number> */): void;
+        public setProgramConstantsFromVector(programTypeOrVariable:string,firstRegisterOrData:any,data?: number[] , numRegisters:number = -1): void
         {
-            if (data.length > 4) throw new Error("data length > 4");
+            if(firstRegisterOrData && typeof(firstRegisterOrData) == "number")
+            {
+                if(data.length <= 0 ) throw "invalid array";
+                /////////////////////
+                // agal way
+                /////////////////////console.log(1 ," --- ", programTypeOrVariable,firstRegisterOrData,data,numRegisters);
+                if(numRegisters == -1)
+                    numRegisters = Math.ceil(data.length / 4); //todo:check max registers
 
-            this._vcCache[variable] = data;
-            if(this._linkedProgram)
-                this.enableVC(variable);
+                var constName:string = this._uniformLocationNameDictionary[programTypeOrVariable]; // vc or fc
+
+                var startIndex:number;
+                for (var i:number = 0; i < numRegisters; i++)
+                {
+                    startIndex = i*4;
+                    this._vcCache[constName + (firstRegisterOrData + i)] =[data[startIndex], data[startIndex + 1], data[startIndex + 2], data[startIndex + 3]];
+                }
+
+            }else
+            {
+                //glsl set variable directly
+                //console.log(2," --- ",programTypeOrVariable,firstRegisterOrData);
+
+                if (firstRegisterOrData.length > 4) throw new Error("data length > 4");
+
+                this._vcCache[programTypeOrVariable] = firstRegisterOrData;
+                if(this._linkedProgram)
+                    this.enableVC(programTypeOrVariable);
+            }
         }
 
-        /**
-        *  @variable must predefined in glsl
-        */
-        public setProgramConstantsFromMatrix(variable: string, matrix:geom.Matrix3D, transposedMatrix: boolean = false): void
+        public setProgramConstantsFromMatrix(programType:string, firstRegister:number/*int*/, matrix:geom.Matrix3D, transposedMatrix:boolean):void;
+        public setProgramConstantsFromMatrix(variable: string, matrix:geom.Matrix3D, transposedMatrix: boolean): void;
+        public setProgramConstantsFromMatrix(programTypeOrVariable: string, FirstRegisterOrMatrix:any, matrixOrtransposedMatrix:any , transposedMatrix: boolean = false): void
         {
-            if(transposedMatrix)
-                matrix.transpose();
 
-            this._vcMCache[variable] = matrix.rawData;
-            if(this._linkedProgram)
-                this.enableVCM(variable);
+            if(FirstRegisterOrMatrix && typeof (FirstRegisterOrMatrix) == "number")
+            {
+                ///////////////////////
+                //  agal
+                ////////////////////////
+
+                if(transposedMatrix)
+                    matrixOrtransposedMatrix.transpose();
+
+                var d:number[] = matrixOrtransposedMatrix.rawData;
+                //no matrix in agal
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix, [ d[0], d[1], d[2], d[3] ], 1);
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix + 1, [ d[4], d[5], d[6], d[7] ], 1);
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix + 2, [ d[8], d[9], d[10], d[11] ], 1);
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix + 3, [ d[12], d[13], d[14], d[15] ], 1);
+
+            }else
+            {
+                ////////////////////
+                // glsl
+                ///////////////////
+
+
+
+                if(matrixOrtransposedMatrix)
+                    FirstRegisterOrMatrix.transpose();
+
+                this._vcMCache[programTypeOrVariable] = FirstRegisterOrMatrix.rawData;
+                if(this._linkedProgram)
+                    this.enableVCM(programTypeOrVariable);
+            }
+
         }
 
-        public setTextureAt(sampler: string, texture: Texture): void
+        public setTextureAt(index:number/*int*/, texture:Texture):void;
+        public setTextureAt(variable:string , texture:Texture):void;
+        public setTextureAt(sampler:any, texture: Texture): void
         {
-            this._texCache[sampler] = texture;
+            if( typeof (sampler) == "number")
+            {
+                ///agal
+                this._texCache["fs"+sampler] = texture;
+            }else
+            {
+                this._texCache[sampler] = texture;
+            }
 
             if (this._linkedProgram )
                 this.enableTex(sampler);

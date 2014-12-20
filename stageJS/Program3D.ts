@@ -8,6 +8,8 @@ module stageJS
 
         private _vShader: WebGLShader;
         private _fShader: WebGLShader;
+        private _tokenizer:stageJS.utils.AGALTokenizer;
+        private _agalParser:stageJS.utils.AGLSLParser;
 
         constructor()
         {
@@ -39,8 +41,7 @@ module stageJS
             this._glProgram = null;
         }
 
-        private _tokenizer:stageJS.utils.AGALTokenizer;
-        private _agalParser:stageJS.utils.AGLSLParser;
+
         public uploadAGAL(vertexProgram:utils.ByteArray, fragmentProgram:utils.ByteArray):void
         {
             if(!this._tokenizer)
@@ -51,6 +52,7 @@ module stageJS
             var v_glsl:string = this._agalParser.parse(this._tokenizer.decribeAGALByteArray(vertexProgram));
             var f_glsl:string = this._agalParser.parse(this._tokenizer.decribeAGALByteArray(fragmentProgram));
 
+            console.log("\n------- vertex shader : -------\n\n" + v_glsl +"\n-------fragment shader: -------\n\n" + f_glsl);
             this._vShader = this.createShader(v_glsl, Context3D.GL.VERTEX_SHADER);
             this._fShader = this.createShader(f_glsl, Context3D.GL.FRAGMENT_SHADER);
 

@@ -53,6 +53,17 @@ var test;
             context3d.drawTriangles(indexBuffer);
             context3d.present();
         }
+        function setProgramConstantsFromVector(programTypeOrVariable, firstRegisterOrData, data, numRegisters) {
+            if (numRegisters === void 0) { numRegisters = -1; }
+            if (firstRegisterOrData && typeof (firstRegisterOrData) == "number") {
+                console.log(1, " --- ", programTypeOrVariable, firstRegisterOrData, data, numRegisters);
+            }
+            else {
+                console.log(2, " --- ", programTypeOrVariable, firstRegisterOrData);
+            }
+        }
+        setProgramConstantsFromVector("sss", 1, [12, 3, 4], 1);
+        setProgramConstantsFromVector("va0", [12, 2, 2, 2, 2, 2, 2, 2]);
     })(drawTriangle = test.drawTriangle || (test.drawTriangle = {}));
 })(test || (test = {}));
 window.onload = test.drawTriangle.main;

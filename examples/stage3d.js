@@ -1396,6 +1396,7 @@ var stageJS;
             var v_glsl = this._agalParser.parse(this._tokenizer.decribeAGALByteArray(vertexProgram));
             var f_glsl = this._agalParser.parse(this._tokenizer.decribeAGALByteArray(fragmentProgram));
 
+            console.log("\n------- vertex shader : -------\n\n" + v_glsl + "\n-------fragment shader: -------\n\n\n" + f_glsl);
             this._vShader = this.createShader(v_glsl, stageJS.Context3D.GL.VERTEX_SHADER);
             this._fShader = this.createShader(f_glsl, stageJS.Context3D.GL.FRAGMENT_SHADER);
 
@@ -1538,6 +1539,8 @@ var stageJS;
 (function (stageJS) {
     var Context3D = (function () {
         function Context3D() {
+            this._uniformLocationNameDictionary = {};
+            this._vertexBufferSizeDictionary = {};
             this._linkedProgram = null;
             this._vaCache = {};
             this._vcCache = {};
@@ -1545,6 +1548,15 @@ var stageJS;
             this._texCache = {};
             Context3D.GL.enable(Context3D.GL.BLEND);
             stageJS.Context3DBlendFactor.init();
+
+            this._uniformLocationNameDictionary[stageJS.Context3DProgramType.VERTEX] = "vc";
+            this._uniformLocationNameDictionary[stageJS.Context3DProgramType.FRAGMENT] = "fc";
+
+            this._vertexBufferSizeDictionary[stageJS.Context3DVertexBufferFormat.FLOAT_1] = 1;
+            this._vertexBufferSizeDictionary[stageJS.Context3DVertexBufferFormat.FLOAT_2] = 2;
+            this._vertexBufferSizeDictionary[stageJS.Context3DVertexBufferFormat.FLOAT_3] = 3;
+            this._vertexBufferSizeDictionary[stageJS.Context3DVertexBufferFormat.FLOAT_4] = 4;
+            this._vertexBufferSizeDictionary[stageJS.Context3DVertexBufferFormat.BYTES_4] = 4;
         }
         Context3D.prototype.configureBackBuffer = function (width, height, antiAlias, enableDepthAndStencil) {
             if (typeof enableDepthAndStencil === "undefined") { enableDepthAndStencil = true; }
@@ -1611,33 +1623,17 @@ var stageJS;
             return new stageJS.Program3D();
         };
 
-        Context3D.prototype.setVertexBufferAt = function (variable, buffer, bufferOffset, format) {
+        Context3D.prototype.setVertexBufferAt = function (index, buffer, bufferOffset, format) {
             if (typeof bufferOffset === "undefined") { bufferOffset = 0; }
             if (typeof format === "undefined") { format = "float4"; }
-            var size = 0;
-            switch (format) {
-                case stageJS.Context3DVertexBufferFormat.FLOAT_4:
-                    size = 4;
-                    break;
-                case stageJS.Context3DVertexBufferFormat.FLOAT_3:
-                    size = 3;
-                    break;
-                case stageJS.Context3DVertexBufferFormat.FLOAT_2:
-                    size = 2;
-                    break;
-                case stageJS.Context3DVertexBufferFormat.FLOAT_1:
-                    size = 1;
-                    break;
-                case stageJS.Context3DVertexBufferFormat.BYTES_4:
-                    size = 4;
-                    break;
-            }
-
-            if (size <= 0)
-                throw new Error("vertexBuffer format error");
+            var variable;
+            if (typeof index === "number")
+                variable = "va" + index;
+            else
+                variable = index;
 
             this._vaCache[variable] = {
-                size: size,
+                size: this._vertexBufferSizeDictionary[format],
                 buffer: buffer.glBuffer,
                 stride: buffer.data32PerVertex * 4,
                 offset: bufferOffset * 4 };
@@ -1646,27 +1642,60 @@ var stageJS;
                 this.enableVA(variable);
         };
 
-        Context3D.prototype.setProgramConstantsFromVector = function (variable, data) {
-            if (data.length > 4)
-                throw new Error("data length > 4");
+        Context3D.prototype.setProgramConstantsFromVector = function (programTypeOrVariable, firstRegisterOrData, data, numRegisters) {
+            if (typeof numRegisters === "undefined") { numRegisters = -1; }
+            if (firstRegisterOrData && typeof (firstRegisterOrData) == "number") {
+                if (data.length <= 0)
+                    throw "invalid array";
 
-            this._vcCache[variable] = data;
-            if (this._linkedProgram)
-                this.enableVC(variable);
+                if (numRegisters == -1)
+                    numRegisters = Math.ceil(data.length / 4);
+
+                var constName = this._uniformLocationNameDictionary[programTypeOrVariable];
+
+                var startIndex;
+                for (var i = 0; i < numRegisters; i++) {
+                    startIndex = i * 4;
+                    this._vcCache[constName + (firstRegisterOrData + i)] = [data[startIndex], data[startIndex + 1], data[startIndex + 2], data[startIndex + 3]];
+                }
+            } else {
+                if (firstRegisterOrData.length > 4)
+                    throw new Error("data length > 4");
+
+                this._vcCache[programTypeOrVariable] = firstRegisterOrData;
+                if (this._linkedProgram)
+                    this.enableVC(programTypeOrVariable);
+            }
         };
 
-        Context3D.prototype.setProgramConstantsFromMatrix = function (variable, matrix, transposedMatrix) {
+        Context3D.prototype.setProgramConstantsFromMatrix = function (programTypeOrVariable, FirstRegisterOrMatrix, matrixOrtransposedMatrix, transposedMatrix) {
             if (typeof transposedMatrix === "undefined") { transposedMatrix = false; }
-            if (transposedMatrix)
-                matrix.transpose();
+            if (FirstRegisterOrMatrix && typeof (FirstRegisterOrMatrix) == "number") {
+                if (transposedMatrix)
+                    matrixOrtransposedMatrix.transpose();
 
-            this._vcMCache[variable] = matrix.rawData;
-            if (this._linkedProgram)
-                this.enableVCM(variable);
+                var d = matrixOrtransposedMatrix.rawData;
+
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix, [d[0], d[1], d[2], d[3]], 1);
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix + 1, [d[4], d[5], d[6], d[7]], 1);
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix + 2, [d[8], d[9], d[10], d[11]], 1);
+                this.setProgramConstantsFromVector(programTypeOrVariable, FirstRegisterOrMatrix + 3, [d[12], d[13], d[14], d[15]], 1);
+            } else {
+                if (matrixOrtransposedMatrix)
+                    FirstRegisterOrMatrix.transpose();
+
+                this._vcMCache[programTypeOrVariable] = FirstRegisterOrMatrix.rawData;
+                if (this._linkedProgram)
+                    this.enableVCM(programTypeOrVariable);
+            }
         };
 
         Context3D.prototype.setTextureAt = function (sampler, texture) {
-            this._texCache[sampler] = texture;
+            if (typeof (sampler) == "number") {
+                this._texCache["fs" + sampler] = texture;
+            } else {
+                this._texCache[sampler] = texture;
+            }
 
             if (this._linkedProgram)
                 this.enableTex(sampler);
@@ -2703,8 +2732,6 @@ var stageJS;
 
                 AGALMiniAssembler.prototype.emitDest = function (pr, token, opdest) {
                     var reg = token.match(/([fov]?[tpocidavs])(\d*)(\.[xyzw]{1,4})?/i);
-
-                    console.log('AGALMiniAssembler', 'emitDest', 'reg', reg, reg[1], assembler.RegMap.map[reg[1]]);
 
                     if (!assembler.RegMap.map[reg[1]])
                         return false;

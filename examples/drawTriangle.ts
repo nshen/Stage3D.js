@@ -48,7 +48,22 @@ module test.drawTriangle
         context3d.present();
 
     }
-  
+
+    function setProgramConstantsFromVector(programType:string, firstRegister:number/*int*/, data:number[]/*Vector.<Number>*/, numRegisters:number/*int*/ ):void;
+    function setProgramConstantsFromVector(variable: string, data: number[] /* Vector.<Number> */): void;
+    function setProgramConstantsFromVector(programTypeOrVariable:string,firstRegisterOrData:any,data?: number[] , numRegisters:number = -1): void
+    {
+        if(firstRegisterOrData && typeof(firstRegisterOrData) == "number")
+        {
+            console.log(1 ," --- ", programTypeOrVariable,firstRegisterOrData,data,numRegisters);
+        }else
+        {
+            console.log(2," --- ",programTypeOrVariable,firstRegisterOrData);
+        }
+    }
+
+    setProgramConstantsFromVector("sss",1,[12,3,4],1);
+    setProgramConstantsFromVector("va0",[12,2,2,2,2,2,2,2]);
 }
 
 

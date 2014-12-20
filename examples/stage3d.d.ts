@@ -275,11 +275,11 @@ declare module stageJS {
         private _glProgram;
         private _vShader;
         private _fShader;
+        private _tokenizer;
+        private _agalParser;
         constructor();
         public glProgram : WebGLProgram;
         public dispose(): void;
-        private _tokenizer;
-        private _agalParser;
         public uploadAGAL(vertexProgram: utils.ByteArray, fragmentProgram: utils.ByteArray): void;
         public upload(vertexProgramId?: string, fragmentProgramId?: string): void;
         private createShader(glsl, type);
@@ -307,6 +307,8 @@ declare module stageJS {
     class Context3D {
         static GL: WebGLRenderingContext;
         private _clearBit;
+        private _uniformLocationNameDictionary;
+        private _vertexBufferSizeDictionary;
         constructor();
         public configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): void;
         public createVertexBuffer(numVertices: number, data32PerVertex: number): VertexBuffer3D;
@@ -316,10 +318,14 @@ declare module stageJS {
         public setRenderToTexture(texture: Texture, enableDepthAndStencil?: boolean, antiAlias?: number, surfaceSelector?: number, colorOutputIndex?: number): void;
         public setRenderToBackBuffer(): void;
         public createProgram(): Program3D;
-        public setVertexBufferAt(variable: string, buffer: VertexBuffer3D, bufferOffset?: number, format?: String): void;
+        public setVertexBufferAt(index: number, buffer: VertexBuffer3D, bufferOffset: number, format: string): void;
+        public setVertexBufferAt(index: string, buffer: VertexBuffer3D, bufferOffset: number, format: string): void;
+        public setProgramConstantsFromVector(programType: string, firstRegister: number, data: number[], numRegisters: number): void;
         public setProgramConstantsFromVector(variable: string, data: number[]): void;
-        public setProgramConstantsFromMatrix(variable: string, matrix: geom.Matrix3D, transposedMatrix?: boolean): void;
-        public setTextureAt(sampler: string, texture: Texture): void;
+        public setProgramConstantsFromMatrix(programType: string, firstRegister: number, matrix: geom.Matrix3D, transposedMatrix: boolean): void;
+        public setProgramConstantsFromMatrix(variable: string, matrix: geom.Matrix3D, transposedMatrix: boolean): void;
+        public setTextureAt(index: number, texture: Texture): void;
+        public setTextureAt(variable: string, texture: Texture): void;
         private _linkedProgram;
         public setProgram(program: Program3D): void;
         public clear(red?: number, green?: number, blue?: number, alpha?: number, depth?: number, stencil?: number, mask?: number): void;

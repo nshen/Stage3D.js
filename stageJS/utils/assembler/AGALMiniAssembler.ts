@@ -172,7 +172,7 @@ module stageJS.utils.assembler {
 			//console.log( 'AGALMiniAssembler' , 'emitDest' , 'RegMap.map' , RegMap.map);
 			var reg = token.match(/([fov]?[tpocidavs])(\d*)(\.[xyzw]{1,4})?/i); // g1: regname, g2:regnum, g3:mask
 
-			console.log( 'AGALMiniAssembler' , 'emitDest' , 'reg' , reg , reg[1] , RegMap.map[reg[1]] );
+			//console.log( 'AGALMiniAssembler' , 'emitDest' , 'reg' , reg , reg[1] , RegMap.map[reg[1]] );
 			// console.log( 'AGALMiniAssembler' , 'emitDest' , 'RegMap.map[reg[1]]' , RegMap.map[reg[1]] , 'bool' , !RegMap.map[reg[1]] ) ;
 
 			if (!RegMap.map[reg[1]]) return false;

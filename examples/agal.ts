@@ -31,22 +31,6 @@ module test.agal
         "m44 op, vt0, vc0 \n" +
         "endpart";
 
-        var assembler = new stageJS.utils.assembler.AGALMiniAssembler();
-        assembler.assemble(str);
-
-        var data = assembler.r['fragment'].data;
-        var tokenizer = new stageJS.utils.AGALTokenizer();
-        var description = tokenizer.decribeAGALByteArray(data);
-        var parser = new stageJS.utils.AGLSLParser();
-        var frag = parser.parse(description);
-
-        var datavertex = assembler.r['vertex'].data;
-        var descriptionvertex = tokenizer.decribeAGALByteArray(datavertex);
-        var vert = parser.parse(descriptionvertex);
-
-        console.log(frag + '\n' + '----------------------------------------------' + '\n' + vert);
-
-        return;
         var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
 
         stage3d = new stageJS.Stage3D(canvas);
@@ -59,8 +43,21 @@ module test.agal
         context3d = stage3d.context3D;
         context3d.configureBackBuffer(stage3d.stageWidth, stage3d.stageHeight, 2, true);
 
+
+
+        //Create vertex assembler;
+        var vertexAssembler:stageJS.utils.assembler.AGALMiniAssembler = new stageJS.utils.assembler.AGALMiniAssembler();
+        vertexAssembler.assemble(stageJS.Context3DProgramType.VERTEX,
+            "mov op,va0 \n"+
+            "mov v0,va1");
+        //Create fragment assembler;
+        var fragmentAssembler:stageJS.utils.assembler.AGALMiniAssembler = new stageJS.utils.assembler.AGALMiniAssembler();
+        fragmentAssembler.assemble(stageJS.Context3DProgramType.FRAGMENT,
+            "mov oc,v0");
+
         var program: stageJS.Program3D = context3d.createProgram();
-        program.upload("shader-vs", "shader-fs"); // shaders are in html file
+        program.uploadAGAL(vertexAssembler.agalcode,fragmentAssembler.agalcode);
+        //program.upload("shader-vs", "shader-fs"); // shaders are in html file
         context3d.setProgram(program);
 
         

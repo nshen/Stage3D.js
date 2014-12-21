@@ -1,13 +1,4 @@
 /**
-<<<<<<< HEAD
- $.get('/folder/file.bla', function(data) {
-  var fileContents = data;
-});
-=======
->>>>>>> examples
-
-
-
     OBJ file format parser for Stage3d - version 2.31
     gratefully adapted from work by Alejandro Santander
 

@@ -1,5 +1,5 @@
 ///<reference path="stage3d.d.ts"/>
-/// <reference path="jquery.d.ts" />
+/// <reference path="lib/jquery.d.ts" />
 var test;
 (function (test) {
     var goraudShading;

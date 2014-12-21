@@ -1,7 +1,10 @@
 /**
+<<<<<<< HEAD
  $.get('/folder/file.bla', function(data) {
   var fileContents = data;
 });
+=======
+>>>>>>> examples
 
 
 
@@ -16,16 +19,14 @@
 
     example:
 
-    [Embed (source = "mesh.obj", mimeType = "application/octet-stream")]
-    private myObjData:Class;
 
-    ... set up your transforms, texture, vertex and fragment <normal> programs ...
-
-    var myMesh:Stage3dObjParser = new Stage3dObjParser(myObjData);
-    context3D.setVertexBufferAt(0, myMesh.positionsBuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
-    context3D.setVertexBufferAt(1, myMesh.uvBuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
-    context3D.drawTriangles(myMesh.indexBuffer, 0, myMesh.indexBufferCount);
-
+     $.get('model/spaceship.obj', (data) => {
+            var myMesh:Stage3dObjParser = new Stage3dObjParser(data);
+            context3D.setVertexBufferAt(0, myMesh.positionsBuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
+            context3D.setVertexBufferAt(1, myMesh.uvBuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
+            context3D.drawTriangles(myMesh.indexBuffer, 0, myMesh.indexBufferCount);
+    });
+ 
     [Some older exporters (eg 3dsmax9) format things differently: zxy instead of xyz:]
     [var myMesh:Stage3dObjParser = new Stage3dObjParser(myObjData, 1, true);]
     [Also, some exporters flip the U texture coordinate:]

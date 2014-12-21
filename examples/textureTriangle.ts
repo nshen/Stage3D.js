@@ -55,12 +55,17 @@ module test.textureTriangle
 
 
         /**
-         *    (-1,1) -----------(1,1)
-         *            \       /
-         *             \     /
-         *              \   /
-         *               \ /
-         *             (0,-1)
+         *    v0(-1,1) ----------- v1(1,1)
+         *              \       /
+         *               \     /
+         *                \   /
+         *                 \ /
+         *              v2(0,-1)
+         *
+         *
+         *      uv  v0  (0,0)
+         *          v1  (1,0)
+         *          v2  (0.5 ,1)
          */
         context3d.setVertexBufferAt("va0", vertexBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_3);
         context3d.setVertexBufferAt("va1", vertexBuffer, 3, stageJS.Context3DVertexBufferFormat.FLOAT_2);

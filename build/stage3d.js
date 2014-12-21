@@ -1073,14 +1073,55 @@ var stageJS;
             function PerspectiveMatrix3D() {
                 _super.apply(this, arguments);
             }
+            PerspectiveMatrix3D.prototype.lookAtLH = function (eye, at, up) {
+            };
+
+            PerspectiveMatrix3D.prototype.lookAtRH = function (eye, at, up) {
+            };
+
+            PerspectiveMatrix3D.prototype.perspectiveLH = function (width, height, zNear, zFar) {
+            };
+
+            PerspectiveMatrix3D.prototype.perspectiveRH = function (width, height, zNear, zFar) {
+                this.copyRawDataFrom([
+                    2.0 * zNear / width, 0.0, 0.0, 0.0,
+                    0.0, 2.0 * zNear / height, 0.0, 0.0,
+                    0.0, 0.0, (zNear + zFar) / (zNear - zFar), 2.0 * zNear * zFar / (zNear - zFar),
+                    0.0, 0.0, -1.0, 0.0
+                ]);
+            };
+
+            PerspectiveMatrix3D.prototype.perspectiveOffCenterLH = function (left, right, bottom, top, zNear, zFar) {
+            };
+
+            PerspectiveMatrix3D.prototype.perspectiveOffCenterRH = function (left, right, bottom, top, zNear, zFar) {
+                this.copyRawDataFrom([
+                    2.0 * zNear / (right - left), 0.0, (right + left) / (right - left), 0.0,
+                    0.0, 2.0 * zNear / (top - bottom), (top + bottom) / (top - bottom), 0.0,
+                    0.0, 0.0, (zNear + zFar) / (zNear - zFar), 2.0 * zNear * zFar / (zNear - zFar),
+                    0.0, 0.0, -1.0, 0.0
+                ]);
+            };
+
+            PerspectiveMatrix3D.prototype.orthoLH = function (width, height, zNear, zFar) {
+            };
+
+            PerspectiveMatrix3D.prototype.orthoRH = function (width, height, zNear, zFar) {
+            };
+
+            PerspectiveMatrix3D.prototype.orthoOffCenterLH = function (left, right, bottom, top, zNear, zFar) {
+            };
+
+            PerspectiveMatrix3D.prototype.orthoOffCenterRH = function (left, right, bottom, top, zNear, zFar) {
+            };
             PerspectiveMatrix3D.prototype.perspectiveFieldOfViewRH = function (fieldOfViewY, aspectRatio, zNear, zFar) {
                 var yScale = 1.0 / Math.tan(fieldOfViewY / 2.0);
                 var xScale = yScale / aspectRatio;
                 this.copyRawDataFrom([
                     xScale, 0.0, 0.0, 0.0,
                     0.0, yScale, 0.0, 0.0,
-                    0.0, 0.0, (zFar + zNear) / (zNear - zFar), -1.0,
-                    0.0, 0.0, (2 * zNear * zFar) / (zNear - zFar), 0.0
+                    0.0, 0.0, (zFar + zNear) / (zNear - zFar), 2.0 * zNear * zFar / (zNear - zFar),
+                    0.0, 0.0, -1.0, 0.0
                 ]);
             };
 

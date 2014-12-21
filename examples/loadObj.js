@@ -7,9 +7,11 @@ var test;
     (function (loadObj) {
         var stage3d;
         var context3d;
-        //var mvMatrix:stageJS.geom.Matrix3D = new stageJS.geom.Matrix3D(); // The Model-View matrix
+        var mvpMatrix = new stageJS.geom.Matrix3D();
+        var modelMatrix = new stageJS.geom.Matrix3D();
+        var cameraMatrix = new stageJS.geom.Matrix3D();
         //var nMatrix:stageJS.geom.Matrix3D = new stageJS.geom.Matrix3D(); // The normal matrix
-        //var pMatrix:stageJS.geom.PerspectiveMatrix3D = new stageJS.geom.PerspectiveMatrix3D(); // The projection matrix
+        var projectionMatrix = new stageJS.geom.PerspectiveMatrix3D(); // The projection matrix
         var loadCount;
         var bitmapdata;
         var objStr;
@@ -66,12 +68,29 @@ var test;
             var texture = context3d.createTexture(bitmapdata.width, bitmapdata.height, stageJS.Context3DTextureFormat.BGRA, false);
             texture.uploadFromBitmapData(bitmapdata, 0);
             context3d.setTextureAt("fs0", texture);
-            //--------------
-            // draw it
-            //---------------
-            context3d.clear(1.0, 1.0, 1.0, 1.0);
+            //pMatrix.perspectiveFieldOfViewLH(45 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 50);
+            //pMatrix.perspectiveLH(4, 4, 1, 1000); //近裁剪面的宽高
+            projectionMatrix.perspectiveFieldOfViewLH(90 * Math.PI / 180, stage3d.stageWidth / stage3d.stageHeight, 2, 1000);
+            modelMatrix.appendTranslation(0, 0, 4);
+            requestAnimationFrame(onEnterFrame);
+        }
+        function onEnterFrame() {
+            modelMatrix.prependRotation(1, stageJS.geom.Vector3D.Y_AXIS);
+            modelMatrix.prependRotation(2, stageJS.geom.Vector3D.X_AXIS);
+            mvpMatrix.identity();
+            mvpMatrix.append(modelMatrix);
+            mvpMatrix.append(projectionMatrix);
+            //context3d.setProgramConstantsFromMatrix("uMVMatrix",mvMatrix);
+            context3d.setProgramConstantsFromMatrix("mvpMatrix", mvpMatrix);
+            context3d.clear();
+            //mvMatrix.identity();
+            //mvMatrix.appendRotation(angle,stageJS.geom.Vector3D.Y_AXIS);
+            //mvMatrix.appendTranslation(0,0,10);
+            //mvMatrix.transpose();
+            //pMatrix.transpose();
             context3d.drawTriangles(myMesh.indexBuffer, 0, myMesh.indexBufferCount);
             context3d.present();
+            requestAnimationFrame(onEnterFrame);
         }
     })(loadObj = test.loadObj || (test.loadObj = {}));
 })(test || (test = {}));

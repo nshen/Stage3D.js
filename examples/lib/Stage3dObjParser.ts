@@ -26,7 +26,7 @@
             context3D.setVertexBufferAt(1, myMesh.uvBuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
             context3D.drawTriangles(myMesh.indexBuffer, 0, myMesh.indexBufferCount);
     });
- 
+
     [Some older exporters (eg 3dsmax9) format things differently: zxy instead of xyz:]
     [var myMesh:Stage3dObjParser = new Stage3dObjParser(myObjData, 1, true);]
     [Also, some exporters flip the U texture coordinate:]

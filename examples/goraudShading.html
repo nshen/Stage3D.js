@@ -39,17 +39,29 @@
          //diffuse term
          vec3 N = normalize(vec3(uNMatrix * vec4(aVertexNormal, 1.0))); //Transformed normal position
          vec3 L = normalize(uLightDirection);   //Normalize light to calculate lambertTerm
-         float lambertTerm = dot(N,-L);     //Lambert's cosine law  (-L : The normalized direction to the light source)
+         float lambertTerm = dot(N,-L);     //Lambert's cosine law  (-L : The normalized direction ,from surface to light source)
          vec4 Id = uMaterialDiffuse *  uLightDiffuse * lambertTerm;
 
          //Specular term
          vec4 vertex = uMVMatrix * vec4(aVertexPosition , 1.0);
          vec3 eyeVec = - vec3(vertex.xyz);
-         vec3 E = normalize(eyeVec);
-         vec3 R = reflect(L,N);  // todo:there is no reflect method in agal
-         float specular = pow(max(dot(R,E),0.0),10.0); // 10.0 is uShininess hard code
-         vec4 Is = uLightSpecular * uMaterialSpecular * specular;
+         vec3 V = normalize(eyeVec);
 
+         //##############################################
+         //(Blinn-Phong)
+         vec3 halfDir = normalize(eyeVec + uLightDirection);
+         float specular = pow(max(dot(halfDir,N),0.0),10.0); // 10.0 is uShininess hard code
+         //##############################################
+
+
+         //########################################
+         // Phong
+         //vec3 R = reflect(L,N);  // todo:there is no reflect method in agal
+         //float specular = pow(max(dot(R,V),0.0),10.0); // 10.0 is uShininess hard code
+         //########################################
+
+
+         vec4 Is = uLightSpecular * uMaterialSpecular * specular;
 
          vFinalColor = Ia + Id + Is;
          vFinalColor.a = 1.0;
@@ -57,7 +69,6 @@
           gl_Position = uPMatrix * vertex;
         }
     </script>
-    <!--////Ia + Id + Is-->
     <script id="shader-fs" type="x-shader/x-fragment">
         #ifdef GL_ES
          precision highp float;

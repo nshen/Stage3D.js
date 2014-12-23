@@ -1,7 +1,7 @@
 ///<reference path="stage3d.d.ts"/>
 /// <reference path="lib/jquery.d.ts" />
 
-module test.goraudShading
+module test.gouraudShading
 {
 
 
@@ -53,7 +53,17 @@ module test.goraudShading
 
     function initShader() {
         var program:stageJS.Program3D = context3d.createProgram();
-        program.upload("shader-vs", "shader-fs"); // shaders are in html file
+
+        /**
+         *  Gouraud shading
+         */
+        //program.upload("gouraudShading-vs", "gouraudShading-fs");
+
+        /**
+         *  Phong shading
+         */
+        program.upload("phongShading-vs", "phongShading-fs");
+
         context3d.setProgram(program);
     }
 
@@ -857,4 +867,4 @@ module test.goraudShading
 }
 
 
-window.onload = test.goraudShading.main;
+window.onload = test.gouraudShading.main;

@@ -2,8 +2,8 @@
 /// <reference path="lib/jquery.d.ts" />
 var test;
 (function (test) {
-    var goraudShading;
-    (function (goraudShading) {
+    var gouraudShading;
+    (function (gouraudShading) {
         var stage3d;
         var context3d;
         var mvMatrix = new stageJS.geom.Matrix3D(); // The Model-View matrix
@@ -23,7 +23,7 @@ var test;
             stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onCreated);
             stage3d.requestContext3D();
         }
-        goraudShading.main = main;
+        gouraudShading.main = main;
         function uploadBuffers(numVertices, vertices, normals, indices) {
             vertexBuffer = context3d.createVertexBuffer(numVertices, 3);
             vertexBuffer.uploadFromVector(vertices, 0, numVertices);
@@ -37,7 +37,14 @@ var test;
         }
         function initShader() {
             var program = context3d.createProgram();
-            program.upload("shader-vs", "shader-fs"); // shaders are in html file
+            /**
+             *  Gouraud shading
+             */
+            //program.upload("gouraudShading-vs", "gouraudShading-fs");
+            /**
+             *  Phong shading
+             */
+            program.upload("phongShading-vs", "phongShading-fs");
             context3d.setProgram(program);
         }
         function initLights() {
@@ -619,6 +626,6 @@ var test;
             }
             return ns;
         }
-    })(goraudShading = test.goraudShading || (test.goraudShading = {}));
+    })(gouraudShading = test.gouraudShading || (test.gouraudShading = {}));
 })(test || (test = {}));
-window.onload = test.goraudShading.main;
+window.onload = test.gouraudShading.main;

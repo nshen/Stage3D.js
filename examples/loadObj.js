@@ -1,6 +1,7 @@
 ///<reference path="stage3d.d.ts"/>
 /// <reference path="lib/jquery.d.ts" />
 /// <reference path="lib/Stage3dObjParser.ts" />
+/// <reference path="lib/OrbitCamera.ts" />
 var test;
 (function (test) {
     var loadObj;
@@ -9,7 +10,7 @@ var test;
         var context3d;
         var mvpMatrix = new stageJS.geom.Matrix3D();
         var modelMatrix = new stageJS.geom.Matrix3D();
-        var cameraMatrix = new stageJS.geom.Matrix3D();
+        var camera = new lib.OrbitCamera(); //camera matrix
         //var nMatrix:stageJS.geom.Matrix3D = new stageJS.geom.Matrix3D(); // The normal matrix
         var projectionMatrix = new stageJS.geom.PerspectiveMatrix3D(); // The projection matrix
         var loadCount;
@@ -42,6 +43,7 @@ var test;
             //init stage3d
             var canvas = document.getElementById("my-canvas");
             document.addEventListener("contextmenu", function (e) { return e.preventDefault(); });
+            addCanvasListener(canvas);
             stage3d = new stageJS.Stage3D(canvas);
             stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onCreated);
             stage3d.requestContext3D();
@@ -70,15 +72,55 @@ var test;
             context3d.setTextureAt("fs0", texture);
             //pMatrix.perspectiveFieldOfViewLH(45 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 50);
             //pMatrix.perspectiveLH(4, 4, 1, 1000); //近裁剪面的宽高
-            projectionMatrix.perspectiveFieldOfViewLH(90 * Math.PI / 180, stage3d.stageWidth / stage3d.stageHeight, 2, 1000);
-            modelMatrix.appendTranslation(0, 0, 4);
+            projectionMatrix.perspectiveFieldOfViewLH(90 * Math.PI / 180, stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
+            //modelMatrix.appendTranslation(0,0,0);
+            camera.posZ = -4;
             requestAnimationFrame(onEnterFrame);
         }
+        var dragging = false;
+        var __mouseX = 0;
+        var __mouseY = 0;
+        function addCanvasListener(canvas) {
+            canvas.onmousedown = function (ev) {
+                dragging = true;
+                __mouseX = ev.clientX;
+                __mouseY = ev.clientY;
+            };
+            canvas.onmouseup = function (ev) {
+                dragging = false;
+            };
+            canvas.onmousemove = function (ev) {
+                var lastX = __mouseX;
+                var lastY = __mouseY;
+                __mouseX = ev.clientX;
+                __mouseY = ev.clientY;
+                if (!dragging)
+                    return;
+                var dx = __mouseX - lastX;
+                var dy = __mouseY - lastY;
+                rotateY += dx;
+                rotateX += dy;
+                camera.rotateY = rotateY;
+                camera.rotateX = rotateX;
+            };
+            //window.onkeydown =(ev)=>{
+            //
+            //}
+            //
+            //window.onkeyup = (ev)=>{
+            //}
+        }
+        var rotateY = 0;
+        var rotateX = 0;
         function onEnterFrame() {
-            modelMatrix.prependRotation(1, stageJS.geom.Vector3D.Y_AXIS);
-            modelMatrix.prependRotation(2, stageJS.geom.Vector3D.X_AXIS);
+            //modelMatrix.prependRotation(1,stageJS.geom.Vector3D.Y_AXIS);
+            //modelMatrix.prependRotation(2,stageJS.geom.Vector3D.X_AXIS);
+            //camera.posZ = xx-=0.01;
+            //camera.rotateY = xx++;
+            //
             mvpMatrix.identity();
             mvpMatrix.append(modelMatrix);
+            mvpMatrix.append(camera.getViewMatrix());
             mvpMatrix.append(projectionMatrix);
             //context3d.setProgramConstantsFromMatrix("uMVMatrix",mvMatrix);
             context3d.setProgramConstantsFromMatrix("mvpMatrix", mvpMatrix);

@@ -87,7 +87,7 @@ module test.loadObj {
         //pMatrix.perspectiveLH(4, 4, 1, 1000); //近裁剪面的宽高
         projectionMatrix.perspectiveFieldOfViewLH(90 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
         //modelMatrix.appendTranslation(0,0,0);
-        camera.posZ = -4
+        camera.z = -4
         requestAnimationFrame(onEnterFrame);
 
 

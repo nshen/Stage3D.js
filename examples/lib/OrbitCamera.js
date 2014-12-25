@@ -9,16 +9,14 @@ var lib;
             this._rotate = new stageJS.geom.Vector3D();
             this._pos = new stageJS.geom.Vector3D();
             this._matrix = new stageJS.geom.Matrix3D();
+            this._invertMatrix = new stageJS.geom.Matrix3D();
         }
-        Object.defineProperty(OrbitCamera.prototype, "pos", {
-            set: function (p) {
-                this._pos = p;
-                this.update();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(OrbitCamera.prototype, "posX", {
+        Object.defineProperty(OrbitCamera.prototype, "x", {
+            //public set pos(p:stageJS.geom.Vector3D)
+            //{
+            //    this._pos = p;
+            //    this.update();
+            //}
             set: function (num) {
                 if (num != this._pos.x) {
                     this._pos.x = num;
@@ -28,7 +26,17 @@ var lib;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(OrbitCamera.prototype, "posZ", {
+        Object.defineProperty(OrbitCamera.prototype, "y", {
+            set: function (num) {
+                if (num != this._pos.y) {
+                    this._pos.y = num;
+                    this.update();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(OrbitCamera.prototype, "z", {
             set: function (num) {
                 if (num != this._pos.z) {
                     this._pos.z = num;
@@ -58,8 +66,18 @@ var lib;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(OrbitCamera.prototype, "rotateZ", {
+            set: function (num) {
+                if (num != this._rotate.z) {
+                    this._rotate.z = num;
+                    this.update();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         OrbitCamera.prototype.getViewMatrix = function () {
-            this._invertMatrix = this._matrix.clone();
+            this._invertMatrix.copyFrom(this._matrix);
             this._invertMatrix.invert();
             return this._invertMatrix;
         };

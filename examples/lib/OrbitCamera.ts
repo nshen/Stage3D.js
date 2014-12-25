@@ -13,20 +13,23 @@ module lib
         private _pos:stageJS.geom.Vector3D;
         private _rotate:stageJS.geom.Vector3D;
 
+        private _invertMatrix:stageJS.geom.Matrix3D;
+
         public constructor()
         {
             this._rotate = new stageJS.geom.Vector3D();
             this._pos = new stageJS.geom.Vector3D();
             this._matrix = new stageJS.geom.Matrix3D();
+            this._invertMatrix = new stageJS.geom.Matrix3D();
         }
 
-        public set pos(p:stageJS.geom.Vector3D)
-        {
-            this._pos = p;
-            this.update();
-        }
+        //public set pos(p:stageJS.geom.Vector3D)
+        //{
+        //    this._pos = p;
+        //    this.update();
+        //}
 
-        public set posX(num:number)
+        public set x(num:number)
         {
             if(num != this._pos.x)
             {
@@ -34,7 +37,15 @@ module lib
                 this.update();
             }
         }
-        public set posZ(num:number)
+        public set y(num:number)
+        {
+            if(num != this._pos.y)
+            {
+                this._pos.y = num;
+                this.update();
+            }
+        }
+        public set z(num:number)
         {
             if(num != this._pos.z)
             {
@@ -42,6 +53,7 @@ module lib
                 this.update();
             }
         }
+
         public set rotateY(num:number)
         {
             if(num != this._rotate.y)
@@ -60,10 +72,18 @@ module lib
             }
         }
 
-        private _invertMatrix:stageJS.geom.Matrix3D;
+        public set rotateZ(num:number)
+        {
+            if(num != this._rotate.z)
+            {
+                this._rotate.z = num;
+                this.update();
+            }
+        }
+
         public getViewMatrix():stageJS.geom.Matrix3D
         {
-            this._invertMatrix = this._matrix.clone();
+            this._invertMatrix.copyFrom(this._matrix);
             this._invertMatrix.invert();
             return this._invertMatrix;
         }

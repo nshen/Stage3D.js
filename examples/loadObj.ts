@@ -85,9 +85,9 @@ module test.loadObj {
 
         //pMatrix.perspectiveFieldOfViewLH(45 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 50);
         //pMatrix.perspectiveLH(4, 4, 1, 1000); //近裁剪面的宽高
-        projectionMatrix.perspectiveFieldOfViewLH(90 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
-        //modelMatrix.appendTranslation(0,0,0);
-        camera.z = -4
+        projectionMatrix.perspectiveFieldOfViewRH(45, stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
+        modelMatrix.appendTranslation(0,0,-4);
+        //camera.z = -4
         requestAnimationFrame(onEnterFrame);
 
 
@@ -150,7 +150,7 @@ module test.loadObj {
         //
         mvpMatrix.identity();
         mvpMatrix.append(modelMatrix);
-        mvpMatrix.append(camera.getViewMatrix());
+        //mvpMatrix.append(camera.getViewMatrix());
         mvpMatrix.append(projectionMatrix);
 
         //context3d.setProgramConstantsFromMatrix("uMVMatrix",mvMatrix);

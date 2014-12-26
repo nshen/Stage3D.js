@@ -22,7 +22,7 @@ module stageJS.geom
 //                0.0, 0.0, zNear*zFar/(zNear-zFar), 0.0
 //            ]));
           }
-
+        //pass test
         public perspectiveRH(width:number,height:number,zNear:number,zFar:number):void
         {
             this.copyRawDataFrom([
@@ -42,7 +42,7 @@ module stageJS.geom
 //                0.0, 0.0, (zNear*zFar)/(zNear-zFar), 0.0
 //            ]));
         }
-
+        //pass test
         public perspectiveOffCenterRH(left:number, right:number,bottom:number,top:number,zNear:number,zFar:number):void
         {
             this.copyRawDataFrom([
@@ -92,6 +92,8 @@ module stageJS.geom
 //                    (left+right)/(left-right), (bottom+top)/(bottom-top), zNear/(zNear-zFar), 1.0
 //            ]));
         }
+
+        //pass test
         public perspectiveFieldOfViewRH(fieldOfViewY:number,aspectRatio:number, zNear:number,zFar:number):void
         {
             var yScale:number = 1.0/Math.tan(fieldOfViewY/2.0);

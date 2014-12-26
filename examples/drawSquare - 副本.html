@@ -25,15 +25,10 @@
         attribute vec3 va0;
         attribute vec2 va1;
 
-        uniform mat4 mMatrix;
-        uniform mat4 pMatrix;
-        uniform mat4 cMatrix;
-
-
         varying vec2 v0;
 
         void main(void) {
-            gl_Position = vec4(va0,1.0) * mMatrix * cMatrix * pMatrix;
+            gl_Position = vec4(va0,1.0);
             v0= va1;
         }
     </script>
@@ -42,7 +37,7 @@
 
 
 <body >
-    <canvas id='my-canvas' width='500' height='500'>
+    <canvas id='my-canvas' width='480' height='400'>
         Your browser does not support the HTML5 canvas element.
     </canvas>
 </body>

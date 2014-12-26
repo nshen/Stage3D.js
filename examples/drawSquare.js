@@ -50,23 +50,23 @@ var test;
              */
             var vertexBuffer = context3d.createVertexBuffer(4, 5);
             vertexBuffer.uploadFromVector([
-                -0.5,
-                0.5,
+                -1,
+                1,
                 0.0,
                 0.0,
                 0.0,
-                -0.5,
-                -0.5,
+                -1,
+                -1,
                 0.0,
                 0.0,
                 1.0,
-                0.5,
-                0.5,
+                1,
+                1,
                 0.0,
                 1.0,
                 0.0,
-                0.5,
-                -0.5,
+                1,
+                -1,
                 0.0,
                 1.0,
                 1.0
@@ -75,8 +75,33 @@ var test;
             context3d.setVertexBufferAt("va1", vertexBuffer, 3, stageJS.Context3DVertexBufferFormat.FLOAT_2);
             var indexBuffer = context3d.createIndexBuffer(6);
             indexBuffer.uploadFromVector([0, 1, 3, 0, 3, 2], 0, 6);
+            var pMatrix = new stageJS.geom.PerspectiveMatrix3D();
+            pMatrix.perspectiveFieldOfViewRH(45, stage3d.stageWidth / stage3d.stageHeight, 0.1, 100);
+            var mMatrix = new stageJS.geom.Matrix3D();
+            mMatrix.appendTranslation(2, 0, -7);
+            mMatrix.appendRotation(30, stageJS.geom.Vector3D.Z_AXIS);
+            var cMatrix = new stageJS.geom.Matrix3D();
+            //cMatrix.appendTranslation(2,0,0);
+            //cMatrix.appendRotation(90,stageJS.geom.Vector3D.Z_AXIS);
+            //mMatrix.appendRotation(30,stageJS.geom.Vector3D.X_AXIS);
+            //mMatrix.appendRotation(40,stageJS.geom.Vector3D.Y_AXIS);
+            //mMatrix.appendRotation(50,stageJS.geom.Vector3D.Z_AXIS);
+            //mMatrix.appendTranslation(1.5,1.2,-1.1);
+            context3d.setProgramConstantsFromMatrix("mMatrix", mMatrix, false);
+            context3d.setProgramConstantsFromMatrix("pMatrix", pMatrix, false);
+            context3d.setProgramConstantsFromMatrix("cMatrix", cMatrix, false);
             console.log("----------- draw ------------");
             context3d.clear(1.0, 0.0, 0.0, 1.0);
+            context3d.drawTriangles(indexBuffer);
+            console.log(mMatrix.rawData); // [0.8660253882408142, 0.5, 0, 2, -0.5, 0.8660253882408142, 0, 0, 0, 0, 1, -7, 0, 0, 0, 1]
+            mMatrix.identity();
+            mMatrix.appendRotation(30, stageJS.geom.Vector3D.Z_AXIS);
+            mMatrix.appendTranslation(2, 0, -7);
+            console.log(mMatrix.rawData); // [0.8660253882408142, 0.5, 0, 1.7320507764816284, -0.5, 0.8660253882408142, 0, -1, 0, 0, 1, -7, 0, 0, 0, 1]
+            //
+            //mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
+            //mMatrix.appendTranslation(4,0,0);
+            context3d.setProgramConstantsFromMatrix("mMatrix", mMatrix, false);
             context3d.drawTriangles(indexBuffer);
             context3d.present();
         }

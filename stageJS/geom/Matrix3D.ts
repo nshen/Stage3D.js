@@ -17,10 +17,7 @@ module stageJS.geom
                 + (this.rawData[4] * this.rawData[9] - this.rawData[8] * this.rawData[5]) * (this.rawData[2] * this.rawData[15] - this.rawData[14] * this.rawData[3])
                 - (this.rawData[4] * this.rawData[13] - this.rawData[12] * this.rawData[5]) * (this.rawData[2] * this.rawData[11] - this.rawData[10] * this.rawData[3])
                 + (this.rawData[8] * this.rawData[13] - this.rawData[12] * this.rawData[9]) * (this.rawData[2] * this.rawData[7] - this.rawData[6] * this.rawData[3]));
-   
         }
-
-
 
         public get position():Vector3D
         {
@@ -28,10 +25,10 @@ module stageJS.geom
         }
          
         /**
-         * A Vector of 16 Numbers, where every four elements is a column of a 4x4 matrix.
-         *
-         * <p>An exception is thrown if the rawData property is set to a matrix that is not invertible. The Matrix3D
-         * object must be invertible. If a non-invertible matrix is needed, create a subclass of the Matrix3D object.</p>
+             1, 0, 0, x,
+             0, 1, 0, y,
+             0, 0, 1, z,
+             0  0, 0, 0
          */
         public rawData: Float32Array; //column major order
 
@@ -135,6 +132,7 @@ module stageJS.geom
         {
 
             var r: Matrix3D = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
+
             if (pivotPoint)
             {  
                  //TODO:simplify
@@ -174,9 +172,18 @@ module stageJS.geom
          */
         public appendTranslation(x: number, y: number, z: number): void
         {
-            this.rawData[12] += x;
-            this.rawData[13] += y;
-            this.rawData[14] += z;
+
+            /*
+                                  1 0 0 x
+                        this *    0 1 0 y
+                                  0 0 0 z
+                                  0 0 0 1
+             */
+
+            this.rawData[3]  = this.rawData[0]  * x + this.rawData[1]  * y + this.rawData[2]  * z + this.rawData[3];
+            this.rawData[7]  = this.rawData[4]  * x + this.rawData[5]  * y + this.rawData[6]  * z + this.rawData[7];
+            this.rawData[11] = this.rawData[8]  * x + this.rawData[9]  * y + this.rawData[10] * z + this.rawData[11];
+            this.rawData[15] = this.rawData[12] * x + this.rawData[13] * y + this.rawData[14] * z + this.rawData[15];
         }
 
 

@@ -3,46 +3,96 @@ var test;
 (function (test) {
     var matrix3d_test;
     (function (matrix3d_test) {
-        function logMatrix(matrix, str) {
-            if (str === void 0) { str = "----------"; }
-            var arr = [];
-            for (var i = 0; i < matrix.length; i++) {
-                //console.log(arr[i] ,arr[i] * 100 , Math.round(arr[i]*100),Math.round(arr[i]*100)/100);
-                arr[i] = String(Math.round(matrix[i] * 1000) / 1000);
-                while (arr[i].length < 7) {
-                    arr[i] = " " + arr[i];
-                }
-            }
-            console.log(str);
-            console.log(arr[0], ",               ", arr[1], ",               ", arr[2], ",               ", arr[3]);
-            console.log(arr[4], ",               ", arr[5], ",               ", arr[6], ",               ", arr[7]);
-            console.log(arr[8], ",               ", arr[9], ",               ", arr[10], ",               ", arr[11]);
-            console.log(arr[12], ",               ", arr[13], ",               ", arr[14], ",               ", arr[15]);
-        }
-        function isTranspose(a, b, str) {
-            if (str === void 0) { str = ""; }
-            if (str != "")
-                console.log("# " + str + " #");
-            var arr = a.clone();
-            arr.transpose();
-            testRawData(arr, b);
-        }
         /**
          *  window.onload entry point
          */
         function main() {
-            var m = new stageJS.geom.Matrix3D();
-            m.appendTranslation(1, 2, 3);
-            var gv2 = vec3.fromValues(1, 2, 3);
-            var gm2 = mat4.create();
-            mat4.translate(gm2, gm2, gv2);
-            isTranspose(m, gm2, "transform");
-            m.appendScale(1, 2, 3);
-            mat4.scale(gm2, gm2, gv2);
-            isTranspose(m, gm2, "scals");
-            m.appendRotation(60, stageJS.geom.Vector3D.X_AXIS); //度
-            mat4.rotate(gm2, gm2, Math.PI / 3, [1, 0, 0]);
-            isTranspose(m, gm2, "rotation");
+            var m1;
+            var m2;
+            var m3;
+            var glM; //glmatrix
+            var glM2;
+            var glM3;
+            var glV1; //glmatrix vec3
+            var glV2;
+            //----------------------------
+            // test start
+            //----------------------------
+            console.log("# appendTranslation #");
+            m1 = new stageJS.geom.Matrix3D();
+            m1.appendTranslation(1, 2, 3);
+            glV1 = vec3.fromValues(1, 2, 3);
+            glM = mat4.create();
+            mat4.translate(glM, glM, glV1);
+            isTranspose(m1, glM, "appendTranslation");
+            console.log("# prependTranslation #");
+            m1.prependTranslation(1, 2, 3);
+            glM2 = mat4.create();
+            mat4.translate(glM2, glM2, glV1);
+            mat4.mul(glM2, glM, glM2);
+            isTranspose(m1, glM2, "prependTranslation");
+            logMatrix(m1.rawData);
+            logMatrix(glM2);
+            //m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+            //m.prependTranslation(7, 8, 9);
+            //testRawData(m, [1,2,3,4,5,6,7,8,9,10,11,12,141,166,191,216]);
+            //append
+            console.log("# append() #");
+            var m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+            var m2 = new stageJS.geom.Matrix3D([16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+            m.append(m2);
+            testRawData(m, [80, 70, 60, 50, 240, 214, 188, 162, 400, 358, 316, 274, 560, 502, 444, 386]);
+            testRawData(m2, [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+            //prepend
+            //appendRotation
+            //prependRotation
+            //appendScale
+            //prependScale
+            //transpose
+            //
+            //transformVector
+            //deltaTransformVector
+            //transformVectors
+            //determinant
+            //position
+            //
+            //
+            //identity
+            //
+            //copyColumnFrom
+            //copyColumnTo
+            //copyFrom
+            //copyRawDataFrom
+            //copyRawDataTo
+            //copyRowFrom
+            //copyRowTo
+            //copyToMatrix3D
+            //
+            //decompose
+            //recompose
+            //
+            //interpolate
+            //interpolateTo
+            //invert
+            //
+            //pointAt
+            //m.appendScale(1,2,3);
+            //mat4.scale(gm2, gm2, gv2);
+            //
+            //isTranspose(m,gm2,"scals");
+            //
+            //
+            //console.log("# determinant #");
+            //if(m.determinant != mat4.determinant(gm2))
+            //    console.error( "fail! " + "determinant");
+            //
+            //
+            //
+            //
+            //m.appendRotation(60,stageJS.geom.Vector3D.X_AXIS); //度
+            //mat4.rotate(gm2, gm2, Math.PI/3, [1,0,0]);
+            //
+            //isTranspose(m,gm2,"rotation");
             //logMatrix(m.rawData);
             //logMatrix(gm2);
             console.log("测试右手投影矩阵");
@@ -64,12 +114,6 @@ var test;
             logMatrix(Sm.rawData);
             logMatrix(Gm);
             return;
-            console.log("## append() ------------------");
-            var m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-            var m2 = new stageJS.geom.Matrix3D([16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
-            m.append(m2);
-            testRawData(m, [80, 70, 60, 50, 240, 214, 188, 162, 400, 358, 316, 274, 560, 502, 444, 386]);
-            testRawData(m2, [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
             console.log("## appendRotation() ----------- x , y , z axis");
             m = new stageJS.geom.Matrix3D();
             m.appendRotation(30, stageJS.geom.Vector3D.X_AXIS);
@@ -97,10 +141,6 @@ var test;
             m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
             m.appendScale(7, 8, 9);
             testRawData(m, [7, 16, 27, 4, 35, 48, 63, 8, 63, 80, 99, 12, 91, 112, 135, 16]);
-            console.log("## appendTranslation() ------------------");
-            m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-            m.appendTranslation(7, 8, 9);
-            testRawData(m, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 20, 22, 24, 16]);
             console.log('## copyColumnFrom() ------------------');
             m = new stageJS.geom.Matrix3D();
             m.copyColumnFrom(0, new stageJS.geom.Vector3D(16, 15, 14, 13));
@@ -265,10 +305,6 @@ var test;
             m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
             m.prependScale(7, 8, 9);
             testRawData(m, [7, 14, 21, 28, 40, 48, 56, 64, 81, 90, 99, 108, 13, 14, 15, 16]);
-            console.log("## prependTranslation() ------------------");
-            m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-            m.prependTranslation(7, 8, 9);
-            testRawData(m, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 141, 166, 191, 216]);
             console.log('## transformVector()   ---------------');
             m = new stageJS.geom.Matrix3D();
             m.appendRotation(30, stageJS.geom.Vector3D.Y_AXIS);
@@ -315,16 +351,40 @@ var test;
                     return false;
                 }
             }
-            console.warn("pass  " + arr);
+            console.warn("pass  " + arr.toString());
             return true;
         }
         function testVector(v1, v2) {
-            var p = 0.00001; //误差再大一点就报错了：（
+            var p = 0.0001;
             if ((Math.abs(v1.x - v2.x) < p) && (Math.abs(v1.y - v2.y) < p) && (Math.abs(v1.z - v2.z) < p) && (Math.abs(v1.w - v2.w) < p)) {
                 console.warn("pass " + v1.toString());
                 return;
             }
             console.error("fail!! " + v1.toString() + v2.toString());
+        }
+        function isTranspose(a, b, str) {
+            if (str === void 0) { str = ""; }
+            //if(str!="")
+            //    console.log("# "+str+ " #");
+            var arr = a.clone();
+            arr.transpose();
+            testRawData(arr, b);
+        }
+        function logMatrix(matrix, str) {
+            if (str === void 0) { str = "----------"; }
+            var arr = [];
+            for (var i = 0; i < matrix.length; i++) {
+                //console.log(arr[i] ,arr[i] * 100 , Math.round(arr[i]*100),Math.round(arr[i]*100)/100);
+                arr[i] = String(Math.round(matrix[i] * 1000) / 1000);
+                while (arr[i].length < 7) {
+                    arr[i] = " " + arr[i];
+                }
+            }
+            console.log(str);
+            console.log(arr[0], ",               ", arr[1], ",               ", arr[2], ",               ", arr[3]);
+            console.log(arr[4], ",               ", arr[5], ",               ", arr[6], ",               ", arr[7]);
+            console.log(arr[8], ",               ", arr[9], ",               ", arr[10], ",               ", arr[11]);
+            console.log(arr[12], ",               ", arr[13], ",               ", arr[14], ",               ", arr[15]);
         }
     })(matrix3d_test = test.matrix3d_test || (test.matrix3d_test = {}));
 })(test || (test = {}));

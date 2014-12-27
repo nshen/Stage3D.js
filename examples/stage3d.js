@@ -374,7 +374,7 @@ var stageJS;
 
             Object.defineProperty(Matrix3D.prototype, "position", {
                 get: function () {
-                    return new geom.Vector3D(this.rawData[12], this.rawData[13], this.rawData[14]);
+                    return new geom.Vector3D(this.rawData[3], this.rawData[7], this.rawData[11]);
                 },
                 enumerable: true,
                 configurable: true
@@ -555,10 +555,18 @@ var stageJS;
             };
 
             Matrix3D.prototype.prependTranslation = function (x, y, z) {
-                this.rawData[12] += this.rawData[0] * x + this.rawData[4] * y + this.rawData[8] * z;
-                this.rawData[13] += this.rawData[1] * x + this.rawData[5] * y + this.rawData[9] * z;
-                this.rawData[14] += this.rawData[2] * x + this.rawData[6] * y + this.rawData[10] * z;
-                this.rawData[15] += this.rawData[3] * x + this.rawData[7] * y + this.rawData[11] * z;
+                this.rawData[0] += this.rawData[12] * x;
+                this.rawData[1] += this.rawData[13] * x;
+                this.rawData[2] += this.rawData[14] * x;
+                this.rawData[3] += this.rawData[15] * x;
+                this.rawData[4] += this.rawData[12] * y;
+                this.rawData[5] += this.rawData[14] * y;
+                this.rawData[6] += this.rawData[14] * y;
+                this.rawData[7] += this.rawData[15] * y;
+                this.rawData[8] += this.rawData[12] * z;
+                this.rawData[9] += this.rawData[13] * z;
+                this.rawData[10] += this.rawData[14] * z;
+                this.rawData[11] += this.rawData[15] * z;
             };
 
             Matrix3D.prototype.clone = function () {

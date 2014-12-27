@@ -21,7 +21,7 @@ module stageJS.geom
 
         public get position():Vector3D
         {
-            return new Vector3D(this.rawData[12], this.rawData[13], this.rawData[14]);
+            return new Vector3D(this.rawData[3], this.rawData[7], this.rawData[11]);
         }
          
         /**
@@ -47,8 +47,6 @@ module stageJS.geom
                     0, 0, 1, 0,
                     0, 0, 0, 1]);
         }
-
-
 
         /**
          * Appends the matrix by multiplying another Matrix3D object by the current Matrix3D object.
@@ -229,16 +227,26 @@ module stageJS.geom
         {
 
             /*
-             *             1 0 0 0
-             *             0 1 0 0   *  this
-             *             0 0 1 0
-             *             x y z 1
+             *             1 0 0 x
+             *             0 1 0 y   *  this
+             *             0 0 1 z
+             *             0 0 0 1
              */
 
-            this.rawData[12] += this.rawData[0] * x + this.rawData[4] * y + this.rawData[8] * z;
-            this.rawData[13] += this.rawData[1] * x + this.rawData[5] * y + this.rawData[9] * z;
-            this.rawData[14] += this.rawData[2] * x + this.rawData[6] * y + this.rawData[10] * z;
-            this.rawData[15] += this.rawData[3] * x + this.rawData[7] * y + this.rawData[11] * z;
+            this.rawData[0] += this.rawData[12] * x; this.rawData[1] += this.rawData[13] * x;
+            this.rawData[2] += this.rawData[14] * x; this.rawData[3] += this.rawData[15] * x;
+            this.rawData[4] += this.rawData[12] * y; this.rawData[5] += this.rawData[14] * y;
+            this.rawData[6] += this.rawData[14] * y; this.rawData[7] += this.rawData[15] * y;
+            this.rawData[8] += this.rawData[12] * z; this.rawData[9] += this.rawData[13] * z;
+            this.rawData[10] += this.rawData[14] * z; this.rawData[11] += this.rawData[15] *z;
+
+
+
+
+            //this.rawData[12] += this.rawData[0] * x + this.rawData[4] * y + this.rawData[8] * z;
+            //this.rawData[13] += this.rawData[1] * x + this.rawData[5] * y + this.rawData[9] * z;
+            //this.rawData[14] += this.rawData[2] * x + this.rawData[6] * y + this.rawData[10] * z;
+            //this.rawData[15] += this.rawData[3] * x + this.rawData[7] * y + this.rawData[11] * z;
         }
 
         /**

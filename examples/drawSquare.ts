@@ -50,6 +50,7 @@ module test.drawSquare {
         context3d.setTextureAt("fs0", texture);
 
         console.log("----- init buffers ------");
+
         /*
          * Creates the buffers that contain the geometry of the square
          *

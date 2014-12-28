@@ -30,7 +30,8 @@ module test.matrix3d_test {
         //----------------------------
 
 
-        console.log("# appendTranslation #");
+        //-----------------------------------------------------------------------------------------
+        console.log("# appendTranslation() #");
 
         m1 = new stageJS.geom.Matrix3D();
         m1.appendTranslation(1,2,3);
@@ -40,21 +41,100 @@ module test.matrix3d_test {
         isTranspose(m1,glM,"appendTranslation");
 
 
-        console.log("# prependTranslation #");
+        //-----------------------------------------------------------------------------------------
+        console.log("# prependTranslation() #");
 
         m1.prependTranslation(1,2,3);
 
-        glM2 = mat4.create();
+        glM2 = mat4.create();//translation matrix
         mat4.translate(glM2, glM2, glV1)
-        mat4.mul(glM2,glM,glM2);
+        mat4.mul(glM,glM,glM2);
 
-        isTranspose(m1,glM2,"prependTranslation");
-        logMatrix(m1.rawData);
-        logMatrix(glM2);
+        isTranspose(m1,glM,"prependTranslation");
+        //logMatrix(m1.rawData);
+        //logMatrix(glM2);
+
+        //-----------------------------------------------------------------------------------------
+        console.log("# appendScale() #");
+
+        m1.appendScale(3,4,5);
+
+        glM2 = mat4.create(); //scale matrix
+        glV1 = vec3.fromValues(3,4,5);
+        mat4.scale(glM2, glM2, glV1);
+        mat4.mul(glM,glM,glM2);
+
+        isTranspose(m1,glM);
+
 
         //m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-        //m.prependTranslation(7, 8, 9);
-        //testRawData(m, [1,2,3,4,5,6,7,8,9,10,11,12,141,166,191,216]);
+        //m.appendScale(7, 8, 9);
+        //testRawData(m, [7, 16, 27, 4, 35, 48, 63, 8, 63, 80, 99, 12, 91, 112, 135, 16]);
+
+        //-----------------------------------------------------------------------------------------
+        console.log("# prependScale() #");
+
+        m1.prependScale(9,-8,7);
+
+        glM2 = mat4.create(); //scale matrix
+        glV1 = vec3.fromValues(9,-8,7);
+        mat4.scale(glM2, glM2, glV1);
+        mat4.mul(glM,glM2,glM);
+        isTranspose(m1,glM);
+
+        m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+        m.prependScale(7, 8, 9);
+        testRawData(m, [7,14,21,28,40,48,56,64,81,90,99,108,13,14,15,16]);
+
+
+        //-----------------------------------------------------------------------------------------
+        console.log("# appendRotation() #");
+
+        //gl-matrix use CW , and we use CCW
+        m1.appendRotation(325,new stageJS.geom.Vector3D(1,3,8));//360 - 35 = 325
+
+        glV1 = vec3.fromValues(1,3,8);
+        mat4.rotate(glM, glM, 35 * Math.PI / 180 , glV1);
+
+        isTranspose(m1,glM);
+
+        m = new stageJS.geom.Matrix3D();
+        m.appendRotation(30, stageJS.geom.Vector3D.X_AXIS);
+        testRawData(m, [1, 0, 0, 0, 0, 0.8660253882408142, 0.5, 0, 0, -0.5, 0.8660253882408142, 0, 0, 0, 0, 1]);
+        m.appendRotation(45, stageJS.geom.Vector3D.Y_AXIS);
+        testRawData(m, [0.7071067690849304, 0, -0.7071067690849304, 0, 0.3535533845424652, 0.8660253882408142, 0.3535533845424652, 0, 0.6123723983764648, -0.5, 0.6123723983764648, 0, 0, 0, 0, 1]);
+        m.appendRotation(60, stageJS.geom.Vector3D.Z_AXIS);
+        testRawData(m, [0.3535533845424652, 0.6123723983764648, -0.7071067690849304, 0, -0.5732232928276062, 0.7391989231109619, 0.3535533845424652, 0, 0.7391989231109619, 0.2803300619125366, 0.6123723983764648, 0, 0, 0, 0, 1]);
+
+        console.log("## appendRotation() ---- any axis");
+        m = new stageJS.geom.Matrix3D();
+        var axis:stageJS.geom.Vector3D = new stageJS.geom.Vector3D(1, 2, 3);
+        axis.normalize();
+        m.appendRotation(23, axis);
+        testRawData(m, [0.9261831045150757, 0.324638307094574, -0.19181989133358002, 0, -0.3019254207611084, 0.9432177543640137, 0.13849663734436035, 0, 0.22588925063610077, -0.07035793364048004, 0.9716088771820068, 0, 0, 0, 0, 1]);
+
+        console.log("## appendRotation() ---- pivotPoint");
+        m = new stageJS.geom.Matrix3D();
+        m.appendRotation(60, stageJS.geom.Vector3D.X_AXIS, new stageJS.geom.Vector3D(1, 2, 3));
+        testRawData(m, [1, 0, 0, 0, 0, 0.5, 0.8660253882408142, 0, 0, -0.8660253882408142, 0.5, 0, 0, 3.598076105117798, -0.23205089569091797, 1]);
+
+        m = new stageJS.geom.Matrix3D();
+        var axis:stageJS.geom.Vector3D = new stageJS.geom.Vector3D(4, 5, 6);
+        axis.normalize();
+        m.appendRotation(45, axis, new stageJS.geom.Vector3D(7, 8, 9));
+        testRawData(m, [0.767967700958252, 0.5595699548721313, -0.3116200864315033, 0, -0.4074175953865051, 0.8022019863128662, 0.43644341826438904, 0, 0.4942028820514679, -0.20821495354175568, 0.8440438508987427, 0, 0.43574094772338867, -0.46067142486572266, 0.0933990478515625, 1]);
+
+
+        logMatrix(glM);
+        logMatrix(m1.rawData);
+        return;
+
+        //console.log
+
+
+
+
+
 
         //append
 
@@ -69,8 +149,7 @@ module test.matrix3d_test {
         //prepend
         //appendRotation
         //prependRotation
-        //appendScale
-        //prependScale
+
 
         //transpose
         //
@@ -178,38 +257,7 @@ module test.matrix3d_test {
         return ;
 
 
-        console.log("## appendRotation() ----------- x , y , z axis");
-        m = new stageJS.geom.Matrix3D();
-        m.appendRotation(30, stageJS.geom.Vector3D.X_AXIS);
-        testRawData(m, [1, 0, 0, 0, 0, 0.8660253882408142, 0.5, 0, 0, -0.5, 0.8660253882408142, 0, 0, 0, 0, 1]);
-        m.appendRotation(45, stageJS.geom.Vector3D.Y_AXIS);
-        testRawData(m, [0.7071067690849304, 0, -0.7071067690849304, 0, 0.3535533845424652, 0.8660253882408142, 0.3535533845424652, 0, 0.6123723983764648, -0.5, 0.6123723983764648, 0, 0, 0, 0, 1]);
-        m.appendRotation(60, stageJS.geom.Vector3D.Z_AXIS);
-        testRawData(m, [0.3535533845424652, 0.6123723983764648, -0.7071067690849304, 0, -0.5732232928276062, 0.7391989231109619, 0.3535533845424652, 0, 0.7391989231109619, 0.2803300619125366, 0.6123723983764648, 0, 0, 0, 0, 1]);
 
-        console.log("## appendRotation() ---- any axis");
-        m = new stageJS.geom.Matrix3D();
-        var axis:stageJS.geom.Vector3D = new stageJS.geom.Vector3D(1, 2, 3);
-        axis.normalize();
-        m.appendRotation(23, axis);
-        testRawData(m, [0.9261831045150757, 0.324638307094574, -0.19181989133358002, 0, -0.3019254207611084, 0.9432177543640137, 0.13849663734436035, 0, 0.22588925063610077, -0.07035793364048004, 0.9716088771820068, 0, 0, 0, 0, 1]);
-
-        console.log("## appendRotation() ---- pivotPoint");
-        m = new stageJS.geom.Matrix3D();
-        m.appendRotation(60, stageJS.geom.Vector3D.X_AXIS, new stageJS.geom.Vector3D(1, 2, 3));
-        testRawData(m, [1, 0, 0, 0, 0, 0.5, 0.8660253882408142, 0, 0, -0.8660253882408142, 0.5, 0, 0, 3.598076105117798, -0.23205089569091797, 1]);
-
-        m = new stageJS.geom.Matrix3D();
-        var axis:stageJS.geom.Vector3D = new stageJS.geom.Vector3D(4, 5, 6);
-        axis.normalize();
-        m.appendRotation(45, axis, new stageJS.geom.Vector3D(7, 8, 9));
-        testRawData(m, [0.767967700958252, 0.5595699548721313, -0.3116200864315033, 0, -0.4074175953865051, 0.8022019863128662, 0.43644341826438904, 0, 0.4942028820514679, -0.20821495354175568, 0.8440438508987427, 0, 0.43574094772338867, -0.46067142486572266, 0.0933990478515625, 1]);
-
-
-        console.log("## appendScale() ------------------");
-        m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-        m.appendScale(7, 8, 9);
-        testRawData(m, [7, 16, 27, 4, 35, 48, 63, 8, 63, 80, 99, 12, 91, 112, 135, 16]);
 
 
 
@@ -409,10 +457,7 @@ module test.matrix3d_test {
         testRawData(m, [0.767967700958252, 0.5595699548721313, -0.3116200864315033, 0, -0.4074175953865051, 0.8022019863128662, 0.43644341826438904, 0, 0.4942028820514679, -0.20821495354175568, 0.8440438508987427, 0, 0.43574094772338867, -0.46067142486572266, 0.0933990478515625, 1]);
 
 
-        console.log("## prependScale() ------------------");
-        m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-        m.prependScale(7, 8, 9);
-        testRawData(m, [7,14,21,28,40,48,56,64,81,90,99,108,13,14,15,16]);
+
 
 
 

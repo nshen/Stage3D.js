@@ -381,39 +381,39 @@ var stageJS;
             });
 
             Matrix3D.prototype.append = function (lhs) {
-                var a11 = this.rawData[0];
-                var a12 = this.rawData[1];
-                var a13 = this.rawData[2];
-                var a14 = this.rawData[3];
-                var a21 = this.rawData[4];
-                var a22 = this.rawData[5];
-                var a23 = this.rawData[6];
-                var a24 = this.rawData[7];
-                var a31 = this.rawData[8];
-                var a32 = this.rawData[9];
-                var a33 = this.rawData[10];
-                var a34 = this.rawData[11];
-                var a41 = this.rawData[12];
-                var a42 = this.rawData[13];
-                var a43 = this.rawData[14];
-                var a44 = this.rawData[15];
+                var a11 = lhs.rawData[0];
+                var a12 = lhs.rawData[1];
+                var a13 = lhs.rawData[2];
+                var a14 = lhs.rawData[3];
+                var a21 = lhs.rawData[4];
+                var a22 = lhs.rawData[5];
+                var a23 = lhs.rawData[6];
+                var a24 = lhs.rawData[7];
+                var a31 = lhs.rawData[8];
+                var a32 = lhs.rawData[9];
+                var a33 = lhs.rawData[10];
+                var a34 = lhs.rawData[11];
+                var a41 = lhs.rawData[12];
+                var a42 = lhs.rawData[13];
+                var a43 = lhs.rawData[14];
+                var a44 = lhs.rawData[15];
 
-                var b11 = lhs.rawData[0];
-                var b12 = lhs.rawData[1];
-                var b13 = lhs.rawData[2];
-                var b14 = lhs.rawData[3];
-                var b21 = lhs.rawData[4];
-                var b22 = lhs.rawData[5];
-                var b23 = lhs.rawData[6];
-                var b24 = lhs.rawData[7];
-                var b31 = lhs.rawData[8];
-                var b32 = lhs.rawData[9];
-                var b33 = lhs.rawData[10];
-                var b34 = lhs.rawData[11];
-                var b41 = lhs.rawData[12];
-                var b42 = lhs.rawData[13];
-                var b43 = lhs.rawData[14];
-                var b44 = lhs.rawData[15];
+                var b11 = this.rawData[0];
+                var b12 = this.rawData[1];
+                var b13 = this.rawData[2];
+                var b14 = this.rawData[3];
+                var b21 = this.rawData[4];
+                var b22 = this.rawData[5];
+                var b23 = this.rawData[6];
+                var b24 = this.rawData[7];
+                var b31 = this.rawData[8];
+                var b32 = this.rawData[9];
+                var b33 = this.rawData[10];
+                var b34 = this.rawData[11];
+                var b41 = this.rawData[12];
+                var b42 = this.rawData[13];
+                var b43 = this.rawData[14];
+                var b44 = this.rawData[15];
 
                 this.rawData[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
                 this.rawData[1] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
@@ -437,39 +437,39 @@ var stageJS;
             };
 
             Matrix3D.prototype.prepend = function (rhs) {
-                var a11 = this.rawData[0];
-                var a12 = this.rawData[1];
-                var a13 = this.rawData[2];
-                var a14 = this.rawData[3];
-                var a21 = this.rawData[4];
-                var a22 = this.rawData[5];
-                var a23 = this.rawData[6];
-                var a24 = this.rawData[7];
-                var a31 = this.rawData[8];
-                var a32 = this.rawData[9];
-                var a33 = this.rawData[10];
-                var a34 = this.rawData[11];
-                var a41 = this.rawData[12];
-                var a42 = this.rawData[13];
-                var a43 = this.rawData[14];
-                var a44 = this.rawData[15];
+                var a11 = rhs.rawData[0];
+                var a12 = rhs.rawData[1];
+                var a13 = rhs.rawData[2];
+                var a14 = rhs.rawData[3];
+                var a21 = rhs.rawData[4];
+                var a22 = rhs.rawData[5];
+                var a23 = rhs.rawData[6];
+                var a24 = rhs.rawData[7];
+                var a31 = rhs.rawData[8];
+                var a32 = rhs.rawData[9];
+                var a33 = rhs.rawData[10];
+                var a34 = rhs.rawData[11];
+                var a41 = rhs.rawData[12];
+                var a42 = rhs.rawData[13];
+                var a43 = rhs.rawData[14];
+                var a44 = rhs.rawData[15];
 
-                var b11 = rhs.rawData[0];
-                var b12 = rhs.rawData[1];
-                var b13 = rhs.rawData[2];
-                var b14 = rhs.rawData[3];
-                var b21 = rhs.rawData[4];
-                var b22 = rhs.rawData[5];
-                var b23 = rhs.rawData[6];
-                var b24 = rhs.rawData[7];
-                var b31 = rhs.rawData[8];
-                var b32 = rhs.rawData[9];
-                var b33 = rhs.rawData[10];
-                var b34 = rhs.rawData[11];
-                var b41 = rhs.rawData[12];
-                var b42 = rhs.rawData[13];
-                var b43 = rhs.rawData[14];
-                var b44 = rhs.rawData[15];
+                var b11 = this.rawData[0];
+                var b12 = this.rawData[1];
+                var b13 = this.rawData[2];
+                var b14 = this.rawData[3];
+                var b21 = this.rawData[4];
+                var b22 = this.rawData[5];
+                var b23 = this.rawData[6];
+                var b24 = this.rawData[7];
+                var b31 = this.rawData[8];
+                var b32 = this.rawData[9];
+                var b33 = this.rawData[10];
+                var b34 = this.rawData[11];
+                var b41 = this.rawData[12];
+                var b42 = this.rawData[13];
+                var b43 = this.rawData[14];
+                var b44 = this.rawData[15];
 
                 this.rawData[0] = b11 * a11 + b12 * a21 + b13 * a31 + b14 * a41;
                 this.rawData[1] = b11 * a12 + b12 * a22 + b13 * a32 + b14 * a42;
@@ -492,20 +492,22 @@ var stageJS;
                 this.rawData[15] = b41 * a14 + b42 * a24 + b43 * a34 + b44 * a44;
             };
 
-            Matrix3D.prototype.appendRotation = function (degrees, axis, pivotPoint) {
-                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
-                var r = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
-
-                if (pivotPoint) {
-                    this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
-                    this.append(r);
-                    this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
-                } else {
-                    this.append(r);
-                }
+            Matrix3D.prototype.appendScale = function (xScale, yScale, zScale) {
+                this.rawData[0] *= xScale;
+                this.rawData[1] *= xScale;
+                this.rawData[2] *= xScale;
+                this.rawData[3] *= xScale;
+                this.rawData[4] *= yScale;
+                this.rawData[5] *= yScale;
+                this.rawData[6] *= yScale;
+                this.rawData[7] *= yScale;
+                this.rawData[8] *= zScale;
+                this.rawData[9] *= zScale;
+                this.rawData[10] *= zScale;
+                this.rawData[11] *= zScale;
             };
 
-            Matrix3D.prototype.appendScale = function (xScale, yScale, zScale) {
+            Matrix3D.prototype.prependScale = function (xScale, yScale, zScale) {
                 this.rawData[0] *= xScale;
                 this.rawData[1] *= yScale;
                 this.rawData[2] *= zScale;
@@ -521,40 +523,6 @@ var stageJS;
             };
 
             Matrix3D.prototype.appendTranslation = function (x, y, z) {
-                this.rawData[3] = this.rawData[0] * x + this.rawData[1] * y + this.rawData[2] * z + this.rawData[3];
-                this.rawData[7] = this.rawData[4] * x + this.rawData[5] * y + this.rawData[6] * z + this.rawData[7];
-                this.rawData[11] = this.rawData[8] * x + this.rawData[9] * y + this.rawData[10] * z + this.rawData[11];
-                this.rawData[15] = this.rawData[12] * x + this.rawData[13] * y + this.rawData[14] * z + this.rawData[15];
-            };
-
-            Matrix3D.prototype.prependRotation = function (degrees, axis, pivotPoint) {
-                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
-                var r = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
-                if (pivotPoint) {
-                    this.prependTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
-                    this.prepend(r);
-                    this.prependTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
-                } else {
-                    this.prepend(r);
-                }
-            };
-
-            Matrix3D.prototype.prependScale = function (xScale, yScale, zScale) {
-                this.rawData[0] *= xScale;
-                this.rawData[1] *= xScale;
-                this.rawData[2] *= xScale;
-                this.rawData[3] *= xScale;
-                this.rawData[4] *= yScale;
-                this.rawData[5] *= yScale;
-                this.rawData[6] *= yScale;
-                this.rawData[7] *= yScale;
-                this.rawData[8] *= zScale;
-                this.rawData[9] *= zScale;
-                this.rawData[10] *= zScale;
-                this.rawData[11] *= zScale;
-            };
-
-            Matrix3D.prototype.prependTranslation = function (x, y, z) {
                 this.rawData[0] += this.rawData[12] * x;
                 this.rawData[1] += this.rawData[13] * x;
                 this.rawData[2] += this.rawData[14] * x;
@@ -567,6 +535,38 @@ var stageJS;
                 this.rawData[9] += this.rawData[13] * z;
                 this.rawData[10] += this.rawData[14] * z;
                 this.rawData[11] += this.rawData[15] * z;
+            };
+
+            Matrix3D.prototype.prependTranslation = function (x, y, z) {
+                this.rawData[3] = this.rawData[0] * x + this.rawData[1] * y + this.rawData[2] * z + this.rawData[3];
+                this.rawData[7] = this.rawData[4] * x + this.rawData[5] * y + this.rawData[6] * z + this.rawData[7];
+                this.rawData[11] = this.rawData[8] * x + this.rawData[9] * y + this.rawData[10] * z + this.rawData[11];
+                this.rawData[15] = this.rawData[12] * x + this.rawData[13] * y + this.rawData[14] * z + this.rawData[15];
+            };
+
+            Matrix3D.prototype.appendRotation = function (degrees, axis, pivotPoint) {
+                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
+                var r = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
+
+                if (pivotPoint) {
+                    this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
+                    this.append(r);
+                    this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
+                } else {
+                    this.append(r);
+                }
+            };
+
+            Matrix3D.prototype.prependRotation = function (degrees, axis, pivotPoint) {
+                if (typeof pivotPoint === "undefined") { pivotPoint = null; }
+                var r = this.getRotateMatrix(axis, degrees * Matrix3D.DEG_2_RAD);
+                if (pivotPoint) {
+                    this.prependTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
+                    this.prepend(r);
+                    this.prependTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
+                } else {
+                    this.prepend(r);
+                }
             };
 
             Matrix3D.prototype.clone = function () {

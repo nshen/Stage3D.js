@@ -120,12 +120,12 @@ declare module stageJS.geom {
         constructor(v?: number[]);
         public append(lhs: Matrix3D): void;
         public prepend(rhs: Matrix3D): void;
-        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
         public appendScale(xScale: number, yScale: number, zScale: number): void;
-        public appendTranslation(x: number, y: number, z: number): void;
-        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
         public prependScale(xScale: number, yScale: number, zScale: number): void;
+        public appendTranslation(x: number, y: number, z: number): void;
         public prependTranslation(x: number, y: number, z: number): void;
+        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
         public clone(): Matrix3D;
         public copyColumnFrom(column: number, vector3D: Vector3D): void;
         public copyColumnTo(column: number, vector3D: Vector3D): void;

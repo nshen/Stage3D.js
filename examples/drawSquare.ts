@@ -119,12 +119,21 @@ module test.drawSquare {
 
 
 
-        requestAnimationFrame(onEnterFrame);
 
 
 
+       requestAnimationFrame(onEnterFrame);
 
-        context3d.present();
+        //context3d.clear(1.0, 0.0, 0.0, 1.0);
+        //mMatrix.appendTranslation(-5,0,0)
+        //mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
+        //mMatrix.appendTranslation(5,0,0);
+        //
+        //context3d.setProgramConstantsFromMatrix("mMatrix",mMatrix,false);
+
+        //context3d.drawTriangles(indexBuffer);
+
+        //context3d.present();
     }
 
 
@@ -133,17 +142,14 @@ module test.drawSquare {
     {
 
         context3d.clear(1.0, 0.0, 0.0, 1.0);
-        context3d.drawTriangles(indexBuffer);
+      //  context3d.drawTriangles(indexBuffer);
 
         //mMatrix.identity();
 
        // mMatrix.appendRotation(1,stageJS.geom.Vector3D.Z_AXIS,new stageJS.geom.Vector3D(5,0,0));
-        console.log(mMatrix.rawData);
         mMatrix.appendTranslation(-5,0,0)
-        console.log(mMatrix.rawData);
-        mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
-        console.log(mMatrix.rawData);
-        //mMatrix.appendTranslation(-5,0,0);
+        mMatrix.appendRotation(1,stageJS.geom.Vector3D.Z_AXIS);
+        mMatrix.appendTranslation(5,0,0);
 
         context3d.setProgramConstantsFromMatrix("mMatrix",mMatrix,false);
 
@@ -153,7 +159,7 @@ module test.drawSquare {
         context3d.present();
 
 
-        //requestAnimationFrame(onEnterFrame);
+        requestAnimationFrame(onEnterFrame);
     }
 
     

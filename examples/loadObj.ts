@@ -86,7 +86,19 @@ module test.loadObj {
         //pMatrix.perspectiveFieldOfViewLH(45 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 50);
         //pMatrix.perspectiveLH(4, 4, 1, 1000); //近裁剪面的宽高
         projectionMatrix.perspectiveFieldOfViewRH(45, stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
-        modelMatrix.appendTranslation(0,0,-4);
+
+        context3d.setProgramConstantsFromMatrix("pMatrix",projectionMatrix);
+
+        //modelMatrix.appendTranslation(0,0,-4);
+        context3d.setProgramConstantsFromMatrix("mMatrix",modelMatrix);
+
+        var vv:stageJS.geom.Matrix3D = new stageJS.geom.Matrix3D();
+        //
+        // vv.appendRotation(30,stageJS.geom.Vector3D.Y_AXIS);
+        vv.appendTranslation(0,0,4);
+        vv.invert();
+
+        context3d.setProgramConstantsFromMatrix("vMatrix",vv);
         //camera.z = -4
         requestAnimationFrame(onEnterFrame);
 
@@ -142,19 +154,21 @@ module test.loadObj {
     var rotateX:number = 0;
     function onEnterFrame():void
     {
+        modelMatrix.appendRotation(1,new stageJS.geom.Vector3D(1,2,3));
+        context3d.setProgramConstantsFromMatrix("mMatrix",modelMatrix);
         //modelMatrix.prependRotation(1,stageJS.geom.Vector3D.Y_AXIS);
         //modelMatrix.prependRotation(2,stageJS.geom.Vector3D.X_AXIS);
 
         //camera.posZ = xx-=0.01;
         //camera.rotateY = xx++;
         //
-        mvpMatrix.identity();
-        mvpMatrix.append(modelMatrix);
+        //mvpMatrix.identity();
+        //mvpMatrix.append(modelMatrix);
         //mvpMatrix.append(camera.getViewMatrix());
-        mvpMatrix.append(projectionMatrix);
+        //mvpMatrix.append(projectionMatrix);
 
         //context3d.setProgramConstantsFromMatrix("uMVMatrix",mvMatrix);
-        context3d.setProgramConstantsFromMatrix("mvpMatrix",mvpMatrix);
+        //context3d.setProgramConstantsFromMatrix("mvpMatrix",mvpMatrix);
 
         context3d.clear();
 

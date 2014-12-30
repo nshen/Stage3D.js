@@ -14,14 +14,17 @@
     <script id="shader-vs" type="x-shader/x-vertex">
 	        attribute vec3 va0;
             attribute vec2 va1;
-            //uniform mat4 uMVMatrix;
-            uniform mat4 mvpMatrix;
+            uniform mat4 mMatrix;
+            uniform mat4 pMatrix;
+            uniform mat4 vMatrix;
+
+            //uniform mat4 mvpMatrix;
 
 	        varying highp vec2 v1;
 
 	        void main(void) {
-		        //gl_Position =  vec4(va0, 1.0)  * uMVMatrix * uPMatrix ;
-		        gl_Position =   mvpMatrix *  vec4(va0, 1.0);
+		        gl_Position =  vec4(va0, 1.0)  * mMatrix * vMatrix * pMatrix ;
+		        //gl_Position = vec4(va0, 1.0) * mvpMatrix ;
                 v1 = va1;
 	        }
     </script>

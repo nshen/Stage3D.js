@@ -25,10 +25,12 @@ module stageJS.geom
         }
          
         /**
+             矩阵要保存到这样
              1, 0, 0, x,
              0, 1, 0, y,
              0, 0, 1, z,
              0  0, 0, 0
+            上传时会自动转置
          */
         public rawData: Float32Array; //column major order
 
@@ -134,9 +136,9 @@ module stageJS.geom
             if (pivotPoint)
             {  
                  //TODO:simplify
-                this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
-                this.append(r);
                 this.appendTranslation(pivotPoint.x, pivotPoint.y, pivotPoint.z);
+                this.append(r);
+                this.appendTranslation(-pivotPoint.x, -pivotPoint.y, -pivotPoint.z);
 
             } else
             {
@@ -713,29 +715,29 @@ module stageJS.geom
             //get rotation matrix
             var rMatrix: Matrix3D;
 
-            if (ax != 0 && ay == 0 && az == 0) //rotate about x axis
+            if (ax != 0 && ay == 0 && az == 0) //rotate about x axis ,from y to z
             {
                 rMatrix = new Matrix3D([
                     1, 0, 0, 0,
-                    0, c, s, 0,
-                    0, -s, c, 0,
+                    0, c, -s, 0,
+                    0, s, c, 0,
                     0, 0, 0, 1
                 ]);
 
-            } else if (ay != 0 && ax == 0 && az == 0) // rotate about y axis
+            } else if (ay != 0 && ax == 0 && az == 0) // rotate about y ,from z to x
             {
                 rMatrix = new Matrix3D([
-                    c, 0, -s, 0,
+                    c, 0, s, 0,
                     0, 1, 0, 0,
-                    s, 0, c, 0,
+                    -s, 0, c, 0,
                     0, 0, 0, 1
                 ]);
 
-            } else if (az != 0 && ax == 0 && ay == 0) // rotate about z axis
+            } else if (az != 0 && ax == 0 && ay == 0) // rotate about z axis ,from x to y
             {
                 rMatrix = new Matrix3D([
-                    c, s, 0, 0,
-                    -s, c, 0, 0,
+                    c, -s, 0, 0,
+                    s, c, 0, 0,
                     0, 0, 1, 0,
                     0, 0, 0, 1,
 
@@ -755,9 +757,9 @@ module stageJS.geom
                 var t: number = 1 - c;
 
                 rMatrix = new Matrix3D([
-                    ax * ax * t + c, ax * ay * t + az * s, ax * az * t - ay * s, 0,
-                    ax * ay * t - az * s, ay * ay * t + c, ay * az * t + ax * s, 0,
-                    ax * az * t + ay * s, ay * az * t - ax * s, az * az * t + c, 0,
+                    ax * ax * t + c, ax * ay * t - az * s, ax * az * t + ay * s, 0,
+                    ax * ay * t + az * s, ay * ay * t + c, ay * az * t - ax * s, 0,
+                    ax * az * t - ay * s, ay * az * t + ax * s, az * az * t + c, 0,
                     0, 0, 0, 1
                 ]);
 

@@ -7,6 +7,12 @@ module test.drawSquare {
     var context3d: stageJS.Context3D;
     var img: HTMLImageElement;
 
+    var mMatrix:stageJS.geom.Matrix3D;
+    var cMatrix:stageJS.geom.Matrix3D;
+    var pMatrix:stageJS.geom.PerspectiveMatrix3D;
+
+    var indexBuffer: stageJS.IndexBuffer3D;
+
      /**
      *  window.onload 入口
      */
@@ -34,7 +40,6 @@ module test.drawSquare {
 
     function contextCreated(e: stageJS.events.Event): void
     {
-        console.log("contexted3d created!");
 
         context3d = stage3d.context3D;
         context3d.configureBackBuffer(stage3d.stageWidth, stage3d.stageHeight, 2);
@@ -73,17 +78,27 @@ module test.drawSquare {
         context3d.setVertexBufferAt("va0", vertexBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_3);
         context3d.setVertexBufferAt("va1",vertexBuffer,3,stageJS.Context3DVertexBufferFormat.FLOAT_2);
 
-        var indexBuffer: stageJS.IndexBuffer3D = context3d.createIndexBuffer(6);
+        indexBuffer = context3d.createIndexBuffer(6);
         indexBuffer.uploadFromVector([0,1,3,0,3,2], 0, 6);
 
-        var pMatrix:stageJS.geom.PerspectiveMatrix3D = new stageJS.geom.PerspectiveMatrix3D();
+
+        //matrix
+
+        pMatrix = new stageJS.geom.PerspectiveMatrix3D();
         pMatrix.perspectiveFieldOfViewRH(45,stage3d.stageWidth/stage3d.stageHeight,0.1,100);
+        context3d.setProgramConstantsFromMatrix("pMatrix",pMatrix,false);
 
-        var mMatrix:stageJS.geom.Matrix3D = new stageJS.geom.Matrix3D();
-        mMatrix.appendTranslation(2,0,-7);
-        mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
 
-        var cMatrix:stageJS.geom.Matrix3D = new stageJS.geom.Matrix3D();
+
+        mMatrix = new stageJS.geom.Matrix3D();
+        mMatrix.appendTranslation(0,0,-20);
+        context3d.setProgramConstantsFromMatrix("mMatrix",mMatrix,false);
+        //mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
+
+        cMatrix = new stageJS.geom.Matrix3D();
+        context3d.setProgramConstantsFromMatrix("cMatrix",cMatrix,false);
+
+
         //cMatrix.appendTranslation(2,0,0);
         //cMatrix.appendRotation(90,stageJS.geom.Vector3D.Z_AXIS);
 
@@ -92,20 +107,11 @@ module test.drawSquare {
         //mMatrix.appendRotation(50,stageJS.geom.Vector3D.Z_AXIS);
         //mMatrix.appendTranslation(1.5,1.2,-1.1);
 
-        context3d.setProgramConstantsFromMatrix("mMatrix",mMatrix,false);
 
-        context3d.setProgramConstantsFromMatrix("pMatrix",pMatrix,false);
-        context3d.setProgramConstantsFromMatrix("cMatrix",cMatrix,false);
+
+
 
         console.log("----------- draw ------------");
-        context3d.clear(1.0, 0.0, 0.0, 1.0);
-        context3d.drawTriangles(indexBuffer);
-
-        console.log(mMatrix.rawData); // [0.8660253882408142, 0.5, 0, 2, -0.5, 0.8660253882408142, 0, 0, 0, 0, 1, -7, 0, 0, 0, 1]
-        mMatrix.identity();
-        mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
-        mMatrix.appendTranslation(2,0,-7);
-        console.log(mMatrix.rawData);// [0.8660253882408142, 0.5, 0, 1.7320507764816284, -0.5, 0.8660253882408142, 0, -1, 0, 0, 1, -7, 0, 0, 0, 1]
 
         //
         //mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
@@ -113,15 +119,42 @@ module test.drawSquare {
 
 
 
-        context3d.setProgramConstantsFromMatrix("mMatrix",mMatrix,false);
+        requestAnimationFrame(onEnterFrame);
 
-        context3d.drawTriangles(indexBuffer);
 
 
 
         context3d.present();
     }
 
+
+
+    function onEnterFrame():void
+    {
+
+        context3d.clear(1.0, 0.0, 0.0, 1.0);
+        context3d.drawTriangles(indexBuffer);
+
+        //mMatrix.identity();
+
+       // mMatrix.appendRotation(1,stageJS.geom.Vector3D.Z_AXIS,new stageJS.geom.Vector3D(5,0,0));
+        console.log(mMatrix.rawData);
+        mMatrix.appendTranslation(-5,0,0)
+        console.log(mMatrix.rawData);
+        mMatrix.appendRotation(30,stageJS.geom.Vector3D.Z_AXIS);
+        console.log(mMatrix.rawData);
+        //mMatrix.appendTranslation(-5,0,0);
+
+        context3d.setProgramConstantsFromMatrix("mMatrix",mMatrix,false);
+
+        context3d.drawTriangles(indexBuffer);
+
+
+        context3d.present();
+
+
+        //requestAnimationFrame(onEnterFrame);
+    }
 
     
 }

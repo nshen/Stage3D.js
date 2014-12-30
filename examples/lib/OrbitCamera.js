@@ -83,9 +83,9 @@ var lib;
         };
         OrbitCamera.prototype.update = function () {
             this._matrix.identity();
-            this._matrix.appendTranslation(this._pos.x, this._pos.y, this._pos.z);
             this._matrix.appendRotation(this._rotate.x, stageJS.geom.Vector3D.X_AXIS);
             this._matrix.appendRotation(this._rotate.y, stageJS.geom.Vector3D.Y_AXIS);
+            this._matrix.appendTranslation(this._pos.x, this._pos.y, this._pos.z);
         };
         return OrbitCamera;
     })();

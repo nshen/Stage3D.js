@@ -619,12 +619,18 @@ module stageJS.geom
          */
         public transformVector(v: Vector3D): Vector3D
         {
-            // [x,y,z,1] * this
+            /*
+                      [ x
+            this  *     y
+                        z
+                        1 ]
+            */
+
             return new Vector3D(
-                v.x * this.rawData[0] + v.y * this.rawData[4] + v.z * this.rawData[8] + this.rawData[12],
-                v.x * this.rawData[1] + v.y * this.rawData[5] + v.z * this.rawData[9] + this.rawData[13],
-                v.x * this.rawData[2] + v.y * this.rawData[6] + v.z * this.rawData[10] + this.rawData[14],
-                v.x * this.rawData[3] + v.y * this.rawData[7] + v.z * this.rawData[11] + this.rawData[15]
+                v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2] + this.rawData[3],
+                v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6] + this.rawData[7],
+                v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10] + this.rawData[11],
+                v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14] + this.rawData[15]
                 );
         }
 
@@ -633,12 +639,17 @@ module stageJS.geom
          */
         public deltaTransformVector(v: Vector3D): Vector3D
         {
-            //[x,y,z,0] * this
+            /*
+                       [ x
+             this  *     y
+                         z
+                         0 ]
+             */
             return new Vector3D(
-                v.x * this.rawData[0] + v.y * this.rawData[4] + v.z * this.rawData[8],
-                v.x * this.rawData[1] + v.y * this.rawData[5] + v.z * this.rawData[9],
-                v.x * this.rawData[2] + v.y * this.rawData[6] + v.z * this.rawData[10],
-                v.x * this.rawData[3] + v.y * this.rawData[7] + v.z * this.rawData[11]
+                v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2],
+                v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6],
+                v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10],
+                v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14]
                 );
         }
 
@@ -648,15 +659,16 @@ module stageJS.geom
         public transformVectors(vin:number[], vout:number[]): void
         {
             var i: number = 0;
-            var x: number = 0, y: number = 0, z: number = 0;
-
+            var v:Vector3D = new Vector3D();
+            var v2:Vector3D = new Vector3D();
             while (i + 3 <= vin.length) {
-                x = vin[i];
-                y = vin[i + 1];
-                z = vin[i + 2];
-                vout[i] = x * this.rawData[0] + y * this.rawData[4] + z * this.rawData[8] + this.rawData[12];
-                vout[i + 1] = x * this.rawData[1] + y * this.rawData[5] + z * this.rawData[9] + this.rawData[13];
-                vout[i + 2] = x * this.rawData[2] + y * this.rawData[6] + z * this.rawData[10] + this.rawData[14];
+                v.x = vin[i];
+                v.y = vin[i + 1];
+                v.z = vin[i + 2];
+                v2 = this.transformVector(v);  //todo: simplify operation
+                vout[i] = v2.x;
+                vout[i + 1] = v2.y;
+                vout[i + 2] = v2.z;
                 i += 3;
             }
         }

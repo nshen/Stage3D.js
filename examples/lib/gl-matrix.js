@@ -3223,7 +3223,17 @@ mat4.translate = function (out, a, v) {
  * @param {vec3} v the vec3 to scale the matrix by
  * @returns {mat4} out
  **/
+
 mat4.scale = function(out, a, v) {
+/*
+
+              x 0 0 0
+              0 y 0 0
+    out =     0 0 z 0  * a
+              0 0 0 1
+
+ */
+
     var x = v[0], y = v[1], z = v[2];
 
     out[0] = a[0] * x;
@@ -3254,6 +3264,8 @@ mat4.scale = function(out, a, v) {
  * @param {vec3} axis the axis to rotate around
  * @returns {mat4} out
  */
+
+//rotateMatrix * a
 mat4.rotate = function (out, a, rad, axis) {
     var x = axis[0], y = axis[1], z = axis[2],
         len = Math.sqrt(x * x + y * y + z * z),
@@ -3359,6 +3371,8 @@ mat4.rotateX = function (out, a, rad) {
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat4} out
  */
+
+
 mat4.rotateY = function (out, a, rad) {
     var s = Math.sin(rad),
         c = Math.cos(rad),

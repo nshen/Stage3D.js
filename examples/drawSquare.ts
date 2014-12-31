@@ -146,10 +146,10 @@ module test.drawSquare {
 
         //mMatrix.identity();
 
-       // mMatrix.appendRotation(1,stageJS.geom.Vector3D.Z_AXIS,new stageJS.geom.Vector3D(5,0,0));
-        mMatrix.appendTranslation(-5,0,0)
-        mMatrix.appendRotation(1,stageJS.geom.Vector3D.Z_AXIS);
-        mMatrix.appendTranslation(5,0,0);
+        mMatrix.prependRotation(1,stageJS.geom.Vector3D.Z_AXIS,new stageJS.geom.Vector3D(5,0,0));
+       // mMatrix.appendTranslation(-5,0,0)
+       // mMatrix.appendRotation(1,stageJS.geom.Vector3D.Z_AXIS);
+       // mMatrix.appendTranslation(5,0,0);
 
         context3d.setProgramConstantsFromMatrix("mMatrix",mMatrix,false);
 

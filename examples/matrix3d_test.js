@@ -10,99 +10,139 @@ var test;
             var m1;
             var m2;
             var m3;
-            var glM; //glmatrix
+            var m4;
+            var v1;
+            var glM1; //glmatrix
             var glM2;
             var glM3;
+            var glM4;
             var glV1; //glmatrix vec3
             var glV2;
             //----------------------------
-            // test start
+            // test
             //----------------------------
             //-----------------------------------------------------------------------------------------
             console.log("# appendTranslation() #");
             m1 = new stageJS.geom.Matrix3D();
             m1.appendTranslation(1, 2, 3);
-            glV1 = vec3.fromValues(1, 2, 3);
-            glM = mat4.create();
-            mat4.translate(glM, glM, glV1);
-            isTranspose(m1, glM, "appendTranslation");
+            glM1 = mat4.create();
+            mat4.translate(glM1, glM1, vec3.fromValues(1, 2, 3));
+            testMatrix(m1, glM1);
             //-----------------------------------------------------------------------------------------
             console.log("# prependTranslation() #");
+            //m1 = new stageJS.geom.Matrix3D();
             m1.prependTranslation(1, 2, 3);
-            glM2 = mat4.create(); //translation matrix
-            mat4.translate(glM2, glM2, glV1);
-            mat4.mul(glM, glM, glM2);
-            isTranspose(m1, glM, "prependTranslation");
-            //logMatrix(m1.rawData);
-            //logMatrix(glM2);
+            //glM1 = mat4.create();
+            glM2 = mat4.create();
+            mat4.translate(glM2, glM2, vec3.fromValues(1, 2, 3));
+            mat4.mul(glM1, glM1, glM2);
+            testMatrix(m1, glM1);
             //-----------------------------------------------------------------------------------------
             console.log("# appendScale() #");
             m1.appendScale(3, 4, 5);
-            glM2 = mat4.create(); //scale matrix
-            glV1 = vec3.fromValues(3, 4, 5);
-            mat4.scale(glM2, glM2, glV1);
-            mat4.mul(glM, glM, glM2);
-            isTranspose(m1, glM);
-            //m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-            //m.appendScale(7, 8, 9);
-            //testRawData(m.rawData, [7, 16, 27, 4, 35, 48, 63, 8, 63, 80, 99, 12, 91, 112, 135, 16]);
+            glM2 = mat4.create();
+            mat4.scale(glM2, glM2, vec3.fromValues(3, 4, 5));
+            mat4.mul(glM1, glM2, glM1); // glM1 * glM2
+            testMatrix(m1, glM1);
             //-----------------------------------------------------------------------------------------
             console.log("# prependScale() #");
             m1.prependScale(9, -8, 7);
-            glM2 = mat4.create(); //scale matrix
-            glV1 = vec3.fromValues(9, -8, 7);
-            mat4.scale(glM2, glM2, glV1);
-            mat4.mul(glM, glM2, glM);
-            isTranspose(m1, glM);
-            m2 = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-            m2.prependScale(7, 8, 9);
-            testRawData(m2.rawData, [7, 14, 21, 28, 40, 48, 56, 64, 81, 90, 99, 108, 13, 14, 15, 16]);
+            mat4.scale(glM1, glM1, vec3.fromValues(9, -8, 7));
+            testMatrix(m1, glM1);
             //-----------------------------------------------------------------------------------------
             console.log("# appendRotation() #");
+            //x axis
             m1.appendRotation(15, stageJS.geom.Vector3D.X_AXIS);
-            mat4.rotate(glM, glM, 15 * Math.PI / 180, vec3.fromValues(1, 0, 0));
-            isTranspose(m1, glM);
-            m1.appendRotation(30, stageJS.geom.Vector3D.Y_AXIS);
-            mat4.rotate(glM, glM, 30 * Math.PI / 180, vec3.fromValues(0, 1, 0));
-            isTranspose(m1, glM);
-            m1.appendRotation(40, stageJS.geom.Vector3D.Z_AXIS);
-            mat4.rotate(glM, glM, 40 * Math.PI / 180, vec3.fromValues(0, 0, 1));
-            isTranspose(m1, glM);
-            m1.appendRotation(325, new stageJS.geom.Vector3D(1, 3, 8));
-            mat4.rotate(glM, glM, 325 * Math.PI / 180, vec3.fromValues(1, 3, 8));
-            isTranspose(m1, glM);
-            //m2 = new stageJS.geom.Matrix3D();
-            //m2.appendRotation(30, stageJS.geom.Vector3D.X_AXIS);
-            //
-            //
-            //isTranspose(m2, [1, 0, 0, 0, 0, 0.8660253882408142, 0.5, 0, 0, -0.5, 0.8660253882408142, 0, 0, 0, 0, 1]);
-            //
-            //m2.appendRotation(45, stageJS.geom.Vector3D.Y_AXIS);
-            //isTranspose(m2, [0.7071067690849304, 0, -0.7071067690849304, 0, 0.3535533845424652, 0.8660253882408142, 0.3535533845424652, 0, 0.6123723983764648, -0.5, 0.6123723983764648, 0, 0, 0, 0, 1]);
-            //
-            //logMatrix(m2.rawData);
-            //logMatrix([0.7071067690849304, 0, -0.7071067690849304, 0, 0.3535533845424652, 0.8660253882408142, 0.3535533845424652, 0, 0.6123723983764648, -0.5, 0.6123723983764648, 0, 0, 0, 0, 1])
-            //
-            //m2.appendRotation(60, stageJS.geom.Vector3D.Z_AXIS);
-            //isTranspose(m2, [0.3535533845424652, 0.6123723983764648, -0.7071067690849304, 0, -0.5732232928276062, 0.7391989231109619, 0.3535533845424652, 0, 0.7391989231109619, 0.2803300619125366, 0.6123723983764648, 0, 0, 0, 0, 1]);
-            //-----------------------------------------------------------------------------------------
-            console.log("# appendRotation() with pivotPoint #");
-            //m2 = new stageJS.geom.Matrix3D();
-            m1.appendRotation(60, stageJS.geom.Vector3D.X_AXIS, new stageJS.geom.Vector3D(1, 2, 3));
-            //glM2 = mat4.create();
-            mat4.translate(glM, glM, vec3.fromValues(-1, -2, -3));
-            mat4.rotate(glM, glM, 300 * Math.PI / 180, vec3.fromValues(1, 0, 0));
-            mat4.translate(glM, glM, vec3.fromValues(1, 2, 3));
-            isTranspose(m1, glM);
+            glM2 = mat4.create(); //rotation matrix
+            mat4.rotateX(glM2, glM2, 15 * Math.PI / 180);
+            mat4.mul(glM1, glM2, glM1); // glM1= glM1* glM2
+            testMatrix(m1, glM1);
+            //y axis
+            m1.appendRotation(25, stageJS.geom.Vector3D.Y_AXIS);
+            glM2 = mat4.create(); //rotation matrix
+            mat4.rotateY(glM2, glM2, 25 * Math.PI / 180);
+            mat4.mul(glM1, glM2, glM1); // glM1= glM1* glM2
+            testMatrix(m1, glM1);
+            //z axis
+            m1.appendRotation(35, stageJS.geom.Vector3D.Z_AXIS);
+            glM2 = mat4.create(); //rotation matrix
+            mat4.rotateZ(glM2, glM2, 35 * Math.PI / 180);
+            mat4.mul(glM1, glM2, glM1); // glM1= glM1* glM2
+            testMatrix(m1, glM1);
+            //custom axis
+            m1.appendRotation(40, new stageJS.geom.Vector3D(4, 5, 6));
+            glM2 = mat4.create(); //rotation matrix
+            mat4.rotate(glM2, glM2, 40 * Math.PI / 180, vec3.fromValues(4, 5, 6));
+            mat4.mul(glM1, glM2, glM1); // glM1= glM1* glM2
+            testMatrix(m1, glM1);
+            //rotate about a point
+            m1.appendRotation(30, new stageJS.geom.Vector3D(4, 5, 6), new stageJS.geom.Vector3D(1, 2, 3));
+            glM2 = mat4.create(); //rotation matrix
+            mat4.rotate(glM2, glM2, 30 * Math.PI / 180, vec3.fromValues(4, 5, 6));
+            glM3 = mat4.create(); //negative translate matrix
+            mat4.translate(glM3, glM3, vec3.fromValues(-1, -2, -3));
+            glM4 = mat4.create(); //positive translate matrix
+            mat4.translate(glM4, glM4, vec3.fromValues(1, 2, 3));
+            // glM1 * negativeM(glM3) * rotationM(glM2) * positive(glM4)
+            mat4.mul(glM1, glM3, glM1); // glM1 = glM1* glM3
+            mat4.mul(glM1, glM2, glM1);
+            mat4.mul(glM1, glM4, glM1);
+            testMatrix(m1, glM1);
             //-----------------------------------------------------------------------------------------
             console.log("# prependRotation() #");
-            m1.prependRotation(15, stageJS.geom.Vector3D.Y_AXIS);
-            m1.appendRotation(325, new stageJS.geom.Vector3D(1, 3, 8));
+            m1.prependRotation(15, stageJS.geom.Vector3D.X_AXIS);
+            mat4.rotate(glM1, glM1, 15 * Math.PI / 180, vec3.fromValues(1, 0, 0));
+            testMatrix(m1, glM1);
+            m1.prependRotation(30, stageJS.geom.Vector3D.Y_AXIS);
+            mat4.rotate(glM1, glM1, 30 * Math.PI / 180, vec3.fromValues(0, 1, 0));
+            testMatrix(m1, glM1);
+            m1.prependRotation(40, stageJS.geom.Vector3D.Z_AXIS);
+            mat4.rotate(glM1, glM1, 40 * Math.PI / 180, vec3.fromValues(0, 0, 1));
+            testMatrix(m1, glM1);
+            m1.prependRotation(325, new stageJS.geom.Vector3D(1, 3, 8));
+            mat4.rotate(glM1, glM1, 325 * Math.PI / 180, vec3.fromValues(1, 3, 8));
+            testMatrix(m1, glM1);
+            //about a point(7,8,9)
+            m1.prependRotation(30, new stageJS.geom.Vector3D(1, 2, 3), new stageJS.geom.Vector3D(7, 8, 9));
+            glM4 = mat4.create(); //positive translate matrix
+            mat4.translate(glM4, glM4, vec3.fromValues(7, 8, 9));
             glM2 = mat4.create(); //rotation matrix
-            mat4.rotate(glM2, glM2, 15 * Math.PI / 180, vec3.fromValues(0, 1, 0));
-            mat4.mul(glM, glM2, glM); // glM = glM * glM2
-            mat4.rotate(glM, glM, 325 * Math.PI / 180, vec3.fromValues(1, 3, 8)); //glM = rotationMatrix * glM
-            isTranspose(m1, glM);
+            mat4.rotate(glM2, glM2, 30 * Math.PI / 180, vec3.fromValues(1, 2, 3));
+            glM3 = mat4.create(); //negative translate matrix
+            mat4.translate(glM3, glM3, vec3.fromValues(-7, -8, -9));
+            //m3 * m2 * m4 * m1
+            mat4.mul(glM2, glM2, glM3);
+            mat4.mul(glM4, glM4, glM2);
+            mat4.mul(glM1, glM1, glM4);
+            testMatrix(m1, glM1);
+            //-----------------------------------------------------------------------------------------
+            console.log("# append() and prepend() #");
+            m2 = new stageJS.geom.Matrix3D();
+            m2.appendRotation(18, stageJS.geom.Vector3D.Z_AXIS);
+            glM2 = mat4.create();
+            mat4.rotateZ(glM2, glM2, 18 * Math.PI / 180);
+            testMatrix(m2, glM2);
+            m3 = new stageJS.geom.Matrix3D();
+            m3.prependScale(1, 3, 4);
+            glM3 = mat4.create();
+            mat4.scale(glM3, glM3, vec3.fromValues(1, 3, 4));
+            testMatrix(m3, glM3);
+            m4 = new stageJS.geom.Matrix3D();
+            m4.prependTranslation(8, 7, 6);
+            glM4 = mat4.create();
+            mat4.translate(glM4, glM4, vec3.fromValues(8, 7, 6));
+            testMatrix(m4, glM4);
+            m1.append(m2);
+            mat4.mul(glM1, glM2, glM1);
+            testMatrix(m1, glM1);
+            m1.prepend(m3);
+            mat4.mul(glM1);
+            m1.append(m4);
+            m1.prepend(m2);
+            m1.prepend(m4);
+            //mat4.mul(glM1,glM2,glM1);  // glM1= glM1* glM2
+            return;
+            //-----------------------------------------------------------------------------------------
             //-----------------------------------------------------------------------------------------
             console.log("# prependRotation() with pivotPoint #");
             //m3 = new stageJS.geom.Matrix3D();
@@ -118,52 +158,17 @@ var test;
             //mat4.rotate(glM2, glM2, 300 * Math.PI/180 , vec3.fromValues(0,0,1)); // 360 - 60 = 300
             //mat4.translate(glM2,glM2,vec3.fromValues(-1,-2,-3));
             //
-            ////mat4.translate(glM,glM,vec3.fromValues(1,2,3));
-            //mat4.mul(glM,glM2,glM);  // glM = glM * glM2
-            mat4.translate(glM, glM, vec3.fromValues(1, 2, 3));
-            mat4.rotate(glM, glM, 60 * Math.PI / 180, vec3.fromValues(0, 1, 0));
-            mat4.translate(glM, glM, vec3.fromValues(-1, -2, -3));
-            isTranspose(m1, glM);
+            ////mat4.translate(glM1,glM1,vec3.fromValues(1,2,3));
+            //mat4.mul(glM1,glM2,glM1);  // glM1= glM1* glM2
+            mat4.translate(glM1, glM1, vec3.fromValues(1, 2, 3));
+            mat4.rotate(glM1, glM1, 60 * Math.PI / 180, vec3.fromValues(0, 1, 0));
+            mat4.translate(glM1, glM1, vec3.fromValues(-1, -2, -3));
+            isTranspose(m1, glM1);
             logMatrix(m1.rawData);
-            logMatrix(glM);
-            //mat4.rotate(glM, glM, 35 * Math.PI / 180 , vec3.fromValues(1,3,8));
-            //isTranspose(m1,glM);
-            console.log("## prependRotation() ----------- x , y , z axis");
-            m = new stageJS.geom.Matrix3D();
-            m.prependRotation(30, stageJS.geom.Vector3D.X_AXIS);
-            testRawData(m.rawData, [1, 0, 0, 0, 0, 0.8660253882408142, 0.5, 0, 0, -0.5, 0.8660253882408142, 0, 0, 0, 0, 1]);
-            m.prependRotation(45, stageJS.geom.Vector3D.Y_AXIS);
-            testRawData(m.rawData, [0.7071067690849304, 0.3535533845424652, -0.6123723983764648, 0, 0, 0.8660253882408142, 0.5, 0, 0.7071067690849304, -0.3535533845424652, 0.6123723983764648, 0, 0, 0, 0, 1]);
-            m.prependRotation(60, stageJS.geom.Vector3D.Z_AXIS);
-            testRawData(m.rawData, [0.3535533845424652, 0.9267767071723938, 0.12682649493217468, 0, -0.6123723983764648, 0.12682649493217468, 0.7803300619125366, 0, 0.7071067690849304, -0.3535533845424652, 0.6123723983764648, 0, 0, 0, 0, 1]);
-            console.log("## prependRotation() ---- any axis");
-            m = new stageJS.geom.Matrix3D();
-            var axis = new stageJS.geom.Vector3D(1, 2, 3);
-            axis.normalize();
-            m.prependRotation(23, axis);
-            testRawData(m.rawData, [0.9261831045150757, 0.324638307094574, -0.19181989133358002, 0, -0.3019254207611084, 0.9432177543640137, 0.13849663734436035, 0, 0.22588925063610077, -0.07035793364048004, 0.9716088771820068, 0, 0, 0, 0, 1]);
-            console.log("## prependRotation() ---- pivotPoint");
-            m = new stageJS.geom.Matrix3D();
-            m.prependRotation(60, stageJS.geom.Vector3D.X_AXIS, new stageJS.geom.Vector3D(1, 2, 3));
-            testRawData(m.rawData, [1, 0, 0, 0, 0, 0.5, 0.8660253882408142, 0, 0, -0.8660253882408142, 0.5, 0, 0, 3.598076105117798, -0.23205089569091797, 1]);
-            m = new stageJS.geom.Matrix3D();
-            var axis = new stageJS.geom.Vector3D(4, 5, 6);
-            axis.normalize();
-            m.prependRotation(45, axis, new stageJS.geom.Vector3D(7, 8, 9));
-            testRawData(m.rawData, [0.767967700958252, 0.5595699548721313, -0.3116200864315033, 0, -0.4074175953865051, 0.8022019863128662, 0.43644341826438904, 0, 0.4942028820514679, -0.20821495354175568, 0.8440438508987427, 0, 0.43574094772338867, -0.46067142486572266, 0.0933990478515625, 1]);
-            //logMatrix(glM);
-            //logMatrix(m1.rawData);
-            //logMatrix(glM2);
-            //logMatrix(m.rawData);
-            return;
-            //console.log
+            logMatrix(glM1);
+            //mat4.rotate(glM1, glM1, 35 * Math.PI / 180 , vec3.fromValues(1,3,8));
+            //isTranspose(m1,glM1);
             //append
-            console.log("# append() #");
-            var m = new stageJS.geom.Matrix3D([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-            var m2 = new stageJS.geom.Matrix3D([16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
-            m.append(m2);
-            testRawData(m.rawData, [80, 70, 60, 50, 240, 214, 188, 162, 400, 358, 316, 274, 560, 502, 444, 386]);
-            testRawData(m2.rawData, [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
             //prepend
             //
             //transpose
@@ -404,6 +409,15 @@ var test;
             testRawData(m.rawData, q.toMatrix3D().rawData);
         }
         matrix3d_test.main = main;
+        /*
+            transform vector(1,2,3) to see if the the result is equal
+         */
+        function testMatrix(stageMatrix, glmatrix) {
+            var v1 = stageMatrix.transformVector(new stageJS.geom.Vector3D(1, 2, 3));
+            var glV1 = vec3.fromValues(1, 2, 3);
+            vec3.transformMat4(glV1, glV1, glmatrix);
+            testVector(v1, new stageJS.geom.Vector3D(glV1[0], glV1[1], glV1[2], 1));
+        }
         function testRawData(rawData, arr) {
             if (rawData.length != arr.length) {
                 console.error("fail!");
@@ -412,6 +426,8 @@ var test;
             for (var i = 0; i < rawData.length; i++) {
                 if (Math.abs(rawData[i] - arr[i]) > 0.0001) {
                     console.error("fail!   " + "rawData[" + i + "] " + rawData[i] + " : " + arr[i]);
+                    logMatrix(rawData);
+                    logMatrix(arr);
                     return false;
                 }
             }

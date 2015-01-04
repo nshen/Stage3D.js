@@ -577,26 +577,24 @@ var stageJS;
                 if (column < 0 || column > 3)
                     throw new Error("column error");
 
-                this.rawData[column * 4 + 0] = vector3D.x;
-                this.rawData[column * 4 + 1] = vector3D.y;
-                this.rawData[column * 4 + 2] = vector3D.z;
-                this.rawData[column * 4 + 3] = vector3D.w;
+                this.rawData[column] = vector3D.x;
+                this.rawData[column + 4] = vector3D.y;
+                this.rawData[column + 8] = vector3D.z;
+                this.rawData[column + 12] = vector3D.w;
             };
 
             Matrix3D.prototype.copyColumnTo = function (column, vector3D) {
                 if (column < 0 || column > 3)
                     throw new Error("column error");
 
-                vector3D.x = this.rawData[column * 4];
-                vector3D.y = this.rawData[column * 4 + 1];
-                vector3D.z = this.rawData[column * 4 + 2];
-                vector3D.w = this.rawData[column * 4 + 3];
+                vector3D.x = this.rawData[column];
+                vector3D.y = this.rawData[column + 4];
+                vector3D.z = this.rawData[column + 8];
+                vector3D.w = this.rawData[column + 12];
             };
 
             Matrix3D.prototype.copyFrom = function (sourceMatrix3D) {
-                var len = sourceMatrix3D.rawData.length;
-                for (var c = 0; c < len; c++)
-                    this.rawData[c] = sourceMatrix3D.rawData[c];
+                this.rawData.set(sourceMatrix3D.rawData);
             };
 
             Matrix3D.prototype.copyRawDataFrom = function (vector, index, transpose) {
@@ -606,6 +604,11 @@ var stageJS;
                     this.transpose();
 
                 var len = vector.length - index;
+                if (len < 16)
+                    throw new Error("Arguments Error");
+                else if (len > 16)
+                    len = 16;
+
                 for (var c = 0; c < len; c++)
                     this.rawData[c] = vector[c + index];
 
@@ -618,17 +621,14 @@ var stageJS;
                 if (typeof transpose === "undefined") { transpose = false; }
                 if (transpose)
                     this.transpose();
-
+                if (index > 0) {
+                    for (var i = 0; i < index; i++)
+                        vector[i] = 0;
+                }
                 var len = this.rawData.length;
-
                 for (var c = 0; c < len; c++)
                     vector[c + index] = this.rawData[c];
 
-                if (index >= 0) {
-                    for (var i = 0; i < index; i++)
-                        vector[i] = 0;
-                    vector.length = index + len;
-                }
                 if (transpose)
                     this.transpose();
             };
@@ -636,19 +636,20 @@ var stageJS;
             Matrix3D.prototype.copyRowFrom = function (row, vector3D) {
                 if (row < 0 || row > 3)
                     throw new Error("row error");
-                this.rawData[row] = vector3D.x;
-                this.rawData[row + 4] = vector3D.y;
-                this.rawData[row + 8] = vector3D.z;
-                this.rawData[row + 12] = vector3D.w;
+                this.rawData[row * 4 + 0] = vector3D.x;
+                this.rawData[row * 4 + 1] = vector3D.y;
+                this.rawData[row * 4 + 2] = vector3D.z;
+                this.rawData[row * 4 + 3] = vector3D.w;
             };
 
             Matrix3D.prototype.copyRowTo = function (row, vector3D) {
                 if (row < 0 || row > 3)
                     throw new Error("row error");
-                vector3D.x = this.rawData[row];
-                vector3D.y = this.rawData[row + 4];
-                vector3D.z = this.rawData[row + 8];
-                vector3D.w = this.rawData[row + 12];
+
+                vector3D.x = this.rawData[row * 4];
+                vector3D.y = this.rawData[row * 4 + 1];
+                vector3D.z = this.rawData[row * 4 + 2];
+                vector3D.w = this.rawData[row * 4 + 3];
             };
 
             Matrix3D.prototype.copyToMatrix3D = function (dest) {
@@ -841,11 +842,11 @@ var stageJS;
             };
 
             Matrix3D.prototype.transformVector = function (v) {
-                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2] + this.rawData[3], v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6] + this.rawData[7], v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10] + this.rawData[11], v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14] + this.rawData[15]);
+                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2] + this.rawData[3], v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6] + this.rawData[7], v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10] + this.rawData[11], 1);
             };
 
             Matrix3D.prototype.deltaTransformVector = function (v) {
-                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2], v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6], v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10], v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14]);
+                return new geom.Vector3D(v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2], v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6], v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10], 0);
             };
 
             Matrix3D.prototype.transformVectors = function (vin, vout) {
@@ -1090,19 +1091,50 @@ var stageJS;
             PerspectiveMatrix3D.prototype.lookAtRH = function (eye, at, up) {
             };
 
-            PerspectiveMatrix3D.prototype.perspectiveLH = function (width, height, zNear, zFar) {
-            };
-
-            PerspectiveMatrix3D.prototype.perspectiveRH = function (width, height, zNear, zFar) {
+            PerspectiveMatrix3D.prototype.perspectiveOffCenterLH = function (left, right, bottom, top, zNear, zFar) {
                 this.copyRawDataFrom([
-                    2.0 * zNear / width, 0.0, 0.0, 0.0,
-                    0.0, 2.0 * zNear / height, 0.0, 0.0,
-                    0.0, 0.0, (zNear + zFar) / (zNear - zFar), 2.0 * zNear * zFar / (zNear - zFar),
-                    0.0, 0.0, -1.0, 0.0
+                    2.0 * zNear / (right - left), 0.0, (left + right) / (left - right), 0.0,
+                    0.0, 2.0 * zNear / (top - bottom), (bottom + top) / (bottom - top), 0.0,
+                    0.0, 0.0, (zFar + zNear) / (zFar - zNear), 2.0 * zFar * zNear / (zNear - zFar),
+                    0.0, 0.0, 1.0, 0.0
                 ]);
             };
 
-            PerspectiveMatrix3D.prototype.perspectiveOffCenterLH = function (left, right, bottom, top, zNear, zFar) {
+            PerspectiveMatrix3D.prototype.perspectiveLH = function (width, height, zNear, zFar) {
+                this.copyRawDataFrom([
+                    2.0 * zNear / width, 0.0, 0.0, 0.0,
+                    0.0, 2.0 * zNear / height, 0.0, 0.0,
+                    0.0, 0.0, (zFar + zNear) / (zFar - zNear), 2.0 * zFar * zNear / (zNear - zFar),
+                    0.0, 0.0, 1.0, 0.0
+                ]);
+            };
+
+            PerspectiveMatrix3D.prototype.perspectiveFieldOfViewLH = function (fieldOfViewY, aspectRatio, zNear, zFar) {
+                var yScale = 1.0 / Math.tan(fieldOfViewY / 2.0);
+                var xScale = yScale / aspectRatio;
+                this.copyRawDataFrom([
+                    xScale, 0.0, 0.0, 0.0,
+                    0.0, yScale, 0.0, 0.0,
+                    0.0, 0.0, (zFar + zNear) / (zFar - zNear), 2.0 * zFar * zNear / (zNear - zFar),
+                    0.0, 0.0, 1.0, 0.0
+                ]);
+            };
+
+            PerspectiveMatrix3D.prototype.orthoOffCenterLH = function (left, right, bottom, top, zNear, zFar) {
+                this.copyRawDataFrom([
+                    2.0 / (right - left), 0.0, 0.0, (left + right) / (left - right),
+                    0.0, 2.0 / (top - bottom), 0.0, (bottom + top) / (bottom - top),
+                    0.0, 0.0, 2 / (zFar - zNear), (zNear + zFar) / (zNear - zFar),
+                    0.0, 0.0, 0.0, 1.0
+                ]);
+            };
+            PerspectiveMatrix3D.prototype.orthoLH = function (width, height, zNear, zFar) {
+                this.copyRawDataFrom([
+                    2.0 / width, 0.0, 0.0, 0.0,
+                    0.0, 2.0 / height, 0.0, 0.0,
+                    0.0, 0.0, 2 / (zFar - zNear), (zNear + zFar) / (zNear - zFar),
+                    0.0, 0.0, 0.0, 1.0
+                ]);
             };
 
             PerspectiveMatrix3D.prototype.perspectiveOffCenterRH = function (left, right, bottom, top, zNear, zFar) {
@@ -1114,16 +1146,13 @@ var stageJS;
                 ]);
             };
 
-            PerspectiveMatrix3D.prototype.orthoLH = function (width, height, zNear, zFar) {
-            };
-
-            PerspectiveMatrix3D.prototype.orthoRH = function (width, height, zNear, zFar) {
-            };
-
-            PerspectiveMatrix3D.prototype.orthoOffCenterLH = function (left, right, bottom, top, zNear, zFar) {
-            };
-
-            PerspectiveMatrix3D.prototype.orthoOffCenterRH = function (left, right, bottom, top, zNear, zFar) {
+            PerspectiveMatrix3D.prototype.perspectiveRH = function (width, height, zNear, zFar) {
+                this.copyRawDataFrom([
+                    2.0 * zNear / width, 0.0, 0.0, 0.0,
+                    0.0, 2.0 * zNear / height, 0.0, 0.0,
+                    0.0, 0.0, (zNear + zFar) / (zNear - zFar), 2.0 * zNear * zFar / (zNear - zFar),
+                    0.0, 0.0, -1.0, 0.0
+                ]);
             };
 
             PerspectiveMatrix3D.prototype.perspectiveFieldOfViewRH = function (fieldOfViewY, aspectRatio, zNear, zFar) {
@@ -1137,14 +1166,21 @@ var stageJS;
                 ]);
             };
 
-            PerspectiveMatrix3D.prototype.perspectiveFieldOfViewLH = function (fieldOfViewY, aspectRatio, zNear, zFar) {
-                var yScale = 1.0 / Math.tan(fieldOfViewY / 2.0);
-                var xScale = yScale / aspectRatio;
+            PerspectiveMatrix3D.prototype.orthoOffCenterRH = function (left, right, bottom, top, zNear, zFar) {
                 this.copyRawDataFrom([
-                    xScale, 0.0, 0.0, 0.0,
-                    0.0, yScale, 0.0, 0.0,
-                    0.0, 0.0, (zFar + zNear) / (zFar - zNear), 1.0,
-                    0.0, 0.0, (zNear * zFar) / (zNear - zFar), 0.0
+                    2.0 / (right - left), 0.0, 0.0, (left + right) / (left - right),
+                    0.0, 2.0 / (top - bottom), 0.0, (bottom + top) / (bottom - top),
+                    0.0, 0.0, -2.0 / (zFar - zNear), (zNear + zFar) / (zNear - zFar),
+                    0.0, 0.0, 0.0, 1.0
+                ]);
+            };
+
+            PerspectiveMatrix3D.prototype.orthoRH = function (width, height, zNear, zFar) {
+                this.copyRawDataFrom([
+                    2.0 / width, 0.0, 0.0, 0.0,
+                    0.0, 2.0 / height, 0.0, 0.0,
+                    0.0, 0.0, -2.0 / (zFar - zNear), (zNear + zFar) / (zNear - zFar),
+                    0.0, 0.0, 0.0, 1.0
                 ]);
             };
             return PerspectiveMatrix3D;

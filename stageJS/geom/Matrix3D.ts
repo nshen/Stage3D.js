@@ -32,7 +32,7 @@ module stageJS.geom
              0  0, 0, 0
             上传时会自动转置
          */
-        public rawData: Float32Array; //column major order
+        public rawData: Float32Array;
 
 
         /**
@@ -267,11 +267,11 @@ module stageJS.geom
             if (column < 0 || column > 3)
                 throw new Error("column error");
 
-            // column is row ...
-            this.rawData[column * 4 + 0] = vector3D.x;
-            this.rawData[column * 4 + 1] = vector3D.y;
-            this.rawData[column * 4 + 2] = vector3D.z;
-            this.rawData[column * 4 + 3] = vector3D.w;
+            this.rawData[column] = vector3D.x;
+            this.rawData[column + 4] = vector3D.y;
+            this.rawData[column + 8] = vector3D.z;
+            this.rawData[column + 12] = vector3D.w;
+
         }
 
         /**
@@ -282,11 +282,10 @@ module stageJS.geom
             if (column < 0 || column > 3)
                 throw new Error("column error");
 
-            //column is row...
-            vector3D.x = this.rawData[column * 4];
-            vector3D.y = this.rawData[column * 4 + 1];
-            vector3D.z = this.rawData[column * 4 + 2];
-            vector3D.w = this.rawData[column * 4 + 3];
+            vector3D.x = this.rawData[column];
+            vector3D.y = this.rawData[column + 4];
+            vector3D.z = this.rawData[column + 8];
+            vector3D.w = this.rawData[column + 12];
         }
 
         /**
@@ -294,9 +293,7 @@ module stageJS.geom
          */
         public copyFrom(sourceMatrix3D: Matrix3D): void
         {
-            var len: number = sourceMatrix3D.rawData.length;
-            for (var c: number = 0; c < len; c++)
-                this.rawData[c] = sourceMatrix3D.rawData[c];
+            this.rawData.set(sourceMatrix3D.rawData);
         }
 
         /**
@@ -308,6 +305,11 @@ module stageJS.geom
                 this.transpose();
 
             var len: number = vector.length - index;
+            if(len < 16)
+                throw new Error("Arguments Error");
+            else if( len > 16)
+                len = 16;
+
             for (var c: number = 0; c < len; c++)
                 this.rawData[c] = vector[c + index];
 
@@ -322,18 +324,15 @@ module stageJS.geom
         {
             if (transpose)
                 this.transpose();
-
-            var len: number = this.rawData.length;
-
-			for (var c: number = 0; c < len; c++)
-                vector[c + index] = this.rawData[c];
-
-            if(index >= 0)
+            if(index > 0)
             {
                 for (var i:number = 0 ; i < index; i++)
                     vector[i] = 0;
-                vector.length = index + len;
             }
+            var len: number = this.rawData.length;
+            for (var c: number = 0; c < len; c++)
+                vector[c + index] = this.rawData[c];
+
             if (transpose)
                 this.transpose();
         }
@@ -345,10 +344,10 @@ module stageJS.geom
         {
             if (row < 0 || row > 3)
                 throw new Error("row error");
-            this.rawData[row] = vector3D.x;
-            this.rawData[row + 4] = vector3D.y;
-            this.rawData[row + 8] = vector3D.z;
-            this.rawData[row + 12] = vector3D.w;
+            this.rawData[row * 4 + 0] = vector3D.x;
+            this.rawData[row * 4 + 1] = vector3D.y;
+            this.rawData[row * 4 + 2] = vector3D.z;
+            this.rawData[row * 4 + 3] = vector3D.w;
         }
 
         /**
@@ -358,10 +357,12 @@ module stageJS.geom
         {
             if (row < 0 || row > 3)
                 throw new Error("row error");
-            vector3D.x = this.rawData[row];
-            vector3D.y = this.rawData[row + 4];
-            vector3D.z = this.rawData[row + 8];
-            vector3D.w = this.rawData[row + 12];
+
+            vector3D.x = this.rawData[row * 4];
+            vector3D.y = this.rawData[row * 4 + 1];
+            vector3D.z = this.rawData[row * 4 + 2];
+            vector3D.w = this.rawData[row * 4 + 3];
+
         }
     
         public copyToMatrix3D(dest: Matrix3D): void
@@ -630,7 +631,7 @@ module stageJS.geom
                 v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2] + this.rawData[3],
                 v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6] + this.rawData[7],
                 v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10] + this.rawData[11],
-                v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14] + this.rawData[15]
+                1 //v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14] + this.rawData[15]
                 );
         }
 
@@ -649,7 +650,7 @@ module stageJS.geom
                 v.x * this.rawData[0] + v.y * this.rawData[1] + v.z * this.rawData[2],
                 v.x * this.rawData[4] + v.y * this.rawData[5] + v.z * this.rawData[6],
                 v.x * this.rawData[8] + v.y * this.rawData[9] + v.z * this.rawData[10],
-                v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14]
+                0 //v.x * this.rawData[12] + v.y * this.rawData[13] + v.z * this.rawData[14]
                 );
         }
 

@@ -169,16 +169,16 @@ declare module stageJS.geom {
     class PerspectiveMatrix3D extends Matrix3D {
         public lookAtLH(eye: Vector3D, at: Vector3D, up: Vector3D): void;
         public lookAtRH(eye: Vector3D, at: Vector3D, up: Vector3D): void;
-        public perspectiveLH(width: number, height: number, zNear: number, zFar: number): void;
-        public perspectiveRH(width: number, height: number, zNear: number, zFar: number): void;
         public perspectiveOffCenterLH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
-        public perspectiveOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
-        public orthoLH(width: number, height: number, zNear: number, zFar: number): void;
-        public orthoRH(width: number, height: number, zNear: number, zFar: number): void;
-        public orthoOffCenterLH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
-        public orthoOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
-        public perspectiveFieldOfViewRH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+        public perspectiveLH(width: number, height: number, zNear: number, zFar: number): void;
         public perspectiveFieldOfViewLH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+        public orthoOffCenterLH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        public orthoLH(width: number, height: number, zNear: number, zFar: number): void;
+        public perspectiveOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        public perspectiveRH(width: number, height: number, zNear: number, zFar: number): void;
+        public perspectiveFieldOfViewRH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+        public orthoOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        public orthoRH(width: number, height: number, zNear: number, zFar: number): void;
     }
 }
 declare module stageJS {

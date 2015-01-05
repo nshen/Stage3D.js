@@ -287,7 +287,7 @@ declare module stageJS {
     }
 }
 declare module stageJS {
-    var VERSION: number;
+    var VERSION: string;
     class Stage3D extends events.EventDispatcher {
         private _context3D;
         private _canvas;

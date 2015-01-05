@@ -1086,9 +1086,63 @@ var stageJS;
                 _super.apply(this, arguments);
             }
             PerspectiveMatrix3D.prototype.lookAtLH = function (eye, at, up) {
+                var zX = at.x - eye.x;
+                var zY = at.y - eye.y;
+                var zZ = at.z - eye.z;
+                var len = 1 / Math.sqrt(zX * zX + zY * zY + zZ * zZ);
+                zX *= len;
+                zY *= len;
+                zZ *= len;
+
+                var xX = up.y * zZ - up.z * zY;
+                var xY = up.z * zX - up.x * zZ;
+                var xZ = up.x * zY - up.y * zX;
+                len = 1 / Math.sqrt(xX * xX + xY * xY + xZ * xZ);
+                xX *= len;
+                xY *= len;
+                xZ *= len;
+
+                var yX = zY * xZ - zZ * xY;
+                var yY = zZ * xX - zX * xZ;
+                var yZ = zX * xY - zY * xX;
+
+                this.copyRawDataFrom([
+                    xX, xY, xZ, -(xX * eye.x + xY * eye.y + xZ * eye.z),
+                    yX, yY, yZ, -(yX * eye.x + yY * eye.y + yZ * eye.z),
+                    zX, zY, zZ, -(zX * eye.x + zY * eye.y + zZ * eye.z),
+                    0.0, 0.0, 0.0, 1.0
+                ]);
             };
 
             PerspectiveMatrix3D.prototype.lookAtRH = function (eye, at, up) {
+                var zX = eye.x - at.x;
+                var zY = eye.y - at.y;
+                var zZ = eye.z - at.z;
+
+                var len = 1 / Math.sqrt(zX * zX + zY * zY + zZ * zZ);
+                zX *= len;
+                zY *= len;
+                zZ *= len;
+
+                var xX = up.y * zZ - up.z * zY;
+                var xY = up.z * zX - up.x * zZ;
+                var xZ = up.x * zY - up.y * zX;
+
+                len = 1 / Math.sqrt(xX * xX + xY * xY + xZ * xZ);
+                xX *= len;
+                xY *= len;
+                xZ *= len;
+
+                var yX = zY * xZ - zZ * xY;
+                var yY = zZ * xX - zX * xZ;
+                var yZ = zX * xY - zY * xX;
+
+                this.copyRawDataFrom([
+                    xX, xY, xZ, -(xX * eye.x + xY * eye.y + xZ * eye.z),
+                    yX, yY, yZ, -(yX * eye.x + yY * eye.y + yZ * eye.z),
+                    zX, zY, zZ, -(zX * eye.x + zY * eye.y + zZ * eye.z),
+                    0.0, 0.0, 0.0, 1.0
+                ]);
             };
 
             PerspectiveMatrix3D.prototype.perspectiveOffCenterLH = function (left, right, bottom, top, zNear, zFar) {
@@ -1500,7 +1554,7 @@ var stageJS;
 })(stageJS || (stageJS = {}));
 var stageJS;
 (function (stageJS) {
-    stageJS.VERSION = 0.001;
+    stageJS.VERSION = "0.2.0";
 
     var Stage3D = (function (_super) {
         __extends(Stage3D, _super);

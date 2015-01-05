@@ -34,7 +34,6 @@ module lib
             if(num != this._pos.x)
             {
                 this._pos.x = num;
-                this.update();
             }
         }
         public set y(num:number)
@@ -42,7 +41,6 @@ module lib
             if(num != this._pos.y)
             {
                 this._pos.y = num;
-                this.update();
             }
         }
         public set z(num:number)
@@ -50,7 +48,6 @@ module lib
             if(num != this._pos.z)
             {
                 this._pos.z = num;
-                this.update();
             }
         }
 
@@ -59,7 +56,6 @@ module lib
             if(num != this._rotate.y)
             {
                 this._rotate.y = num;
-                this.update();
             }
         }
 
@@ -68,7 +64,6 @@ module lib
             if(num != this._rotate.x)
             {
                 this._rotate.x = num;
-                this.update();
             }
         }
 
@@ -77,14 +72,13 @@ module lib
             if(num != this._rotate.z)
             {
                 this._rotate.z = num;
-                this.update();
             }
         }
 
         public getViewMatrix():stageJS.geom.Matrix3D
         {
-            this._invertMatrix.copyFrom(this._matrix);
-            this._invertMatrix.invert();
+            this.update();
+
             return this._invertMatrix;
         }
 
@@ -92,9 +86,12 @@ module lib
         private update():void
         {
             this._matrix.identity();
+            this._matrix.appendTranslation(this._pos.x, this._pos.y,this._pos.z);
             this._matrix.appendRotation(this._rotate.x,stageJS.geom.Vector3D.X_AXIS);
             this._matrix.appendRotation(this._rotate.y,stageJS.geom.Vector3D.Y_AXIS);
-            this._matrix.appendTranslation(this._pos.x, this._pos.y,this._pos.z);
+            this._invertMatrix.copyFrom(this._matrix);
+            this._invertMatrix.invert();
+
         }
 
 

@@ -37,13 +37,13 @@
          vec4 Ia = uLightAmbient * uMaterialAmbient;
 
          //diffuse term
-         vec3 N = normalize(vec3(uNMatrix * vec4(aVertexNormal, 1.0))); //Transformed normal position
+         vec3 N = normalize(vec3(vec4(aVertexNormal, 1.0) * uNMatrix)); //Transformed normal position
          vec3 L = normalize(uLightDirection);   //Normalize light to calculate lambertTerm
          float lambertTerm = dot(N,-L);     //Lambert's cosine law  (-L : The normalized direction ,from surface to light source)
          vec4 Id = uMaterialDiffuse *  uLightDiffuse * lambertTerm;
 
          //Specular term
-         vec4 vertex = uMVMatrix * vec4(aVertexPosition , 1.0);
+         vec4 vertex = vec4(aVertexPosition , 1.0) * uMVMatrix;
          vec3 eyeVec = - vec3(vertex.xyz);
          vec3 V = normalize(eyeVec);
 
@@ -66,7 +66,7 @@
          vFinalColor = Ia + Id + Is;
          vFinalColor.a = 1.0;
 
-          gl_Position = uPMatrix * vertex;
+          gl_Position = vertex * uPMatrix;
         }
     </script>
     <script id="gouraudShading-fs" type="x-shader/x-fragment">
@@ -97,11 +97,11 @@
         void main(void)
         {
 
-            vec4 vertex = uMVMatrix * vec4(aVertexPosition , 1.0);
+            vec4 vertex = vec4(aVertexPosition , 1.0) * uMVMatrix;
             //Transformed normal position
             vEyeVec = -vec3(vertex.xyz);
-            vNormal = vec3(uNMatrix * vec4(aVertexNormal, 1.0));
-            gl_Position = uPMatrix * vertex;
+            vNormal = vec3(vec4(aVertexNormal, 1.0) * uNMatrix);
+            gl_Position = vertex * uPMatrix;
         }
     </script>
     <script id="phongShading-fs" type="x-shader/x-fragment">

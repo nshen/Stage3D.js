@@ -1,4 +1,4 @@
-///<reference path="stage3d.d.ts"/>
+/// <reference path="stage3d.d.ts"/>
 /// <reference path="lib/jquery.d.ts" />
 /// <reference path="lib/Stage3dObjParser.ts" />
 /// <reference path="lib/OrbitCamera.ts" />
@@ -60,7 +60,6 @@ module test.loadObj {
         context3d = stage3d.context3D;
         context3d.configureBackBuffer(stage3d.stageWidth, stage3d.stageHeight, 2, true);
 
-
         //-------------
         // init shader
         //-------------
@@ -85,25 +84,20 @@ module test.loadObj {
 
         //pMatrix.perspectiveFieldOfViewLH(45 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 50);
         //pMatrix.perspectiveLH(4, 4, 1, 1000); //近裁剪面的宽高
-        projectionMatrix.perspectiveFieldOfViewRH(45, stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
-
+        projectionMatrix.perspectiveFieldOfViewLH(45, stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
         context3d.setProgramConstantsFromMatrix("pMatrix",projectionMatrix);
-
-        //modelMatrix.appendTranslation(0,0,-4);
         context3d.setProgramConstantsFromMatrix("mMatrix",modelMatrix);
+        camera.z = -4;
 
-        var vv:stageJS.geom.Matrix3D = new stageJS.geom.Matrix3D();
-        //
-        // vv.appendRotation(30,stageJS.geom.Vector3D.Y_AXIS);
-        vv.appendTranslation(0,0,4);
-        vv.invert();
+        //var camM:stageJS.geom.PerspectiveMatrix3D = new stageJS.geom.PerspectiveMatrix3D();
+        //camM.lookAtLH(
+        //    new stageJS.geom.Vector3D(0,0,-4),
+        //    new stageJS.geom.Vector3D(0,0,0),
+        //    new stageJS.geom.Vector3D(0,1,0)
+        //);
+        //context3d.setProgramConstantsFromMatrix("vMatrix",camM);
 
-        context3d.setProgramConstantsFromMatrix("vMatrix",vv);
-        //camera.z = -4
         requestAnimationFrame(onEnterFrame);
-
-
-
 
     }
 
@@ -154,33 +148,18 @@ module test.loadObj {
     var rotateX:number = 0;
     function onEnterFrame():void
     {
-        modelMatrix.appendRotation(1,new stageJS.geom.Vector3D(1,2,3));
-        context3d.setProgramConstantsFromMatrix("mMatrix",modelMatrix);
-        //modelMatrix.prependRotation(1,stageJS.geom.Vector3D.Y_AXIS);
-        //modelMatrix.prependRotation(2,stageJS.geom.Vector3D.X_AXIS);
 
-        //camera.posZ = xx-=0.01;
-        //camera.rotateY = xx++;
-        //
-        //mvpMatrix.identity();
-        //mvpMatrix.append(modelMatrix);
-        //mvpMatrix.append(camera.getViewMatrix());
-        //mvpMatrix.append(projectionMatrix);
+        /*
+            mvpMatrix.identity();
+            mvpMatrix.append(modelMatrix);
+            mvpMatrix.append(vv);
+            mvpMatrix.append(projectionMatrix);
+            context3d.setProgramConstantsFromMatrix("mvpMatrix",mvpMatrix);
+        */
 
-        //context3d.setProgramConstantsFromMatrix("uMVMatrix",mvMatrix);
-        //context3d.setProgramConstantsFromMatrix("mvpMatrix",mvpMatrix);
+        context3d.setProgramConstantsFromMatrix("vMatrix",camera.getViewMatrix());
 
         context3d.clear();
-
-
-        //mvMatrix.identity();
-        //mvMatrix.appendRotation(angle,stageJS.geom.Vector3D.Y_AXIS);
-        //mvMatrix.appendTranslation(0,0,10);
-
-        //mvMatrix.transpose();
-        //pMatrix.transpose();
-
-
 
 
         context3d.drawTriangles(myMesh.indexBuffer, 0, myMesh.indexBufferCount);

@@ -6,10 +6,75 @@ module stageJS.geom
 
         public lookAtLH(eye:Vector3D, at:Vector3D, up:Vector3D):void 
         {
+            //http://msdn.microsoft.com/en-us/library/windows/desktop/bb281710(v=vs.85).aspx
+
+            //zaxis = normal(at - eye)
+            var zX:number = at.x - eye.x;
+            var zY:number = at.y - eye.y;
+            var zZ:number = at.z - eye.z;
+            var len:number = 1/Math.sqrt(zX * zX + zY * zY + zZ * zZ);
+            zX *= len;
+            zY *= len;
+            zZ *= len;
+
+            //xaxis = normal(cross(up,zaxis))
+            var xX:number = up.y * zZ - up.z * zY;
+            var xY:number = up.z * zX - up.x * zZ;
+            var xZ:number = up.x * zY - up.y * zX;
+            len = 1/Math.sqrt(xX * xX + xY * xY + xZ * xZ);
+            xX *= len;
+            xY *= len;
+            xZ *= len;
+            //yaxis = cross(zaxis,xaxis)
+            var yX:number = zY * xZ - zZ * xY;
+            var yY:number = zZ * xX - zX * xZ;
+            var yZ:number = zX * xY - zY * xX;
+
+            this.copyRawDataFrom([
+                xX, xY, xZ, -(xX * eye.x + xY * eye.y + xZ * eye.z),
+                yX, yY, yZ, -(yX * eye.x + yY * eye.y + yZ * eye.z),
+                zX, zY, zZ, -(zX * eye.x + zY * eye.y + zZ * eye.z),
+                0.0, 0.0, 0.0, 1.0
+            ]);
+
         }
 
         public lookAtRH(eye:Vector3D, at:Vector3D, up:Vector3D):void 
         {
+            //http://msdn.microsoft.com/en-us/library/windows/desktop/bb281711(v=vs.85).aspx
+            //http://blog.csdn.net/popy007/article/details/5120158
+
+            //zaxis = normal(eye - at)
+            var zX:number = eye.x - at.x;
+            var zY:number = eye.y - at.y;
+            var zZ:number = eye.z - at.z;
+
+            var len:number = 1/Math.sqrt(zX * zX + zY * zY + zZ * zZ);
+            zX *= len;
+            zY *= len;
+            zZ *= len;
+
+            // xaxis = normal(cross(up,zaxis))
+            var xX:number = up.y * zZ - up.z * zY;
+            var xY:number = up.z * zX - up.x * zZ;
+            var xZ:number = up.x * zY - up.y * zX;
+
+            len = 1/Math.sqrt(xX * xX + xY * xY + xZ * xZ);
+            xX *= len;
+            xY *= len;
+            xZ *= len;
+
+            //yaxis = cross(zaxis,xaxis)
+            var yX:number = zY * xZ - zZ * xY;
+            var yY:number = zZ * xX - zX * xZ;
+            var yZ:number = zX * xY - zY * xX;
+
+            this.copyRawDataFrom([
+                xX, xY, xZ, -(xX * eye.x + xY * eye.y + xZ * eye.z),
+                yX, yY, yZ, -(yX * eye.x + yY * eye.y + yZ * eye.z),
+                zX, zY, zZ, -(zX * eye.x + zY * eye.y + zZ * eye.z),
+                0.0, 0.0, 0.0, 1.0
+            ]);
 
         }
 

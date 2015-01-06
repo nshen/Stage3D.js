@@ -1,7 +1,7 @@
 ///<reference path="reference.ts"/>
 module stageJS
 {
-    export var VERSION: number = 0.001; // :(
+    export var VERSION: string = "0.2.0";
 
     export class Stage3D extends stageJS.events.EventDispatcher
     {

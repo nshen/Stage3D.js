@@ -120,12 +120,12 @@ declare module stageJS.geom {
         constructor(v?: number[]);
         public append(lhs: Matrix3D): void;
         public prepend(rhs: Matrix3D): void;
-        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
         public appendScale(xScale: number, yScale: number, zScale: number): void;
-        public appendTranslation(x: number, y: number, z: number): void;
-        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
         public prependScale(xScale: number, yScale: number, zScale: number): void;
+        public appendTranslation(x: number, y: number, z: number): void;
         public prependTranslation(x: number, y: number, z: number): void;
+        public appendRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
+        public prependRotation(degrees: number, axis: Vector3D, pivotPoint?: Vector3D): void;
         public clone(): Matrix3D;
         public copyColumnFrom(column: number, vector3D: Vector3D): void;
         public copyColumnTo(column: number, vector3D: Vector3D): void;
@@ -167,8 +167,18 @@ declare module stageJS.geom {
 }
 declare module stageJS.geom {
     class PerspectiveMatrix3D extends Matrix3D {
-        public perspectiveFieldOfViewRH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+        public lookAtLH(eye: Vector3D, at: Vector3D, up: Vector3D): void;
+        public lookAtRH(eye: Vector3D, at: Vector3D, up: Vector3D): void;
+        public perspectiveOffCenterLH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        public perspectiveLH(width: number, height: number, zNear: number, zFar: number): void;
         public perspectiveFieldOfViewLH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+        public orthoOffCenterLH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        public orthoLH(width: number, height: number, zNear: number, zFar: number): void;
+        public perspectiveOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        public perspectiveRH(width: number, height: number, zNear: number, zFar: number): void;
+        public perspectiveFieldOfViewRH(fieldOfViewY: number, aspectRatio: number, zNear: number, zFar: number): void;
+        public orthoOffCenterRH(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): void;
+        public orthoRH(width: number, height: number, zNear: number, zFar: number): void;
     }
 }
 declare module stageJS {
@@ -277,7 +287,7 @@ declare module stageJS {
     }
 }
 declare module stageJS {
-    var VERSION: number;
+    var VERSION: string;
     class Stage3D extends events.EventDispatcher {
         private _context3D;
         private _canvas;

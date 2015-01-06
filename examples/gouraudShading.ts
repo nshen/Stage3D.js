@@ -129,14 +129,13 @@ module test.gouraudShading
         mvMatrix.appendRotation(angle,stageJS.geom.Vector3D.Y_AXIS);
         mvMatrix.appendTranslation(0,0,-3);
 
-        context3d.setProgramConstantsFromMatrix("uMVMatrix",mvMatrix);
-        context3d.setProgramConstantsFromMatrix("uPMatrix",pMatrix);
-
+        context3d.setProgramConstantsFromMatrix("uMVMatrix",mvMatrix,false);
+        context3d.setProgramConstantsFromMatrix("uPMatrix",pMatrix,false);
         //transform normal vector
         nMatrix.copyFrom(mvMatrix);
         nMatrix.invert();
         nMatrix.transpose();
-        context3d.setProgramConstantsFromMatrix("uNMatrix",nMatrix);
+        context3d.setProgramConstantsFromMatrix("uNMatrix",nMatrix,false);
 
 
         context3d.drawTriangles(indexBuffer);

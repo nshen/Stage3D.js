@@ -1,15 +1,16 @@
 {
   "name": "Stage3D.js",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/nshen/Stage3D.js"
   },
   "keywords": [
     "webgl",
-    "stage3d"
+    "stage3d",
+	"3d"
   ],
-  "author": "nshen",
+  "author": "nshen.net <nshen121@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nshen/Stage3D.js/issues"

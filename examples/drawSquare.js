@@ -6,6 +6,10 @@ var test;
         var stage3d;
         var context3d;
         var img;
+        var mMatrix;
+        var cMatrix;
+        var pMatrix;
+        var indexBuffer;
         /**
         *  window.onload 入口
         */
@@ -25,7 +29,6 @@ var test;
             stage3d.requestContext3D();
         }
         function contextCreated(e) {
-            console.log("contexted3d created!");
             context3d = stage3d.context3D;
             context3d.configureBackBuffer(stage3d.stageWidth, stage3d.stageHeight, 2);
             console.log("--------- init program ----------");
@@ -50,35 +53,53 @@ var test;
              */
             var vertexBuffer = context3d.createVertexBuffer(4, 5);
             vertexBuffer.uploadFromVector([
-                -0.5,
-                0.5,
+                -1,
+                1,
                 0.0,
                 0.0,
                 0.0,
-                -0.5,
-                -0.5,
+                -1,
+                -1,
                 0.0,
                 0.0,
                 1.0,
-                0.5,
-                0.5,
+                1,
+                1,
                 0.0,
                 1.0,
                 0.0,
-                0.5,
-                -0.5,
+                1,
+                -1,
                 0.0,
                 1.0,
                 1.0
             ], 0, 4);
             context3d.setVertexBufferAt("va0", vertexBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_3);
             context3d.setVertexBufferAt("va1", vertexBuffer, 3, stageJS.Context3DVertexBufferFormat.FLOAT_2);
-            var indexBuffer = context3d.createIndexBuffer(6);
+            indexBuffer = context3d.createIndexBuffer(6);
             indexBuffer.uploadFromVector([0, 1, 3, 0, 3, 2], 0, 6);
-            console.log("----------- draw ------------");
+            pMatrix = new stageJS.geom.PerspectiveMatrix3D();
+            pMatrix.perspectiveFieldOfViewRH(45, stage3d.stageWidth / stage3d.stageHeight, 0.1, 100);
+            context3d.setProgramConstantsFromMatrix("pMatrix", pMatrix, false);
+            cMatrix = new stageJS.geom.Matrix3D();
+            context3d.setProgramConstantsFromMatrix("cMatrix", cMatrix, false);
+            mMatrix = new stageJS.geom.Matrix3D();
+            console.log("----------- draw  twice ------------");
             context3d.clear(1.0, 0.0, 0.0, 1.0);
+            mMatrix.identity();
+            mMatrix.appendTranslation(5, 0, -20);
+            context3d.setProgramConstantsFromMatrix("mMatrix", mMatrix, false);
+            context3d.drawTriangles(indexBuffer);
+            mMatrix.identity();
+            mMatrix.appendRotation(30, stageJS.geom.Vector3D.Z_AXIS);
+            mMatrix.appendTranslation(-1, 0, -5);
+            context3d.setProgramConstantsFromMatrix("mMatrix", mMatrix, false);
             context3d.drawTriangles(indexBuffer);
             context3d.present();
+            //requestAnimationFrame(onEnterFrame);
+        }
+        function onEnterFrame() {
+            requestAnimationFrame(onEnterFrame);
         }
     })(drawSquare = test.drawSquare || (test.drawSquare = {}));
 })(test || (test = {}));

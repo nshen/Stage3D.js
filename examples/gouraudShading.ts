@@ -112,7 +112,9 @@ module test.gouraudShading
 
     function run():void
     {
-        pMatrix.perspectiveFieldOfViewRH(45,stage3d.stageWidth / stage3d.stageHeight, 0.1, 10000.0);
+        pMatrix.perspectiveFieldOfViewRH(45,stage3d.stageWidth / stage3d.stageHeight, 0.1, 1000.0);
+
+
         requestAnimationFrame(onEnterFrame)
     }
 

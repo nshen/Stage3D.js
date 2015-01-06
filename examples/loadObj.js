@@ -43,7 +43,7 @@ var test;
             //init stage3d
             var canvas = document.getElementById("my-canvas");
             document.addEventListener("contextmenu", function (e) { return e.preventDefault(); });
-            addCanvasListener(canvas);
+            //addCanvasListener(canvas);
             stage3d = new stageJS.Stage3D(canvas);
             stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onCreated);
             stage3d.requestContext3D();
@@ -70,9 +70,7 @@ var test;
             var texture = context3d.createTexture(bitmapdata.width, bitmapdata.height, stageJS.Context3DTextureFormat.BGRA, false);
             texture.uploadFromBitmapData(bitmapdata, 0);
             context3d.setTextureAt("fs0", texture);
-            //pMatrix.perspectiveFieldOfViewLH(45 * Math.PI / 180 , stage3d.stageWidth / stage3d.stageHeight, 1, 50);
-            //pMatrix.perspectiveLH(4, 4, 1, 1000); //近裁剪面的宽高
-            projectionMatrix.perspectiveFieldOfViewLH(45, stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
+            projectionMatrix.perspectiveFieldOfViewLH(45, stage3d.stageWidth / stage3d.stageHeight, 0.1, 1000);
             context3d.setProgramConstantsFromMatrix("pMatrix", projectionMatrix);
             context3d.setProgramConstantsFromMatrix("mMatrix", modelMatrix);
             camera.z = -4;
@@ -83,11 +81,60 @@ var test;
             //    new stageJS.geom.Vector3D(0,1,0)
             //);
             //context3d.setProgramConstantsFromMatrix("vMatrix",camM);
+            $("#selectmenu").selectmenu({
+                change: function (event, data) {
+                    switch (data.item.label) {
+                        case "perspectiveOffCenterLH":
+                            camera.z = -4;
+                            projectionMatrix.perspectiveOffCenterLH(-1, 1, -1, 1, 1, 1000);
+                            break;
+                        case "perspectiveLH":
+                            camera.z = -4;
+                            projectionMatrix.perspectiveLH(2, 2, 1, 1000);
+                            break;
+                        case "perspectiveFieldOfViewLH":
+                            camera.z = -4;
+                            projectionMatrix.perspectiveFieldOfViewLH(45, 1, 1, 1000);
+                            break;
+                        case "orthoOffCenterLH":
+                            camera.z = -4;
+                            projectionMatrix.orthoOffCenterLH(-1, 1, -1, 1, 1, 1000);
+                            break;
+                        case "orthoLH":
+                            camera.z = -4;
+                            projectionMatrix.orthoLH(2, 2, 1, 1000);
+                            break;
+                        case "perspectiveOffCenterRH":
+                            camera.z = 4;
+                            projectionMatrix.perspectiveOffCenterRH(-1, 1, -1, 1, 1, 1000);
+                            break;
+                        case "perspectiveRH":
+                            camera.z = 4;
+                            projectionMatrix.perspectiveRH(2, 2, 1, 1000);
+                            break;
+                        case "perspectiveFieldOfViewRH":
+                            camera.z = 4;
+                            projectionMatrix.perspectiveFieldOfViewRH(45, stage3d.stageWidth / stage3d.stageHeight, 1, 1000);
+                            break;
+                        case "orthoOffCenterRH":
+                            camera.z = 4;
+                            projectionMatrix.orthoOffCenterRH(-1, 1, -1, 1, 1, 1000);
+                            break;
+                        case "orthoRH":
+                            camera.z = 4;
+                            projectionMatrix.orthoRH(2, 2, 1, 1000);
+                            break;
+                    }
+                    context3d.setProgramConstantsFromMatrix("pMatrix", projectionMatrix);
+                }
+            });
             requestAnimationFrame(onEnterFrame);
         }
         var dragging = false;
         var __mouseX = 0;
         var __mouseY = 0;
+        var rotateY = 0;
+        var rotateX = 0;
         function addCanvasListener(canvas) {
             canvas.onmousedown = function (ev) {
                 dragging = true;
@@ -100,8 +147,8 @@ var test;
             canvas.onmousemove = function (ev) {
                 var lastX = __mouseX;
                 var lastY = __mouseY;
-                __mouseX = ev.clientX;
-                __mouseY = ev.clientY;
+                //__mouseX = ev.clientX;
+                //__mouseY = ev.clientY;
                 if (!dragging)
                     return;
                 var dx = __mouseX - lastX;
@@ -118,8 +165,7 @@ var test;
             //window.onkeyup = (ev)=>{
             //}
         }
-        var rotateY = 0;
-        var rotateX = 0;
+        var rotateAxis = new stageJS.geom.Vector3D(1, 2, 3);
         function onEnterFrame() {
             /*
                 mvpMatrix.identity();
@@ -128,6 +174,8 @@ var test;
                 mvpMatrix.append(projectionMatrix);
                 context3d.setProgramConstantsFromMatrix("mvpMatrix",mvpMatrix);
             */
+            modelMatrix.appendRotation(2, rotateAxis);
+            context3d.setProgramConstantsFromMatrix("mMatrix", modelMatrix);
             context3d.setProgramConstantsFromMatrix("vMatrix", camera.getViewMatrix());
             context3d.clear();
             context3d.drawTriangles(myMesh.indexBuffer, 0, myMesh.indexBufferCount);

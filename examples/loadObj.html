@@ -9,9 +9,14 @@
             margin: 50px;
         }
 
+        #canvas
+        {
+            float: left;
+            margin-right: 30px;
+        }
         #ui
         {
-            float: right;
+            float: left;
           
         }
     </style>
@@ -52,22 +57,16 @@
 
     <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="lib/jquery-ui.min.js"></script>
-    <script type="text/javascript">
 
-        $(function() {
-            $("#selectmenu").selectmenu({
-                change: function (event, data) {
-                    console.log(data.item.label);
-                }
-            });
-
-        });
-    </script>
 </head>
 <body>
-    <canvas id='my-canvas' width='800' height='800' style="border: dotted">
-        Your browser does not support the HTML5 canvas element.
-    </canvas>
+
+    <div id="canvas">
+        <canvas id='my-canvas' width='800' height='800' style="border: dotted">
+            Your browser does not support the HTML5 canvas element.
+        </canvas>
+    </div>
+
 
     <div id="ui">
         <h2 class="demoHeaders">PerspectiveMatrix</h2>
@@ -87,7 +86,9 @@
                 <option>orthoRH</option>
             </optgroup>
         </select>
-    </div>
+
+
+
 
 
 </body>

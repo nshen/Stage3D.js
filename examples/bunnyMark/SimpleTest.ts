@@ -24,7 +24,9 @@ module SimpleTest
 
     export function init()
     {
+
         var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
+
         stage3d = new stageJS.Stage3D(canvas);
         stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onContext3DCreate);
         stage3d.requestContext3D();
@@ -43,6 +45,7 @@ module SimpleTest
         _spriteStage = new GPUSprite.SpriteRenderStage(stage3d,context3D,stageRect);
 
         _spriteSheet = new GPUSprite.SpriteSheet(64,64);//2的次幂，图片26*37，比32大，所以用64
+
         var bunnyBitmap:HTMLImageElement = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
         var bunnyRect:{x:number;y:number;width:number;height:number} = {x:0 ,y:0,width:bunnyBitmap.width,height:bunnyBitmap.height};
         var _bunnySpriteID:number = _spriteSheet.addSprite(bunnyBitmap,bunnyRect,{x:0,y:0});

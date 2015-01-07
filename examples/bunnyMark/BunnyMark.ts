@@ -43,7 +43,6 @@ module BunnyMark
         _spriteStage.configureBackBuffer(_width,_height);
 
         var view:Rectangle = new Rectangle(0,0,_width,_height);
-
         _bunnyLayer = new BunnyLayer(view);
         _bunnyLayer.createRenderLayer(context3D);
         _spriteStage.addLayer(_bunnyLayer._renderLayer);
@@ -80,7 +79,7 @@ module BunnyMark
         context3D.clear(0,1,0,1);
 //        bg.render();
         _bunnyLayer.update(timer.getTimer());
-        //_spriteStage.drawDeferred();
+        _spriteStage.drawDeferred();
         context3D.present();
     }
 

@@ -8,7 +8,7 @@ module BunnyMark
     var _width:number = 480;
     var _height:number = 640;
 
-    var _spriteStage:GPUSprite.GPUSpriteRenderStage;
+    var _spriteStage:GPUSprite.SpriteRenderStage;
 
     var numBunnies:number = 100;
 
@@ -39,7 +39,7 @@ module BunnyMark
     function initSpriteEngine()
     {
         var stageRect = {x:0,y:0,width:_width,height:_height};
-        _spriteStage = new GPUSprite.GPUSpriteRenderStage(stage3d,context3D,stageRect);
+        _spriteStage = new GPUSprite.SpriteRenderStage(stage3d,context3D,stageRect);
         _spriteStage.configureBackBuffer(_width,_height);
 
         var view:Rectangle = new Rectangle(0,0,_width,_height);

@@ -138,7 +138,7 @@ module GPUSprite
             this._context3D.setVertexBufferAt("va0", this._vertexBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_3);//todo:0 - "va0"
             this._context3D.setVertexBufferAt("va1", this._uvBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_2);//todo:1 -"va1"
 
-            this._context3D.drawTriangles(this._indexBuffer, 0,  nChildren * 2);
+            this._context3D.drawTriangles(this._indexBuffer);//, 0,  nChildren * 2
         }
 
         private setupShaders() : void
@@ -181,7 +181,7 @@ module GPUSprite
                 var rect:{x:number;y:number;width:number;height:number} = sprite.rect;
                 var sinT:number = Math.sin(sprite.rotation);
                 var cosT:number = Math.cos(sprite.rotation);
-                var alpha:number = 0//sprite.alpha;
+                var alpha:number = 1//sprite.alpha;
 
                 var scaledWidth:number = rect.width * sprite.scaleX;
                 var scaledHeight:number = rect.height * sprite.scaleY;

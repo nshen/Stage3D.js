@@ -6,10 +6,8 @@ module SimpleTest
     var stage3d: stageJS.Stage3D;
     var context3D: stageJS.Context3D;
 
-    var _width:number = 480;
-    var _height:number = 640;
     var _spriteStage:GPUSprite.SpriteRenderStage;
-
+    var _spriteRenderLayer:GPUSprite.SpriteRenderLayer;
     var _spriteSheet:GPUSprite.SpriteSheet;
     var indexBuffer:stageJS.IndexBuffer3D;
     /**
@@ -41,8 +39,8 @@ module SimpleTest
 //
 //        return;
 
-        var stageRect = {x:0,y:0,width:_width,height:_height};
-        _spriteStage = new GPUSprite.SpriteRenderStage(stage3d,context3D,stageRect);
+
+        //### 1.spritesheet
 
         _spriteSheet = new GPUSprite.SpriteSheet(64,64);//2的次幂，图片26*37，比32大，所以用64
 
@@ -56,14 +54,31 @@ module SimpleTest
         ctx.putImageData(_spriteSheet._spriteSheet.imageData,0,0);
         ////////////////
 
+        //### 2. renderLayer
+        _spriteRenderLayer = new GPUSprite.SpriteRenderLayer(context3D,_spriteSheet);
+        var sp:GPUSprite.Sprite = _spriteRenderLayer.createChild(_bunnySpriteID);
+
+        sp.position = {x:0,y:0};
 
 
 
-        var view:BunnyMark.Rectangle = new BunnyMark.Rectangle(0,0,_width,_height);
-        _bunnyLayer = new BunnyMark.BunnyLayer(view);
-        _bunnyLayer.createRenderLayer(context3D);
-        _spriteStage.addLayer(_bunnyLayer._renderLayer);
-        _bunnyLayer.addBunny(100);
+        //### 3. RenderStage
+        var stageRect = {x:0,y:0,width:stage3d.stageWidth,height:stage3d.stageHeight};
+        _spriteStage = new GPUSprite.SpriteRenderStage(stage3d,context3D,stageRect);
+        _spriteStage.addLayer(_spriteRenderLayer);
+
+
+        //context3D.clear(0,1,0,1);
+        //_spriteStage.drawDeferred();
+        //
+        //context3D.present();
+        //return;
+
+        //var view:BunnyMark.Rectangle = new BunnyMark.Rectangle(0,0,stage3d.stageWidth,stage3d.stageHeight);
+        //_bunnyLayer = new BunnyMark.BunnyLayer(view);
+        //_bunnyLayer.createRenderLayer(context3D);
+        //_spriteStage.addLayer(_bunnyLayer._renderLayer);
+        //_bunnyLayer.addBunny(100);
 
 
         requestAnimationFrame(onEnterFrame)
@@ -84,7 +99,7 @@ module SimpleTest
         // init texture
         //--------------
 
-        _spriteSheet = new GPUSprite.GPUSpriteSheet(64,64);//2的次幂，图片26*37，比32大，所以用64
+        _spriteSheet = new GPUSprite.SpriteSheet(64,64);//2的次幂，图片26*37，比32大，所以用64
         var bunnyBitmap:HTMLImageElement = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
         var bunnyRect:{x:number;y:number;width:number;height:number} = {x:0 ,y:0,width:bunnyBitmap.width,height:bunnyBitmap.height};
         var _bunnySpriteID:number = _spriteSheet.addSprite(bunnyBitmap,bunnyRect,{x:0,y:0});
@@ -193,7 +208,7 @@ module SimpleTest
 
     function onEnterFrame():void
     {
-        requestAnimationFrame(onEnterFrame);
+
         //--------------
         // draw it
         //---------------
@@ -202,10 +217,13 @@ module SimpleTest
 //        context3D.present();
 
 
+        //context3D.clear(0,1,0,1);
+       // _bunnyLayer.update(11);
+       // _spriteStage.drawDeferred();
         context3D.clear(0,1,0,1);
-        _bunnyLayer.update(11);
-        _spriteStage.drawDeferred();
+        _spriteRenderLayer.draw();
         context3D.present();
+         requestAnimationFrame(onEnterFrame);
     }
 
 

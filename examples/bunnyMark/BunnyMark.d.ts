@@ -32,8 +32,8 @@ declare module BunnyMark {
     }
 }
 declare module GPUSprite {
-    class GPUSprite {
-        public _parent: GPUSpriteRenderLayer;
+    class Sprite {
+        public _parent: SpriteRenderLayer;
         public _spriteId: number;
         public _childId: number;
         private _pos;
@@ -57,15 +57,15 @@ declare module GPUSprite {
             width: number;
             height: number;
         };
-        public parent : GPUSpriteRenderLayer;
+        public parent : SpriteRenderLayer;
         public spriteId : number;
         public childId : number;
         constructor();
     }
 }
 declare module GPUSprite {
-    class GPUSpriteRenderLayer {
-        public _spriteSheet: GPUSpriteSheet;
+    class SpriteRenderLayer {
+        public _spriteSheet: SpriteSheet;
         private _vertexData;
         private _indexData;
         private _uvData;
@@ -77,12 +77,12 @@ declare module GPUSprite {
         private _uvBuffer;
         private _shaderProgram;
         private _updateVBOs;
-        constructor(context3D: stageJS.Context3D, spriteSheet: GPUSpriteSheet);
-        public parent : GPUSpriteRenderStage;
+        constructor(context3D: stageJS.Context3D, spriteSheet: SpriteSheet);
+        public parent : SpriteRenderStage;
         public numChildren : number;
-        public createChild(spriteId: number): GPUSprite;
-        public addChild(sprite: GPUSprite, spriteId: number): void;
-        public removeChild(child: GPUSprite): void;
+        public createChild(spriteId: number): Sprite;
+        public addChild(sprite: Sprite, spriteId: number): void;
+        public removeChild(child: Sprite): void;
         public draw(): void;
         private setupShaders();
         private updateTexture();
@@ -90,7 +90,7 @@ declare module GPUSprite {
     }
 }
 declare module GPUSprite {
-    class GPUSpriteRenderStage {
+    class SpriteRenderStage {
         private _stage3D;
         private _context3D;
         private _rect;
@@ -102,6 +102,7 @@ declare module GPUSprite {
             width: number;
             height: number;
         };
+        private _orth;
         public modelViewMatrix : stageJS.geom.Matrix3D;
         constructor(stage3D: stageJS.Stage3D, context3D: stageJS.Context3D, rect: {
             x: number;
@@ -109,15 +110,15 @@ declare module GPUSprite {
             width: number;
             height: number;
         });
-        public addLayer(layer: GPUSpriteRenderLayer): void;
-        public removeLayer(layer: GPUSpriteRenderLayer): void;
+        public addLayer(layer: SpriteRenderLayer): void;
+        public removeLayer(layer: SpriteRenderLayer): void;
         public draw(): void;
         public drawDeferred(): void;
         public configureBackBuffer(width: number, height: number): void;
     }
 }
 declare module GPUSprite {
-    class GPUSpriteSheet {
+    class SpriteSheet {
         public _texture: stageJS.Texture;
         public _spriteSheet: stageJS.BitmapData;
         private _uvCoords;
@@ -161,14 +162,14 @@ declare module BunnyMark {
         constructor(gs: any);
         public speedX : number;
         public speedY : number;
-        public sprite : GPUSprite.GPUSprite;
+        public sprite : GPUSprite.Sprite;
     }
 }
 declare module BunnyMark {
     class BunnyLayer {
         private _bunnies;
         private _spriteSheet;
-        public _renderLayer: GPUSprite.GPUSpriteRenderLayer;
+        public _renderLayer: GPUSprite.SpriteRenderLayer;
         private _bunnySpriteID;
         private gravity;
         private maxX;
@@ -177,7 +178,7 @@ declare module BunnyMark {
         private minY;
         constructor(view: Rectangle);
         public setPosition(view: Rectangle): void;
-        public createRenderLayer(context3D: stageJS.Context3D): GPUSprite.GPUSpriteRenderLayer;
+        public createRenderLayer(context3D: stageJS.Context3D): GPUSprite.SpriteRenderLayer;
         public addBunny(numBunnies: number): void;
         public update(currentTime: number): void;
     }

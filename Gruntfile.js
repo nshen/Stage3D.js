@@ -22,12 +22,16 @@
                 out: './build/stage3d.js', 
                 // watch: 'stage3d',  
             },
+
+
+            //compile bunnyMark examples
 			bunny: 
             {
                 src: ["examples/bunnyMark/_definitions.ts"],  
-                // reference: 'stage3d/reference.ts',  //create reference.ts
                 out: './examples/bunnyMark/BunnyMark.js', 
-                // watch: 'stage3d',  
+                options: {
+                     declaration: false, 
+                },
             }
         },
 

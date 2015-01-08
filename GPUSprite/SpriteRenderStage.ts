@@ -26,11 +26,14 @@ module GPUSprite
             this._modelViewMatrix = new stageJS.geom.Matrix3D();
             this._modelViewMatrix.appendTranslation( -rect.width/2, -rect.height/2,0);
             this._modelViewMatrix.appendScale(2.0/rect.width , -2.0/rect.height,1); //y轴向下
-            console.log(this._modelViewMatrix.rawData);
+            //this._orth.orthoLH(480,-400,1,1000);
+
         }
 
+        //private _orth:stageJS.geom.PerspectiveMatrix3D = new stageJS.geom.PerspectiveMatrix3D();
         public get modelViewMatrix():stageJS.geom.Matrix3D
         {
+           // return this._orth;
             return this._modelViewMatrix;
         }
 

@@ -3,7 +3,7 @@ module GPUSprite
 {
     export class Sprite
     {
-        public _parent : GPUSpriteRenderLayer; //internal
+        public _parent : SpriteRenderLayer; //internal
         public _spriteId : number;//internal
         public _childId : number;//internal
 
@@ -80,7 +80,7 @@ module GPUSprite
             return this._parent._spriteSheet.getRect(this._spriteId);
         }
 
-        public get parent() : GPUSpriteRenderLayer
+        public get parent() : SpriteRenderLayer
         {
             return this._parent;
         }
@@ -101,7 +101,7 @@ module GPUSprite
             this._parent = null;
             this._spriteId = 0;
             this._childId = 0;
-//            this._pos = new Point();
+            this._pos = {x:0 ,y:0};
             this._scaleX = 1.0;
             this._scaleY = 1.0;
             this._rotation = 0;

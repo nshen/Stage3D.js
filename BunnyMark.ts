@@ -1,14 +1,14 @@
 ///<reference path="_definitions.ts"/>
 module BunnyMark
 {
-//$FileName$ --target ES5
+    //$FileName$ --target ES5
     var stage3d: stageJS.Stage3D;
     var context3D: stageJS.Context3D;
 
     var _width:number = 480;
     var _height:number = 640;
 
-    var _spriteStage:GPUSprite.GPUSpriteRenderStage;
+    var _spriteStage:GPUSprite.SpriteRenderStage;
 
     var numBunnies:number = 100;
 
@@ -39,11 +39,10 @@ module BunnyMark
     function initSpriteEngine()
     {
         var stageRect = {x:0,y:0,width:_width,height:_height};
-        _spriteStage = new GPUSprite.GPUSpriteRenderStage(stage3d,context3D,stageRect);
+        _spriteStage = new GPUSprite.SpriteRenderStage(stage3d,context3D,stageRect);
         _spriteStage.configureBackBuffer(_width,_height);
 
         var view:Rectangle = new Rectangle(0,0,_width,_height);
-
         _bunnyLayer = new BunnyLayer(view);
         _bunnyLayer.createRenderLayer(context3D);
         _spriteStage.addLayer(_bunnyLayer._renderLayer);
@@ -79,8 +78,8 @@ module BunnyMark
         requestAnimationFrame(onEnterFrame);
         context3D.clear(0,1,0,1);
 //        bg.render();
-        _bunnyLayer.update(timer.getTimer());
-        //_spriteStage.drawDeferred();
+//        _bunnyLayer.update(timer.getTimer());
+        _spriteStage.drawDeferred();
         context3D.present();
     }
 

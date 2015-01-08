@@ -23,7 +23,8 @@ module stageJS {
             this._context = this._canvas.getContext("2d");
             this._rect = {x:0,y:0,width:width,height:height};
 
-            this.fillRect(this._rect,fillColor);
+            if(!transparent)
+                this.fillRect(this._rect,fillColor);
         }
 
         public get width():number

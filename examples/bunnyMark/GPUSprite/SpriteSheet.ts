@@ -11,7 +11,7 @@ module GPUSprite
 
         public constructor(width:number , height:number)
         {
-            this._spriteSheet = new stageJS.BitmapData(width,height,true,0xffff1117);
+            this._spriteSheet = new stageJS.BitmapData(width,height,true);
             this._uvCoords = [];
             this._rects = [];
         }

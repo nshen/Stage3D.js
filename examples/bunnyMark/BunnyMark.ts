@@ -78,7 +78,7 @@ module BunnyMark
         requestAnimationFrame(onEnterFrame);
         context3D.clear(0,1,0,1);
 //        bg.render();
-        _bunnyLayer.update(timer.getTimer());
+//        _bunnyLayer.update(timer.getTimer());
         _spriteStage.drawDeferred();
         context3D.present();
     }

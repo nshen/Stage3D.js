@@ -120,7 +120,7 @@ module GPUSprite
 
             this._context3D.setProgram(this._shaderProgram);
             this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.ONE, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
-            this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, true); //todo: vc0
+            this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false); //todo: vc0
             this._context3D.setTextureAt("fs0", this._spriteSheet._texture);//todo: 0 ->"fs0"
 
             if ( this._updateVBOs )

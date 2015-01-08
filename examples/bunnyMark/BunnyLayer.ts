@@ -56,8 +56,8 @@ module BunnyMark
                 sprite = this._renderLayer.createChild(this._bunnySpriteID);
                 bunny = new BunnySprite(sprite);
                 bunny.sprite.position = {x:0,y:0};
-                bunny.speedX = 5//Math.random() * 5;
-                bunny.speedY = 5//(Math.random() * 5) - 2.5;
+                bunny.speedX = Math.random() * 5;
+                bunny.speedY = (Math.random() * 5) - 2.5;
                 bunny.sprite.scaleX = bunny.sprite.scaleY = Math.random() + 0.3;
                 bunny.sprite.rotation = 15 - Math.random() * 30;
                 this._bunnies.push(bunny);
@@ -66,7 +66,7 @@ module BunnyMark
 
         }
 
-        public update(currentTime:number):void
+        public update():void
         {
             var bunny:BunnySprite;
             for(var i:number = 0; i<this._bunnies.length; i++)

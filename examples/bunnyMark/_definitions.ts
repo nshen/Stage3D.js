@@ -13,7 +13,7 @@
 ///<reference path="BunnySprite.ts"/>
 ///<reference path="BunnyLayer.ts"/>
 ///<reference path="Background.ts"/>
+
 ///<reference path="BunnyMark.ts"/>
 
-///<reference path="SimpleTest.ts"/>
 

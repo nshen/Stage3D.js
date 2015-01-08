@@ -1,86 +1,124 @@
 ///<reference path="_definitions.ts"/>
 module BunnyMark
 {
-    //$FileName$ --target ES5
+
+//    var timer:BunnyMark.Timer = new BunnyMark.Timer();
     var stage3d: stageJS.Stage3D;
     var context3D: stageJS.Context3D;
 
-    var _width:number = 480;
-    var _height:number = 640;
-
     var _spriteStage:GPUSprite.SpriteRenderStage;
+    var _spriteRenderLayer:GPUSprite.SpriteRenderLayer;
+    var _spriteSheet:GPUSprite.SpriteSheet;
+    var indexBuffer:stageJS.IndexBuffer3D;
 
-    var numBunnies:number = 100;
+    declare var Stats:any;
+    var stats;
 
-    var _bunnyLayer:BunnyLayer;
-
-    var timer:Timer = new Timer();
-//    var bg:Background;
 
     /**
      *  window.onload entry point
      */
     export function main()
     {
+        BunnyMark.ImageLoader.getInstance().add("assets/wabbit_alpha.png");
+        BunnyMark.ImageLoader.getInstance().downloadAll(BunnyMark.init);
+    }
 
+
+    export function init()
+    {
         var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
+        canvas.onmousedown = (ev:MouseEvent)=>{
+          if( _bunnyLayer)
+              _bunnyLayer.addBunny(100);
+        };
+        ///////////////////////////////////////////
+        stats = new Stats();
+        stats.setMode( 0 );
+        // align top-left
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.body.appendChild( stats.domElement );
+        ///////////////////////////////////////////
+
 
         stage3d = new stageJS.Stage3D(canvas);
         stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onContext3DCreate);
         stage3d.requestContext3D();
     }
 
+    var _bunnyLayer:BunnyMark.BunnyLayer;
     function onContext3DCreate(e: stageJS.events.Event): void
     {
         context3D = stage3d.context3D;
-        initSpriteEngine();
-    }
 
-    function initSpriteEngine()
-    {
-        var stageRect = {x:0,y:0,width:_width,height:_height};
+//        debug();
+//
+//        return;
+
+
+        /*
+        //### 1.spritesheet
+
+        _spriteSheet = new GPUSprite.SpriteSheet(64,64);//2的次幂，图片26*37，比32大，所以用64
+
+        var bunnyBitmap:HTMLImageElement = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
+        var bunnyRect:{x:number;y:number;width:number;height:number} = {x:0 ,y:0,width:bunnyBitmap.width,height:bunnyBitmap.height};
+        var _bunnySpriteID:number = _spriteSheet.addSprite(bunnyBitmap,bunnyRect,{x:0,y:0});
+
+        //--------debug
+        var c:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("test-canvas");
+        var ctx:CanvasRenderingContext2D = c.getContext("2d");
+        ctx.putImageData(_spriteSheet._spriteSheet.imageData,0,0);
+        ////////////////
+
+        //### 2. renderLayer
+        _spriteRenderLayer = new GPUSprite.SpriteRenderLayer(context3D,_spriteSheet);
+        var sp:GPUSprite.Sprite = _spriteRenderLayer.createChild(_bunnySpriteID);
+        sp.position = {x:0,y:0};
+
+
+
+        //### 3. RenderStage
+        var stageRect = {x:0,y:0,width:stage3d.stageWidth,height:stage3d.stageHeight};
         _spriteStage = new GPUSprite.SpriteRenderStage(stage3d,context3D,stageRect);
-        _spriteStage.configureBackBuffer(_width,_height);
+        _spriteStage.addLayer(_spriteRenderLayer);
 
-        var view:Rectangle = new Rectangle(0,0,_width,_height);
-        _bunnyLayer = new BunnyLayer(view);
+*/
+
+        var stageRect = {x:0,y:0,width:stage3d.stageWidth,height:stage3d.stageHeight};
+        _spriteStage = new GPUSprite.SpriteRenderStage(stage3d,context3D,stageRect);
+
+        var view:BunnyMark.Rectangle = new BunnyMark.Rectangle(0,0,stage3d.stageWidth,stage3d.stageHeight);
+        _bunnyLayer = new BunnyMark.BunnyLayer(view);
         _bunnyLayer.createRenderLayer(context3D);
         _spriteStage.addLayer(_bunnyLayer._renderLayer);
-        _bunnyLayer.addBunny(numBunnies);
+        _bunnyLayer.addBunny(100);
 
-//        bg = new Background(context3D,_width,_height);
-//        bg.render();
-//        context3D.present();
-//        wrapper();
+
+
+
         requestAnimationFrame(onEnterFrame)
-
-//        var img:HTMLImageElement = AssetManager.getInstance().getAsset("assets/grass.png");
-//        document.body.appendChild();
-//        var bitmapdata:stageJS.BitmapData = new stageJS.BitmapData(img.width,img.height,true);
-//        bitmapdata.copyPixels(img,{x:img.x,y:img.y,width:img.width,height:img.height},{x:110,y:0});
-//        bitmapdata.draw();
     }
 
-    function doAllTheTime()
-    {
-        context3D.clear(0,0,0,0);
-//        bg.render();
-        context3D.present();
-    }
-    function wrapper() {
-        doAllTheTime();
-        setTimeout(wrapper, 1000);
-    }
+
 
 
     function onEnterFrame():void
     {
-        requestAnimationFrame(onEnterFrame);
-        context3D.clear(0,1,0,1);
-//        bg.render();
-//        _bunnyLayer.update(timer.getTimer());
-        _spriteStage.drawDeferred();
+
+
+        stats.begin();
+
+        context3D.clear(1,0,0,1);
+       _bunnyLayer.update();
+       _spriteStage.drawDeferred();
         context3D.present();
+
+        stats.end();
+
+        requestAnimationFrame(onEnterFrame);
     }
 
 
@@ -89,10 +127,8 @@ module BunnyMark
 
 
 //window.onload = (e:Event) =>{
-//    BunnyMark.ImageLoader.getInstance().add("assets/grass.png");
-//    BunnyMark.ImageLoader.getInstance().add("assets/pirate.png");
 //    BunnyMark.ImageLoader.getInstance().add("assets/wabbit_alpha.png");
 //
-//    BunnyMark.ImageLoader.getInstance().downloadAll(BunnyMark.main);
+//    BunnyMark.ImageLoader.getInstance().downloadAll(SimpleTest.main);
 //};
 

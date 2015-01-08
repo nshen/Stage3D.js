@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+
+
+    <script type="text/javascript" src="stage3d.js"></script>
+    <script type="text/javascript" src="drawSquare.js"></script>
+
+    <!-- Fragment Shader //-->
+    <script id="shader-fs" type="x-shader/x-fragment">
+        varying highp vec2 v0;
+        uniform sampler2D fs0;
+        void main(void) {
+         //gl_FragColor = vec4(0.5,0.5,1.0, 1.0);
+         gl_FragColor = texture2D( fs0, vec2(v0.x, v0.y) );
+        }
+
+
+    </script>
+
+    <!-- Vertex Shader //-->
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 va0;
+        attribute vec2 va1;
+
+        uniform mat4 mMatrix;
+        uniform mat4 pMatrix;
+        uniform mat4 cMatrix;
+
+
+        varying vec2 v0;
+
+        void main(void) {
+            gl_Position = vec4(va0,1.0) * mMatrix * cMatrix * pMatrix;
+            v0= va1;
+        }
+    </script>
+
+</head>
+
+
+<body >
+    <canvas id='my-canvas' width='800' height='800'>
+        Your browser does not support the HTML5 canvas element.
+    </canvas>
+</body>
+
+</html>

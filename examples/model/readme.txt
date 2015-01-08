@@ -1,0 +1,1 @@
+convert_obj_three.py -i cone.obj -o cone.json

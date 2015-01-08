@@ -58,7 +58,7 @@ module BunnyMark
                 bunny.sprite.position = {x:0,y:0};
                 bunny.speedX = Math.random() * 5;
                 bunny.speedY = (Math.random() * 5) - 2.5;
-                bunny.sprite.scaleX = bunny.sprite.scaleY = Math.random() + 0.3;
+                bunny.sprite.scaleX = bunny.sprite.scaleY = Math.random() + 1;
                 bunny.sprite.rotation = 15 - Math.random() * 30;
                 this._bunnies.push(bunny);
 
@@ -75,7 +75,7 @@ module BunnyMark
                 bunny.sprite.position.x += bunny.speedX;
                 bunny.sprite.position.y += bunny.speedY;
                 bunny.speedY += this.gravity;
-                bunny.sprite.alpha = 0.3 + 0.7 * bunny.sprite.position.y / this.maxY;
+                bunny.sprite.alpha = 0.4 + 0.6 * bunny.sprite.position.y / this.maxY;
                 if (bunny.sprite.position.x > this.maxX)
                 {
                     bunny.speedX *= -1;

@@ -101,7 +101,7 @@ module GPUSprite
             this._parent = null;
             this._spriteId = 0;
             this._childId = 0;
-//            this._pos = new Point();
+            this._pos = {x:0 ,y:0};
             this._scaleX = 1.0;
             this._scaleY = 1.0;
             this._rotation = 0;

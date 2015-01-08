@@ -181,7 +181,7 @@ module GPUSprite
                 var rect:{x:number;y:number;width:number;height:number} = sprite.rect;
                 var sinT:number = Math.sin(sprite.rotation);
                 var cosT:number = Math.cos(sprite.rotation);
-                var alpha:number = 1//sprite.alpha;
+                var alpha:number = sprite.alpha;
 
                 var scaledWidth:number = rect.width * sprite.scaleX;
                 var scaledHeight:number = rect.height * sprite.scaleY;

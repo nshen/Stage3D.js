@@ -90,7 +90,7 @@ var GPUSprite;
             this._parent = null;
             this._spriteId = 0;
             this._childId = 0;
-
+            this._pos = { x: 0, y: 0 };
             this._scaleX = 1.0;
             this._scaleY = 1.0;
             this._rotation = 0;
@@ -334,7 +334,7 @@ var GPUSprite;
                 var rect = sprite.rect;
                 var sinT = Math.sin(sprite.rotation);
                 var cosT = Math.cos(sprite.rotation);
-                var alpha = 1;
+                var alpha = sprite.alpha;
 
                 var scaledWidth = rect.width * sprite.scaleX;
                 var scaledHeight = rect.height * sprite.scaleY;
@@ -580,7 +580,7 @@ var BunnyMark;
                 bunny.sprite.position = { x: 0, y: 0 };
                 bunny.speedX = Math.random() * 5;
                 bunny.speedY = (Math.random() * 5) - 2.5;
-                bunny.sprite.scaleX = bunny.sprite.scaleY = Math.random() + 0.3;
+                bunny.sprite.scaleX = bunny.sprite.scaleY = Math.random() + 1;
                 bunny.sprite.rotation = 15 - Math.random() * 30;
                 this._bunnies.push(bunny);
             }
@@ -593,7 +593,7 @@ var BunnyMark;
                 bunny.sprite.position.x += bunny.speedX;
                 bunny.sprite.position.y += bunny.speedY;
                 bunny.speedY += this.gravity;
-                bunny.sprite.alpha = 0.3 + 0.7 * bunny.sprite.position.y / this.maxY;
+                bunny.sprite.alpha = 0.4 + 0.6 * bunny.sprite.position.y / this.maxY;
                 if (bunny.sprite.position.x > this.maxX) {
                     bunny.speedX *= -1;
                     bunny.sprite.position.x = this.maxX;
@@ -813,6 +813,10 @@ var SimpleTest;
 
     function init() {
         var canvas = document.getElementById("my-canvas");
+        canvas.onmousedown = function (ev) {
+            if (_bunnyLayer)
+                _bunnyLayer.addBunny(100);
+        };
 
         stage3d = new stageJS.Stage3D(canvas);
         stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onContext3DCreate);
@@ -838,10 +842,8 @@ var SimpleTest;
 
     function getSpriteSheetID() {
         var bunnyBitmap = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
-        console.log("bunnyBitmap", bunnyBitmap.width, bunnyBitmap.height);
         var bunnyRect = { x: 0, y: 0, width: bunnyBitmap.width, height: bunnyBitmap.height };
         return _spriteSheet.addSprite(bunnyBitmap, bunnyRect, { x: 0, y: 0 });
-
         var c = document.getElementById("test-canvas");
         var ctx = c.getContext("2d");
         ctx.putImageData(_spriteSheet._spriteSheet.imageData, 0, 0);

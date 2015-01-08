@@ -27,6 +27,10 @@ module SimpleTest
     export function init()
     {
         var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
+        canvas.onmousedown = (ev:MouseEvent)=>{
+          if( _bunnyLayer)
+              _bunnyLayer.addBunny(100);
+        };
 
         stage3d = new stageJS.Stage3D(canvas);
         stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onContext3DCreate);
@@ -83,6 +87,7 @@ module SimpleTest
         _bunnyLayer.addBunny(100);
 
 
+
         requestAnimationFrame(onEnterFrame)
     }
 
@@ -91,11 +96,8 @@ module SimpleTest
     {
         //add bunny image to sprite sheet
         var bunnyBitmap:HTMLImageElement = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
-        console.log("bunnyBitmap",bunnyBitmap.width,bunnyBitmap.height);
         var bunnyRect:{x:number;y:number;width:number;height:number} = {x:0 ,y:0,width:bunnyBitmap.width,height:bunnyBitmap.height};
         return _spriteSheet.addSprite(bunnyBitmap,bunnyRect,{x:0,y:0});
-
-
         var c:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("test-canvas");
         var ctx:CanvasRenderingContext2D = c.getContext("2d");
         ctx.putImageData(_spriteSheet._spriteSheet.imageData,0,0);
@@ -107,12 +109,6 @@ module SimpleTest
     function onEnterFrame():void
     {
 
-        //--------------
-        // draw it
-        //---------------
-//        context3D.clear(1.0, 1.0, 1.0, 1.0);
-//        context3D.drawTriangles(indexBuffer);
-//        context3D.present();
 
 
         context3D.clear(1,0,0,1);
@@ -120,10 +116,6 @@ module SimpleTest
        _spriteStage.drawDeferred();
         context3D.present();
 
-
-       // context3D.clear(0,1,0,1);
-       // _spriteRenderLayer.draw();
-       // context3D.present();
          requestAnimationFrame(onEnterFrame);
     }
 

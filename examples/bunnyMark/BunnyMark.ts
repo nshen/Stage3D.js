@@ -1,7 +1,7 @@
 ///<reference path="_definitions.ts"/>
 module BunnyMark
 {
-//$FileName$ --target ES5
+    //$FileName$ --target ES5
     var stage3d: stageJS.Stage3D;
     var context3D: stageJS.Context3D;
 

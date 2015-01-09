@@ -580,7 +580,7 @@ var BunnyMark;
                 bunny.sprite.position = { x: 0, y: 0 };
                 bunny.speedX = Math.random() * 5;
                 bunny.speedY = (Math.random() * 5) - 2.5;
-                bunny.sprite.scaleX = bunny.sprite.scaleY = Math.random() + 1;
+                bunny.sprite.scaleX = bunny.sprite.scaleY = 0.3 + Math.random();
                 bunny.sprite.rotation = 15 - Math.random() * 30;
                 this._bunnies.push(bunny);
             }
@@ -593,7 +593,7 @@ var BunnyMark;
                 bunny.sprite.position.x += bunny.speedX;
                 bunny.sprite.position.y += bunny.speedY;
                 bunny.speedY += this.gravity;
-                bunny.sprite.alpha = 0.4 + 0.6 * bunny.sprite.position.y / this.maxY;
+                bunny.sprite.alpha = 0.3 + 0.7 * bunny.sprite.position.y / this.maxY;
                 if (bunny.sprite.position.x > this.maxX) {
                     bunny.speedX *= -1;
                     bunny.sprite.position.x = this.maxX;
@@ -743,7 +743,12 @@ var BunnyMark;
     var _spriteSheet;
     var indexBuffer;
 
+    var numBunnies = 200;
+    var incBunnies = 200;
+
     var stats;
+
+    var counter;
 
     function main() {
         BunnyMark.ImageLoader.getInstance().add("assets/wabbit_alpha.png");
@@ -754,9 +759,14 @@ var BunnyMark;
     function init() {
         var canvas = document.getElementById("my-canvas");
         canvas.onmousedown = function (ev) {
-            if (_bunnyLayer)
-                _bunnyLayer.addBunny(100);
+            if (_bunnyLayer) {
+                _bunnyLayer.addBunny(incBunnies);
+                numBunnies += incBunnies;
+                $("#counter").html("<b>Bunnies:" + numBunnies + "</b>");
+            }
         };
+
+        $("#counter").html("<b>Bunnies:200</b>");
 
         stats = new Stats();
         stats.setMode(0);
@@ -765,6 +775,8 @@ var BunnyMark;
         stats.domElement.style.left = '0px';
         stats.domElement.style.top = '0px';
         document.body.appendChild(stats.domElement);
+
+        swfobject.embedSWF("BunnyMarkMoleHill.swf", "swf", "480", "640", "9.0.0", "expressInstall.swf");
 
         stage3d = new stageJS.Stage3D(canvas);
         stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onContext3DCreate);
@@ -783,7 +795,7 @@ var BunnyMark;
         _bunnyLayer = new BunnyMark.BunnyLayer(view);
         _bunnyLayer.createRenderLayer(context3D);
         _spriteStage.addLayer(_bunnyLayer._renderLayer);
-        _bunnyLayer.addBunny(100);
+        _bunnyLayer.addBunny(incBunnies);
 
         requestAnimationFrame(onEnterFrame);
     }
@@ -791,7 +803,7 @@ var BunnyMark;
     function onEnterFrame() {
         stats.begin();
 
-        context3D.clear(1, 0, 0, 1);
+        context3D.clear(0.5, 0.5, 0.5, 1);
         _bunnyLayer.update();
         _spriteStage.drawDeferred();
         context3D.present();

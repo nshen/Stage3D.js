@@ -6,6 +6,8 @@
 
 
     <script type="text/javascript" src="../lib/stats.min.js"></script>
+    <script type="text/javascript" src="../lib/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="../lib/swfobject.js"></script>
     <script type="text/javascript" src="../stage3d.js"></script>
     <script type="text/javascript" src="./BunnyMark.js"></script>
 
@@ -40,10 +42,18 @@
 </head>
 
 
-<body onload="BunnyMark.main()">
-    <canvas id='my-canvas' width='480' height='640'>
+<body onload="BunnyMark.main()" onselectstart="return false;" style="-moz-user-select:none;margin: 0px;padding: 0px;">
+    <canvas id='my-canvas' width='480' height='640' style="float: left" >
         Your browser does not support the HTML5 canvas element.
     </canvas>
+    <p id="counter" style="position: absolute;left: 350px;font-size: 18px"></p>
+
+    <div id="flashPos" style="float: left" >
+        <div id="swf" >
+            <p><a href="http://www.adobe.com/go/getflashplayer">getflashplayer</a></p>
+        </div>
+    </div>
+
 </body>
 
 </html>

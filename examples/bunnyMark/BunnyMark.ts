@@ -57,7 +57,7 @@ module BunnyMark
 
         //var el = document.getElementById("swf");
         //swfobject.embedSWF("BunnyMarkMoleHill.swf", el, 480, 640, 13);
-        swfobject.embedSWF("BunnyMarkMoleHill.swf", "swf", "480", "640", "9.0.0", "expressInstall.swf");
+        swfobject.embedSWF("BunnyMarkMoleHill.swf", "swf", "480", "640", "9.0.0", "expressInstall.swf",{},{wmode:"direct"},{});
 
         stage3d = new stageJS.Stage3D(canvas);
         stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onContext3DCreate);

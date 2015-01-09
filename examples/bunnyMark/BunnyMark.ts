@@ -11,9 +11,15 @@ module BunnyMark
     var _spriteSheet:GPUSprite.SpriteSheet;
     var indexBuffer:stageJS.IndexBuffer3D;
 
+    var numBunnies:number = 200;
+    var incBunnies:number = 200;
+
     declare var Stats:any;
+    declare var $:any;
+    declare var swfobject:any;
     var stats;
 
+    var counter:HTMLElement;
 
     /**
      *  window.onload entry point
@@ -30,8 +36,15 @@ module BunnyMark
         var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
         canvas.onmousedown = (ev:MouseEvent)=>{
           if( _bunnyLayer)
-              _bunnyLayer.addBunny(100);
+          {
+              _bunnyLayer.addBunny(incBunnies);
+              numBunnies += incBunnies;
+              $("#counter").html("<b>Bunnies:"+numBunnies+"</b>");
+          }
+
         };
+
+        $("#counter").html("<b>Bunnies:200</b>");
         ///////////////////////////////////////////
         stats = new Stats();
         stats.setMode( 0 );
@@ -42,6 +55,9 @@ module BunnyMark
         document.body.appendChild( stats.domElement );
         ///////////////////////////////////////////
 
+        //var el = document.getElementById("swf");
+        //swfobject.embedSWF("BunnyMarkMoleHill.swf", el, 480, 640, 13);
+        swfobject.embedSWF("BunnyMarkMoleHill.swf", "swf", "480", "640", "9.0.0", "expressInstall.swf");
 
         stage3d = new stageJS.Stage3D(canvas);
         stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onContext3DCreate);
@@ -94,7 +110,7 @@ module BunnyMark
         _bunnyLayer = new BunnyMark.BunnyLayer(view);
         _bunnyLayer.createRenderLayer(context3D);
         _spriteStage.addLayer(_bunnyLayer._renderLayer);
-        _bunnyLayer.addBunny(100);
+        _bunnyLayer.addBunny(incBunnies);
 
 
 
@@ -111,7 +127,7 @@ module BunnyMark
 
         stats.begin();
 
-        context3D.clear(1,0,0,1);
+        context3D.clear(0.5,0.5,0.5,1);
        _bunnyLayer.update();
        _spriteStage.drawDeferred();
         context3D.present();

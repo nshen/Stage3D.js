@@ -26,6 +26,7 @@ module BunnyMark
      */
     export function main()
     {
+
         BunnyMark.ImageLoader.getInstance().add("assets/wabbit_alpha.png");
         BunnyMark.ImageLoader.getInstance().downloadAll(BunnyMark.init);
     }
@@ -55,8 +56,7 @@ module BunnyMark
         document.body.appendChild( stats.domElement );
         ///////////////////////////////////////////
 
-        //var el = document.getElementById("swf");
-        //swfobject.embedSWF("BunnyMarkMoleHill.swf", el, 480, 640, 13);
+
         swfobject.embedSWF("BunnyMarkMoleHill.swf", "swf", "480", "640", "9.0.0", "expressInstall.swf",{},{wmode:"direct"},{});
 
         stage3d = new stageJS.Stage3D(canvas);

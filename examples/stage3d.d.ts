@@ -291,8 +291,6 @@ declare module stageJS {
     class Stage3D extends events.EventDispatcher {
         private _context3D;
         private _canvas;
-        private _stageWidth;
-        private _stageHeight;
         constructor(canvas: HTMLCanvasElement);
         public context3D : Context3D;
         public stageWidth : number;

@@ -1562,12 +1562,7 @@ var stageJS;
         function Stage3D(canvas) {
             _super.call(this);
             this._context3D = null;
-            this._stageWidth = 0;
-            this._stageHeight = 0;
-
             this._canvas = canvas;
-            this._stageWidth = canvas.width;
-            this._stageHeight = canvas.height;
         }
         Object.defineProperty(Stage3D.prototype, "context3D", {
             get: function () {
@@ -1579,7 +1574,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageWidth", {
             get: function () {
-                return this._stageWidth;
+                return this._canvas.clientWidth;
             },
             enumerable: true,
             configurable: true
@@ -1587,7 +1582,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageHeight", {
             get: function () {
-                return this._stageHeight;
+                return this._canvas.clientHeight;
             },
             enumerable: true,
             configurable: true

@@ -14,6 +14,12 @@ var stageJS;
             if (!transparent)
                 this.fillRect(this._rect, fillColor);
         }
+        BitmapData.fromImageElement = function (img) {
+            var bmd = new BitmapData(img.width, img.height);
+            bmd._context.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
+            return bmd;
+        };
+
         Object.defineProperty(BitmapData.prototype, "width", {
             get: function () {
                 return this._canvas.width;

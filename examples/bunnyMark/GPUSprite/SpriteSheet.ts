@@ -9,11 +9,37 @@ module GPUSprite
         private _uvCoords:number[];
         private _rects:{x:number;y:number;width:number;height:number}[];
 
-        public constructor(width:number , height:number)
+        public constructor(spriteSheetBitmapData:stageJS.BitmapData ,numSpritesW:number = 8 , numSpritesH:number = 8)
         {
-            this._spriteSheet = new stageJS.BitmapData(width,height,true);
+            this._spriteSheet = spriteSheetBitmapData;
             this._uvCoords = [];
             this._rects = [];
+            this.createUVs(numSpritesW,numSpritesH);
+        }
+
+        public createUVs(numSpritesW:number , numSpritesH:number):void
+        {
+            var destRect : BunnyMark.Rectangle;
+
+            for (var y:number = 0; y < numSpritesH; y++)
+            {
+                for (var x:number = 0; x < numSpritesW; x++)
+                {
+                    this._uvCoords.push(
+                        // bl, tl, tr, br
+                        x / numSpritesW, (y+1) / numSpritesH,
+                        x / numSpritesW, y / numSpritesH,
+                        (x+1) / numSpritesW, y / numSpritesH,
+                        (x + 1) / numSpritesW, (y + 1) / numSpritesH);
+
+                    destRect = new BunnyMark.Rectangle();
+                    destRect.x = 0;
+                    destRect.y = 0;
+                    destRect.width = this._spriteSheet.width / numSpritesW;
+                    destRect.height = this._spriteSheet.height / numSpritesH;
+                    this._rects.push(destRect);
+                }
+            }
         }
 
         // Very simplistic for now...assume client will manage the packing of the sprite sheet bitmap
@@ -24,18 +50,11 @@ module GPUSprite
         {
             this._spriteSheet.copyPixels(srcBits, srcRect, destPt);
 
-//            var destRect : Rectangle = new Rectangle();
-//            destRect.left = destPt.x;
-//            destRect.top = destPt.y;
-//            destRect.right = destRect.left + srcRect.width;
-//            destRect.bottom = destRect.top + srcRect.height;
-//
-//            _rects.push(destRect);
+
             this._rects.push({x:destPt.x,
                               y:destPt.y,
                               width:srcRect.width,
                               height:srcRect.height});
-
 
             /**
              * 2 3

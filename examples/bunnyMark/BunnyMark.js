@@ -317,7 +317,6 @@ var GPUSprite;
 
         SpriteRenderLayer.prototype.setupShaders = function () {
             this._shaderProgram = this._context3D.createProgram();
-
             this._shaderProgram.upload("shader-vs", "shader-fs");
         };
 
@@ -439,11 +438,31 @@ var GPUSprite;
 var GPUSprite;
 (function (GPUSprite) {
     var SpriteSheet = (function () {
-        function SpriteSheet(width, height) {
-            this._spriteSheet = new stageJS.BitmapData(width, height, true);
+        function SpriteSheet(spriteSheetBitmapData, numSpritesW, numSpritesH) {
+            if (typeof numSpritesW === "undefined") { numSpritesW = 8; }
+            if (typeof numSpritesH === "undefined") { numSpritesH = 8; }
+            this._spriteSheet = spriteSheetBitmapData;
             this._uvCoords = [];
             this._rects = [];
+            this.createUVs(numSpritesW, numSpritesH);
         }
+        SpriteSheet.prototype.createUVs = function (numSpritesW, numSpritesH) {
+            var destRect;
+
+            for (var y = 0; y < numSpritesH; y++) {
+                for (var x = 0; x < numSpritesW; x++) {
+                    this._uvCoords.push(x / numSpritesW, (y + 1) / numSpritesH, x / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, (y + 1) / numSpritesH);
+
+                    destRect = new BunnyMark.Rectangle();
+                    destRect.x = 0;
+                    destRect.y = 0;
+                    destRect.width = this._spriteSheet.width / numSpritesW;
+                    destRect.height = this._spriteSheet.height / numSpritesH;
+                    this._rects.push(destRect);
+                }
+            }
+        };
+
         SpriteSheet.prototype.addSprite = function (srcBits, srcRect, destPt) {
             this._spriteSheet.copyPixels(srcBits, srcRect, destPt);
 
@@ -559,12 +578,15 @@ var BunnyMark;
         };
 
         BunnyLayer.prototype.createRenderLayer = function (context3D) {
-            this._spriteSheet = new GPUSprite.SpriteSheet(64, 64);
+            var bmd = new stageJS.BitmapData(64, 64, true);
 
-            var bunnyBitmap = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
-            var bunnyRect = { x: 0, y: 0, width: bunnyBitmap.width, height: bunnyBitmap.height };
+            var bunnyImg = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
+            var bunnyRect = { x: 0, y: 0, width: bunnyImg.width, height: bunnyImg.height };
 
-            this._bunnySpriteID = this._spriteSheet.addSprite(bunnyBitmap, bunnyRect, { x: 0, y: 0 });
+            bmd.copyPixels(bunnyImg, bunnyRect, { x: 0, y: 0 });
+
+            this._spriteSheet = new GPUSprite.SpriteSheet(bmd, 1, 1);
+            this._bunnySpriteID = 0;
 
             this._renderLayer = new GPUSprite.SpriteRenderLayer(context3D, this._spriteSheet);
             return this._renderLayer;

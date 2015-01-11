@@ -6,6 +6,7 @@ declare module stageJS {
         private _canvas;
         private _context;
         constructor(width: number, height: number, transparent?: boolean, fillColor?: number);
+        static fromImageElement(img: HTMLImageElement): BitmapData;
         public width : number;
         public height : number;
         public canvas : HTMLCanvasElement;

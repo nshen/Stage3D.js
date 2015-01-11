@@ -1,12 +1,10 @@
 ///<reference path="reference.ts"/>
-module stageJS {
+module stageJS
+{
     export class BitmapData
     {
 
-//        public width:number;
-//        public height:number;
         public transparent:boolean;
-
 
         private _rect:{x:number;y:number;width:number;height:number};
         private _transparent;
@@ -25,6 +23,13 @@ module stageJS {
 
             if(!transparent)
                 this.fillRect(this._rect,fillColor);
+        }
+
+        public static fromImageElement(img:HTMLImageElement):stageJS.BitmapData
+        {
+            var bmd:stageJS.BitmapData = new BitmapData(img.width,img.height);
+            bmd._context.drawImage(<HTMLElement>img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
+            return bmd;
         }
 
         public get width():number

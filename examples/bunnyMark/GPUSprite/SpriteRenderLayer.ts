@@ -143,26 +143,7 @@ module GPUSprite
 
         private setupShaders() : void
         {
-//            var vertexShaderAssembler:AGALMiniAssembler = new AGALMiniAssembler();
-//            vertexShaderAssembler.assemble( Context3DProgramType.VERTEX,
-//                    "dp4 op.x, va0, vc0 \n"+ // transform from stream 0 to output clipspace
-//                    "dp4 op.y, va0, vc1 \n"+
-//                    //"dp4 op.z, va0, vc2 \n"+
-//                    "mov op.z, vc2.z    \n"+
-//                    "mov op.w, vc3.w    \n"+
-//                    "mov v0, va1.xy     \n"+ // copy texcoord from stream 1 to fragment program
-//                    "mov v0.z, va0.z \n"     // copy alpha from stream 0 to fragment program
-//            );
-//
-//            var fragmentShaderAssembler:AGALMiniAssembler = new AGALMiniAssembler();
-//            fragmentShaderAssembler.assemble( Context3DProgramType.FRAGMENT,
-//                    "tex ft0, v0, fs0 <2d,clamp,linear,mipnearest> \n"+
-//                    "mul ft0, ft0, v0.zzzz\n" +
-//                    "mov oc, ft0 \n"
-//            );
-
             this._shaderProgram = this._context3D.createProgram();
-//            this._shaderProgram.upload( vertexShaderAssembler.agalcode, fragmentShaderAssembler.agalcode );
             this._shaderProgram.upload("shader-vs", "shader-fs");
         }
 

@@ -1,4 +1,7 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="Rectangle.ts"/>
+///<reference path="Sprite.ts"/>
+///<reference path="SpriteRenderLayer.ts"/>
+///<reference path="SpriteRenderStage.ts"/>
 module GPUSprite
 {
     export class SpriteSheet
@@ -19,7 +22,7 @@ module GPUSprite
 
         public createUVs(numSpritesW:number , numSpritesH:number):void
         {
-            var destRect : BunnyMark.Rectangle;
+            var destRect : GPUSprite.Rectangle;
 
             for (var y:number = 0; y < numSpritesH; y++)
             {
@@ -32,7 +35,7 @@ module GPUSprite
                         (x+1) / numSpritesW, y / numSpritesH,
                         (x + 1) / numSpritesW, (y + 1) / numSpritesH);
 
-                    destRect = new BunnyMark.Rectangle();
+                    destRect = new GPUSprite.Rectangle();
                     destRect.x = 0;
                     destRect.y = 0;
                     destRect.width = this._spriteSheet.width / numSpritesW;
@@ -40,6 +43,27 @@ module GPUSprite
                     this._rects.push(destRect);
                 }
             }
+        }
+
+
+        // when the automated grid isn't what we want
+        // we can define any rectangle and return a new sprite ID
+        public defineSprite(x:number, y:number, w:number, h:number) : number
+        {
+            var destRect:GPUSprite.Rectangle = new GPUSprite.Rectangle();
+            destRect.x = x;
+            destRect.y = y;
+            destRect.width = x + w;
+            destRect.height = y + h;
+            this._rects.push(destRect);
+
+            this._uvCoords.push(
+                destRect.x/this._spriteSheet.width, destRect.y/this._spriteSheet.height + destRect.height/this._spriteSheet.height,
+                destRect.x/this._spriteSheet.width, destRect.y/this._spriteSheet.height,
+                destRect.x/this._spriteSheet.width + destRect.width/this._spriteSheet.width, destRect.y/this._spriteSheet.height,
+                destRect.x/this._spriteSheet.width + destRect.width/this._spriteSheet.width, destRect.y/this._spriteSheet.height + destRect.height/this._spriteSheet.height);
+
+            return this._rects.length - 1;
         }
 
         // Very simplistic for now...assume client will manage the packing of the sprite sheet bitmap

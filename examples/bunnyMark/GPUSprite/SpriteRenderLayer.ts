@@ -1,4 +1,7 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="Rectangle.ts"/>
+///<reference path="Sprite.ts"/>
+///<reference path="SpriteRenderStage.ts"/>
+///<reference path="SpriteSheet.ts"/>
 module GPUSprite
 {
     export class SpriteRenderLayer

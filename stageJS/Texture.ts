@@ -86,6 +86,7 @@ module stageJS
         public uploadFromImage(source: any, miplevel: number /* uint */ = 0): void
         {
             //Context3D.GL.pixelStorei(Context3D.GL.UNPACK_FLIP_Y_WEBGL, 1); //uv原点在左下角，v朝上时时才需翻转
+            //Context3D.GL.pixelStorei(Context3D.GL.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
             Context3D.GL.activeTexture(Context3D.GL["TEXTURE"+this.textureUnit]);
             Context3D.GL.bindTexture(Context3D.GL.TEXTURE_2D, this._glTexture);
 
@@ -95,7 +96,7 @@ module stageJS
             Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MAG_FILTER, Context3D.GL.NEAREST); //Context3D.GL.LINEAR
             if (this._streamingLevels == 0)
             {
-                Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MIN_FILTER, Context3D.GL.NEAREST);//Context3D.GL.LINEAR
+                Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MIN_FILTER,Context3D.GL.NEAREST );// Context3D.GL.LINEAR
             } else {
                 Context3D.GL.texParameteri(Context3D.GL.TEXTURE_2D, Context3D.GL.TEXTURE_MIN_FILTER, Context3D.GL.LINEAR_MIPMAP_LINEAR); //linnear生成mipmap,缩放也linear
                 Context3D.GL.generateMipmap(Context3D.GL.TEXTURE_2D);

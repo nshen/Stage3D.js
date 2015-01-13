@@ -13,6 +13,8 @@ module shooter
         private _entities:shooter.EntityManager;
 
         private _controls : shooter.GameControls;
+
+        private _state:number = 0;
         // the title screen batch
         private _mainmenu : shooter.GameMenu;
 
@@ -59,7 +61,7 @@ module shooter
 
 
             // add the first entity right now
-            this._entities.addEntity();
+            //this._entities.addEntity();
 
             // tell the gui where to grab statistics from
             //_gui.statsTarget = _entities;
@@ -67,6 +69,31 @@ module shooter
             // start the render loop
             this.onEnterFrame();//stage.addEventListener(Event.ENTER_FRAME,onEnterFrame);
 
+            // only used for the menu
+            ShooterMain.canvas.onmousedown = (ev:MouseEvent)=>
+            {
+                if (this._state == 0) // are we at the main menu?
+                {
+                    if (this._mainmenu && this._mainmenu.activateCurrentMenuItem(new Date().valueOf()))
+                    { // if the above returns true we should start the game
+                        //this.startGame();
+                    }
+                }
+            }
+
+            ShooterMain.canvas.onmouseup = (ev:MouseEvent)=>
+            {
+
+            }
+
+            ShooterMain.canvas.onmousemove = (ev:MouseEvent)=>
+            {
+                if (this._state == 0) // are we at the main menu?
+                {
+                    // select menu items via mouse
+                    if (this._mainmenu) this._mainmenu.mouseHighlight(ev.clientX, ev.clientY);
+                }
+            }
         }
 
         private onEnterFrame = () =>
@@ -126,12 +153,13 @@ module shooter
             document.body.appendChild(this.stats.domElement);
         }
 
+        public static canvas:HTMLCanvasElement;
         public static main():void
         {
             shooter.ImageLoader.getInstance().add("assets/sprites.png");
             shooter.ImageLoader.getInstance().add("assets/titlescreen.png");
             shooter.ImageLoader.getInstance().downloadAll(function(){
-                new ShooterMain(<HTMLCanvasElement>document.getElementById("my-canvas"));
+                new ShooterMain(ShooterMain.canvas = <HTMLCanvasElement>document.getElementById("my-canvas"));
             });
 
         }

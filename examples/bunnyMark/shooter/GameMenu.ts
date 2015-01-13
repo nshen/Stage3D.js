@@ -101,39 +101,39 @@ module shooter
 			this.amenuPlaySprite.position.y = this.menuY;
 			this.amenuPlaySprite.alpha = 0;
 
-			//var menuControlsSpriteID:number = this.spriteSheet.defineSprite(0, 304, this.menuWidth, 32);
-			//this.menuControlsSprite = this.batch.createChild(menuControlsSpriteID);
-			//this.menuControlsSprite.position.x = this.menuX;
-			//this.menuControlsSprite.position.y = this.menuY + this.menuItemHeight;
-            //
-			//var amenuControlsSpriteID:number = this.spriteSheet.defineSprite(0, 304+128, this.menuWidth, 32);
-			//this.amenuControlsSprite = this.batch.createChild(amenuControlsSpriteID);
-			//this.amenuControlsSprite.position.x = this.menuX;
-			//this.amenuControlsSprite.position.y = this.menuY + this.menuItemHeight;
-			//this.amenuControlsSprite.alpha = 0;
-            //
-			//var menuAboutSpriteID:number = this.spriteSheet.defineSprite(0, 336, this.menuWidth, 48);
-			//this.menuAboutSprite = this.batch.createChild(menuAboutSpriteID);
-			//this.menuAboutSprite.position.x = this.menuX;
-			//this.menuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
-            //
-			//var amenuAboutSpriteID:number = this.spriteSheet.defineSprite(0, 336+128, this.menuWidth, 48);
-			//this.amenuAboutSprite = this.batch.createChild(amenuAboutSpriteID);
-			//this.amenuAboutSprite.position.x = this.menuX;
-			//this.amenuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
-			//this.amenuAboutSprite.alpha = 0;
-            //
-			//var aboutSpriteID:number = this.spriteSheet.defineSprite(128, 256, 384, 128);
-			//this.aboutSprite = this.batch.createChild(aboutSpriteID);
-			//this.aboutSprite.position.x = this.menuX;
-			//this.aboutSprite.position.y = this.menuY + 64;
-			//this.aboutSprite.alpha = 0;
-            //
-			//var controlsSpriteID:number = this.spriteSheet.defineSprite(128, 384, 384, 128);
-			//this.controlsSprite = this.batch.createChild(controlsSpriteID);
-			//this.controlsSprite.position.x = this.menuX;
-			//this.controlsSprite.position.y = this.menuY + 64;
-			//this.controlsSprite.alpha = 0;
+			var menuControlsSpriteID:number = this.spriteSheet.defineSprite(0, 304, this.menuWidth, 32);
+			this.menuControlsSprite = this.batch.createChild(menuControlsSpriteID);
+			this.menuControlsSprite.position.x = this.menuX;
+			this.menuControlsSprite.position.y = this.menuY + this.menuItemHeight;
+
+			var amenuControlsSpriteID:number = this.spriteSheet.defineSprite(0, 304+128, this.menuWidth, 32);
+			this.amenuControlsSprite = this.batch.createChild(amenuControlsSpriteID);
+			this.amenuControlsSprite.position.x = this.menuX;
+			this.amenuControlsSprite.position.y = this.menuY + this.menuItemHeight;
+			this.amenuControlsSprite.alpha = 0;
+
+			var menuAboutSpriteID:number = this.spriteSheet.defineSprite(0, 336, this.menuWidth, 48);
+			this.menuAboutSprite = this.batch.createChild(menuAboutSpriteID);
+			this.menuAboutSprite.position.x = this.menuX;
+			this.menuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
+
+			var amenuAboutSpriteID:number = this.spriteSheet.defineSprite(0, 336+128, this.menuWidth, 48);
+			this.amenuAboutSprite = this.batch.createChild(amenuAboutSpriteID);
+			this.amenuAboutSprite.position.x = this.menuX;
+			this.amenuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
+			this.amenuAboutSprite.alpha = 0;
+
+			var aboutSpriteID:number = this.spriteSheet.defineSprite(128, 256, 384, 128);
+			this.aboutSprite = this.batch.createChild(aboutSpriteID);
+			this.aboutSprite.position.x = this.menuX;
+			this.aboutSprite.position.y = this.menuY + 64;
+			this.aboutSprite.alpha = 0;
+
+			var controlsSpriteID:number = this.spriteSheet.defineSprite(128, 384, 384, 128);
+			this.controlsSprite = this.batch.createChild(controlsSpriteID);
+			this.controlsSprite.position.x = this.menuX;
+			this.controlsSprite.position.y = this.menuY + 64;
+			this.controlsSprite.alpha = 0;
 
 			return this.batch;
 		}
@@ -270,7 +270,7 @@ module shooter
 			this.logoSprite.scaleY = 1 + wobble;
 			wobble = (Math.cos(currentTime / 777) / Math.PI) * 0.1;
 			this.logoSprite.rotation = wobble;
-			
+
 			// pulse the active menu item
 			wobble = (Math.cos(currentTime / 150) / Math.PI) * 0.1;
 			this.amenuAboutSprite.scaleX =

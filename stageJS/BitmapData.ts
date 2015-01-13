@@ -27,7 +27,7 @@ module stageJS
 
         public static fromImageElement(img:HTMLImageElement):stageJS.BitmapData
         {
-            var bmd:stageJS.BitmapData = new BitmapData(img.width,img.height);
+            var bmd:stageJS.BitmapData = new BitmapData(img.width,img.height,true);
             bmd._context.drawImage(<HTMLElement>img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
             return bmd;
         }

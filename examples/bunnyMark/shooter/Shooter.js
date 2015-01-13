@@ -47,8 +47,8 @@ var GPUSprite;
             var destRect = new GPUSprite.Rectangle();
             destRect.x = x;
             destRect.y = y;
-            destRect.width = x + w;
-            destRect.height = y + h;
+            destRect.width = w;
+            destRect.height = h;
             this._rects.push(destRect);
 
             this._uvCoords.push(destRect.x / this._spriteSheet.width, destRect.y / this._spriteSheet.height + destRect.height / this._spriteSheet.height, destRect.x / this._spriteSheet.width, destRect.y / this._spriteSheet.height, destRect.x / this._spriteSheet.width + destRect.width / this._spriteSheet.width, destRect.y / this._spriteSheet.height, destRect.x / this._spriteSheet.width + destRect.width / this._spriteSheet.width, destRect.y / this._spriteSheet.height + destRect.height / this._spriteSheet.height);
@@ -644,6 +644,40 @@ var shooter;
             this.amenuPlaySprite.position.y = this.menuY;
             this.amenuPlaySprite.alpha = 0;
 
+            var menuControlsSpriteID = this.spriteSheet.defineSprite(0, 304, this.menuWidth, 32);
+            this.menuControlsSprite = this.batch.createChild(menuControlsSpriteID);
+            this.menuControlsSprite.position.x = this.menuX;
+            this.menuControlsSprite.position.y = this.menuY + this.menuItemHeight;
+
+            var amenuControlsSpriteID = this.spriteSheet.defineSprite(0, 304 + 128, this.menuWidth, 32);
+            this.amenuControlsSprite = this.batch.createChild(amenuControlsSpriteID);
+            this.amenuControlsSprite.position.x = this.menuX;
+            this.amenuControlsSprite.position.y = this.menuY + this.menuItemHeight;
+            this.amenuControlsSprite.alpha = 0;
+
+            var menuAboutSpriteID = this.spriteSheet.defineSprite(0, 336, this.menuWidth, 48);
+            this.menuAboutSprite = this.batch.createChild(menuAboutSpriteID);
+            this.menuAboutSprite.position.x = this.menuX;
+            this.menuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
+
+            var amenuAboutSpriteID = this.spriteSheet.defineSprite(0, 336 + 128, this.menuWidth, 48);
+            this.amenuAboutSprite = this.batch.createChild(amenuAboutSpriteID);
+            this.amenuAboutSprite.position.x = this.menuX;
+            this.amenuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
+            this.amenuAboutSprite.alpha = 0;
+
+            var aboutSpriteID = this.spriteSheet.defineSprite(128, 256, 384, 128);
+            this.aboutSprite = this.batch.createChild(aboutSpriteID);
+            this.aboutSprite.position.x = this.menuX;
+            this.aboutSprite.position.y = this.menuY + 64;
+            this.aboutSprite.alpha = 0;
+
+            var controlsSpriteID = this.spriteSheet.defineSprite(128, 384, 384, 128);
+            this.controlsSprite = this.batch.createChild(controlsSpriteID);
+            this.controlsSprite.position.x = this.menuX;
+            this.controlsSprite.position.y = this.menuY + 64;
+            this.controlsSprite.alpha = 0;
+
             return this.batch;
         };
 
@@ -938,6 +972,7 @@ var shooter;
     var ShooterMain = (function () {
         function ShooterMain(canvas) {
             var _this = this;
+            this._state = 0;
             this.onContext3DCreate = function (e) {
                 _this.context3D = _this.stage3d.context3D;
                 _this.initSpriteEngine();
@@ -976,6 +1011,7 @@ var shooter;
             this.stage3d.requestContext3D();
         }
         ShooterMain.prototype.initSpriteEngine = function () {
+            var _this = this;
             var _width = this.stage3d.stageWidth;
             var _height = this.stage3d.stageHeight;
 
@@ -991,9 +1027,24 @@ var shooter;
             batch = this._mainmenu.createBatch(this.context3D);
             this._spriteStage.addLayer(batch);
 
-            this._entities.addEntity();
-
             this.onEnterFrame();
+
+            ShooterMain.canvas.onmousedown = function (ev) {
+                if (_this._state == 0) {
+                    if (_this._mainmenu && _this._mainmenu.activateCurrentMenuItem(new Date().valueOf())) {
+                    }
+                }
+            };
+
+            ShooterMain.canvas.onmouseup = function (ev) {
+            };
+
+            ShooterMain.canvas.onmousemove = function (ev) {
+                if (_this._state == 0) {
+                    if (_this._mainmenu)
+                        _this._mainmenu.mouseHighlight(ev.clientX, ev.clientY);
+                }
+            };
         };
 
         ShooterMain.prototype.initStats = function () {
@@ -1010,7 +1061,7 @@ var shooter;
             shooter.ImageLoader.getInstance().add("assets/sprites.png");
             shooter.ImageLoader.getInstance().add("assets/titlescreen.png");
             shooter.ImageLoader.getInstance().downloadAll(function () {
-                new ShooterMain(document.getElementById("my-canvas"));
+                new ShooterMain(ShooterMain.canvas = document.getElementById("my-canvas"));
             });
         };
         return ShooterMain;

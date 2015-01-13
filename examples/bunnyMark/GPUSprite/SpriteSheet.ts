@@ -53,8 +53,8 @@ module GPUSprite
             var destRect:GPUSprite.Rectangle = new GPUSprite.Rectangle();
             destRect.x = x;
             destRect.y = y;
-            destRect.width = x + w;
-            destRect.height = y + h;
+            destRect.width = w;
+            destRect.height = h;
             this._rects.push(destRect);
 
             this._uvCoords.push(

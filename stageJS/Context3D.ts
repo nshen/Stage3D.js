@@ -8,10 +8,9 @@ module stageJS
         //todo:enableErrorChecking https://www.khronos.org/webgl/wiki/Debugging
 
         private _clearBit: number;
-
+        private _bendDisabled:boolean = true;
         constructor()
         {
-            Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend?
             Context3DBlendFactor.init();
         }
 
@@ -268,6 +267,11 @@ module stageJS
 
         public setBlendFactors(sourceFactor: number, destinationFactor: number): void
         {
+            if(this._bendDisabled)
+            {
+                Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend?
+                this._bendDisabled = false;
+            }
             Context3D.GL.blendFunc(sourceFactor, destinationFactor);
         }
 

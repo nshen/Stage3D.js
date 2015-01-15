@@ -1,11 +1,13 @@
 /// <reference path="stage3d.d.ts"/>
-
+/// <reference path="./lib/Stage3dObjParser.ts"/>
+/// <reference path="./lib/ImageLoader.ts"/>
+/// <reference path="./lib/FileLoader.ts"/>
 module test {
 
     import Context3D = stageJS.Context3D;
     import Program3D = stageJS.Program3D;
     import PerspectiveMatrix3D = stageJS.geom.PerspectiveMatrix3D;
-    import Matrix3D = stageJS.Matrix3D;
+    import Matrix3D = stageJS.geom.Matrix3D;
     import Texture = stageJS.Texture;
     import Stage3D = stageJS.Stage3D;
     import Context3DTextureFormat = stageJS.Context3DTextureFormat;
@@ -69,12 +71,36 @@ module test {
 
         public constructor(canvas:HTMLCanvasElement)
         {
+            //canvas.onmousedown = (e)=>{
+            //    this.nextBlendmode();
+            //}
+            window.onkeypress = (e) =>{
+                switch(e.charCode)
+                {
+                    case 98: // the b key
+                        this.nextBlendmode();
+                        break;
+                    case 109: // the m key
+                        this.nextMesh();
+                        break;
+                    case 116: // the t key
+                        this.nextTexture();
+                        break;
+                }
+            }
+
+
+            // force these labels to be set
+            this.nextMesh();
+            this.nextTexture();
+            this.nextBlendmode();
+
             this.stage3d = new Stage3D(canvas);
-            this.stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onCreated);
+            this.stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, this.onCreated);
             this.stage3d.requestContext3D();
         }
 
-        private onCreated(event:Event):void
+        private onCreated = (event:Event) =>
         {
 
             this.context3D = this.stage3d.context3D;
@@ -132,7 +158,7 @@ module test {
 
         private enterFrame = ()=>{
             // clear scene before rendering is mandatory
-            this.context3D.clear(0,0,0);
+            this.context3D.clear(0.3,0.3,0.3);
             // move or rotate more each frame
             this.t += 2.0;
             // scroll and render the terrain once
@@ -143,6 +169,7 @@ module test {
             // now that all meshes have been drawn
             this.context3D.present();
 
+            requestAnimationFrame(this.enterFrame);
         }
 
         private renderMesh():void
@@ -160,8 +187,10 @@ module test {
             // clear the transformation matrix to 0,0,0
             this.modelmatrix.identity();
             this.context3D.setProgram ( this.shaderProgram1 );
+
             this.setTexture();
             this.setBlendmode();
+
             this.modelmatrix.appendRotation(this.t*0.7, Vector3D.Y_AXIS);
             this.modelmatrix.appendRotation(this.t*0.6, Vector3D.X_AXIS);
             this.modelmatrix.appendRotation(this.t*1.0, Vector3D.Y_AXIS);
@@ -171,7 +200,7 @@ module test {
             this.modelViewProjection.append(this.viewmatrix);
             this.modelViewProjection.append(this.projectionmatrix);
             // pass our matrix data to the shader program
-            this.context3D.setProgramConstantsFromMatrix("va0", this.modelViewProjection, false ); // todo:true
+            this.context3D.setProgramConstantsFromMatrix("vc0", this.modelViewProjection, false ); // todo:true
 
             switch(this.meshNum)
             {
@@ -276,6 +305,82 @@ module test {
                     break;
             }
         }
+
+        private nextMesh():void
+        {
+            this.meshNum++;
+            if (this.meshNum > this.meshNumMax)
+                this.meshNum = 0;
+            switch(this.meshNum)
+            {
+                case 0:
+                    document.getElementById("p3").innerText = '[M] Random Particle Cluster';
+                    break;
+                case 1:
+                    document.getElementById("p3").innerText ='[M] Round Puff Cluster';
+                    break;
+                case 2:
+                    document.getElementById("p3").innerText ='[M] Cube Model';
+                    break;
+                case 3:
+                    document.getElementById("p3").innerText ='[M] Sphere Model';
+                    break;
+                case 4:
+                    document.getElementById("p3").innerText ='[M] Spaceship Model';
+                    break;
+            }
+        }
+        private nextTexture():void
+        {
+            this.texNum++;
+            if (this.texNum > this.texNumMax)
+                this.texNum = 0;
+            switch(this.texNum)
+            {
+                case 0:
+                    document.getElementById("p2").innerText =  '[T] Transparent Leaf Texture';
+                    break;
+                case 1:
+                    document.getElementById("p2").innerText = '[T] Fire Texture';
+                    break;
+                case 2:
+                    document.getElementById("p2").innerText = '[T] Lens Flare Texture';
+                    break;
+                case 3:
+                    document.getElementById("p2").innerText = '[T] Glow Texture';
+                    break;
+                case 4:
+                    document.getElementById("p2").innerText = '[T] Smoke Texture';
+                    break;
+            }
+        }
+
+
+        private nextBlendmode():void
+        {
+            this.blendNum++;
+            if (this.blendNum > this.blendNumMax)
+                this.blendNum = 0;
+
+            switch(this.blendNum)
+            {
+                case 0:
+                    document.getElementById("p1").innerText = '[B] ONE,ZERO';
+                    break;
+                case 1:
+                    document.getElementById("p1").innerText = '[B] SOURCE_ALPHA,ONE_MINUS_SOURCE_ALPHA';
+                    break;
+                case 2:
+                    document.getElementById("p1").innerText = '[B] SOURCE_COLOR,ONE';
+                    break;
+                case 3:
+                    document.getElementById("p1").innerText = '[B] ONE,ONE';
+                    break;
+                case 4:
+                    document.getElementById("p1").innerText = '[B] DESTINATION_COLOR,ZERO';
+                    break;
+            }
+        }
         private initData():void
         {
             // parse the OBJ file and create buffers
@@ -285,7 +390,7 @@ module test {
             this.myMesh2 = new lib.Stage3dObjParser(lib.FileLoader.getInstance().get("blendAssets/puff.obj").response, this.context3D, 1, true, true);
             this.myMesh3 = new lib.Stage3dObjParser(lib.FileLoader.getInstance().get("blendAssets/box.obj").response, this.context3D, 1, true, true);
             this.myMesh4 = new lib.Stage3dObjParser(lib.FileLoader.getInstance().get("blendAssets/sphere.obj").response, this.context3D, 1, true, true);
-            this.myMesh4 = new lib.Stage3dObjParser(lib.FileLoader.getInstance().get("blendAssets/spaceship.obj").response, this.context3D, 1, true, true);
+            this.myMesh5 = new lib.Stage3dObjParser(lib.FileLoader.getInstance().get("blendAssets/spaceship.obj").response, this.context3D, 1, true, true);
 
             // parse the terrain <well> mesh
             //console.log("Parsing the terrain...");
@@ -317,6 +422,7 @@ module test {
 
             lib.ImageLoader.getInstance().downloadAll(()=>
             {
+                //console.log("images loaded!");
                 if (lib.FileLoader.getInstance().isDone())
                     new test.blend(canvas);
             });
@@ -325,10 +431,12 @@ module test {
             lib.FileLoader.getInstance().add("blendAssets/puff.obj");
             lib.FileLoader.getInstance().add("blendAssets/sphere.obj");
             lib.FileLoader.getInstance().add("blendAssets/spaceship.obj");
+            lib.FileLoader.getInstance().add("blendAssets/box.obj");
             //lib.FileLoader.getInstance().add("blendAssets/terrain.obj");
 
             lib.FileLoader.getInstance().downloadAll(()=>
             {
+                console.log("models loaded!");
                 if (lib.ImageLoader.getInstance().isDone())
                     new test.blend(canvas);
             })

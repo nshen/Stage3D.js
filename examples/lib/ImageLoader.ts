@@ -55,6 +55,7 @@ module lib
 
         public isDone():boolean
         {
+            //console.log("image load success:" + this._successCount +" error:" + this._errorCount+" total:"+this._queue.length);
             return this._queue.length == (this._successCount + this._errorCount);
         }
 

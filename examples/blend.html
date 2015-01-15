@@ -2,7 +2,6 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <link href="lib/jquery-ui.min.css" rel="stylesheet">
     <style>
         body{
             font: 62.5% "Trebuchet MS", sans-serif;
@@ -24,7 +23,8 @@
 
     <script type="text/javascript" src="stage3d.js"></script>
     <script type="text/javascript" src="lib/Stage3dObjParser.js"></script>
-    <script type="text/javascript" src="lib/OrbitCamera.js"></script>
+    <script type="text/javascript" src="lib/ImageLoader.js"></script>
+    <script type="text/javascript" src="lib/FileLoader.js"></script>
     <script type="text/javascript" src="blend.js"></script>
 
 
@@ -40,7 +40,7 @@
 
         varying highp vec3 v0;
         varying highp vec2 v1;
-        varying highp vec2 v2;
+        varying highp vec4 v2;
 
         void main(void) {
             gl_Position =  vec4(va0, 1.0)  * vc0;
@@ -59,8 +59,8 @@
         }
     </script>
 
-    <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+    <!--<script type="text/javascript" src="lib/jquery-1.11.1.js"></script>-->
+    <!--<script type="text/javascript" src="lib/jquery-ui.min.js"></script>-->
 
 </head>
 <body>
@@ -73,23 +73,15 @@
 
 
     <div id="ui">
-        <h2 class="demoHeaders">PerspectiveMatrix</h2>
-        <select id="selectmenu">
-            <optgroup label="------- Left Hand -------">
-                <option>perspectiveOffCenterLH</option>
-                <option>perspectiveLH</option>
-                <option selected="selected">perspectiveFieldOfViewLH</option>
-                <option>orthoOffCenterLH</option>
-                <option>orthoLH</option>
-            </optgroup>
-            <optgroup label="------- Right Hand -------">
-                <option>perspectiveOffCenterRH</option>
-                <option>perspectiveRH</option>
-                <option>perspectiveFieldOfViewRH</option>
-                <option>orthoOffCenterRH</option>
-                <option>orthoRH</option>
-            </optgroup>
-        </select>
+
+        <p >press key B to change blendFactor</p>
+        <p >press key T to change texture</p>
+        <p >press key M to change model</p>
+
+        <h2 id="p1"></h2>
+        <h2 id="p2"></h2>
+        <h2 id="p3"></h2>
+    </div>
 
 
 

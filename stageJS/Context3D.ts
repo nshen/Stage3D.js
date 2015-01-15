@@ -9,6 +9,7 @@ module stageJS
 
         private _clearBit: number;
         private _bendDisabled:boolean = true;
+        private _depthDisabled:boolean = true;
         constructor()
         {
             Context3DBlendFactor.init();
@@ -17,8 +18,7 @@ module stageJS
         public configureBackBuffer(width: number/* int */, height: number/* int */, antiAlias: number/* int */, enableDepthAndStencil:boolean = true): void
         {
             Context3D.GL.viewport(0, 0, width, height);
-
-          
+            this._depthDisabled = enableDepthAndStencil;
             //TODO: antiAlias , Stencil
             if (enableDepthAndStencil)
             {
@@ -234,7 +234,12 @@ module stageJS
 
         public setDepthTest(depthMask: boolean, passCompareMode: string): void
         {
-            // Context3D.GL.enable(Context3D.GL.DEPTH_TEST); need this ?
+            if(this._depthDisabled)
+            {
+                Context3D.GL.enable(Context3D.GL.DEPTH_TEST);
+                this._bendDisabled = false;
+            }
+
             Context3D.GL.depthMask(depthMask);
 
             switch (passCompareMode) {

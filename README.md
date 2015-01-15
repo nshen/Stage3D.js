@@ -3,7 +3,6 @@ Stage3D.js
 
 Stage3D API on top of WebGL
 
----
 Here is a drawTriangle example using TypeScript [(result)](http://www.nshen.net/Stage3D.js/examples/drawTriangle.html) :
 
 	var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");

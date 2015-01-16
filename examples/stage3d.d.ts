@@ -292,8 +292,6 @@ declare module stageJS {
     class Stage3D extends events.EventDispatcher {
         private _context3D;
         private _canvas;
-        private _stageWidth;
-        private _stageHeight;
         constructor(canvas: HTMLCanvasElement);
         public context3D : Context3D;
         public stageWidth : number;
@@ -308,6 +306,8 @@ declare module stageJS {
     class Context3D {
         static GL: WebGLRenderingContext;
         private _clearBit;
+        private _bendDisabled;
+        private _depthDisabled;
         constructor();
         public configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): void;
         public createVertexBuffer(numVertices: number, data32PerVertex: number): VertexBuffer3D;

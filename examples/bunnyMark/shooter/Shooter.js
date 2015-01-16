@@ -829,6 +829,11 @@ var shooter;
         function Entity(gs) {
             if (typeof gs === "undefined") { gs = null; }
             this.active = true;
+            this.fadeAnim = 0;
+            this.zoomAnim = 0;
+            this.rotationSpeed = 0;
+            this.collidemode = 0;
+            this.recycled = false;
             this._sprite = gs;
             this._speedX = 0.0;
             this._speedY = 0.0;
@@ -879,8 +884,22 @@ var shooter;
         function EntityManager(view) {
             this._SpritesPerRow = 8;
             this._SpritesPerCol = 8;
+            this.spritenumFireball = 63;
+            this.spritenumFireburst = 62;
+            this.spritenumShockwave = 61;
+            this.spritenumDebris = 60;
+            this.spritenumSpark = 59;
+            this.spritenumBullet3 = 58;
+            this.spritenumBullet2 = 57;
+            this.spritenumBullet1 = 56;
+            this.spritenumPlayer = 10;
+            this.spritenumOrb = 17;
             this.numCreated = 0;
             this.numReused = 0;
+            this.DEGREES_TO_RADIANS = Math.PI / 180;
+            this.RADIANS_TO_DEGREES = 180 / Math.PI;
+            this.FASTRANDOMTOFLOAT = 1 / Number.MAX_VALUE;
+            this.fastrandomseed = Math.random() * Number.MAX_VALUE;
             this._entityPool = [];
             this.setPosition(view);
         }
@@ -889,6 +908,13 @@ var shooter;
             this.minX = view.x - 32;
             this.maxY = view.height;
             this.minY = view.y;
+        };
+
+        EntityManager.prototype.fastRandom = function () {
+            this.fastrandomseed ^= (this.fastrandomseed << 21);
+            this.fastrandomseed ^= (this.fastrandomseed >>> 35);
+            this.fastrandomseed ^= (this.fastrandomseed << 4);
+            return (this.fastrandomseed * this.FASTRANDOMTOFLOAT);
         };
 
         EntityManager.prototype.createBatch = function (context3D) {

@@ -21,8 +21,17 @@ module shooter
 		private _SpritesPerRow:number = 8;
 		private _SpritesPerCol:number = 8;
 
-		//[Embed(source="../assets/sprites.png")]
-		//private SourceImage : Class;
+		// sprite IDs (indexing the spritesheet)
+		public spritenumFireball:number = 63;
+		public spritenumFireburst:number = 62;
+		public spritenumShockwave:number = 61;
+		public spritenumDebris:number = 60;
+		public spritenumSpark:number = 59;
+		public spritenumBullet3:number = 58;
+		public spritenumBullet2:number = 57;
+		public spritenumBullet1:number = 56;
+		public spritenumPlayer:number = 10;
+		public spritenumOrb:number = 17;
 		
 		// a reusable pool of entities
 		public _entityPool :Entity[] ;
@@ -41,6 +50,10 @@ module shooter
 
 		// the player entity - a special case
 		public thePlayer:Entity;
+
+		// reused for calculation speed
+		public DEGREES_TO_RADIANS:number = Math.PI / 180;
+		public RADIANS_TO_DEGREES:number = 180 / Math.PI;
 		
 		constructor(view:GPUSprite.Rectangle)
 		{
@@ -56,7 +69,21 @@ module shooter
 			this.maxY = view.height;
 			this.minY = view.y;
 		}
-		
+
+		//todo:try this myself
+		// this XOR based fast random number generator runs 4x faster
+		// than Math.random() and also returns a number from 0 to 1
+		// see http://www.calypso88.com/?cat=7
+		private FASTRANDOMTOFLOAT:number = 1 / Number.MAX_VALUE;
+		private fastrandomseed:number = Math.random() * Number.MAX_VALUE;
+		public fastRandom():number
+		{
+			this.fastrandomseed ^= (this.fastrandomseed << 21);
+			this.fastrandomseed ^= (this.fastrandomseed >>> 35);
+			this.fastrandomseed ^= (this.fastrandomseed << 4);
+			return (this.fastrandomseed * this.FASTRANDOMTOFLOAT);
+		}
+
 		public createBatch(context3D:stageJS.Context3D):GPUSprite.SpriteRenderLayer//LiteSpriteBatch
 		{
 			var sourceBitmap:HTMLImageElement = lib.ImageLoader.getInstance().get("assets/sprites.png");

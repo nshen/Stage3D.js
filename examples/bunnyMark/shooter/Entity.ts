@@ -22,7 +22,18 @@ module shooter
 
 		// if this is set, custom behaviors are run
 		public aiFunction : Function;
-		
+
+		// used for particle animation (in units per second)
+		public fadeAnim:number = 0;
+		public zoomAnim:number = 0;
+		public rotationSpeed:number = 0;
+
+		public collidemode:number = 0; // 0=none, 1=sphere, 2=box, etc.
+
+		// used to mark whether or not this entity was
+		// freshly created or reused from an inactive one
+		public recycled:boolean = false;
+
 		constructor(gs:GPUSprite.Sprite = null)
 		{
 			this._sprite = gs;

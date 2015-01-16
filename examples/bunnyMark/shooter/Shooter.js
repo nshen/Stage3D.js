@@ -457,8 +457,8 @@ var GPUSprite;
     })();
     GPUSprite.Sprite = Sprite;
 })(GPUSprite || (GPUSprite = {}));
-var shooter;
-(function (shooter) {
+var lib;
+(function (lib) {
     var ImageLoader = (function () {
         function ImageLoader() {
             this._queue = [];
@@ -510,8 +510,8 @@ var shooter;
         };
         return ImageLoader;
     })();
-    shooter.ImageLoader = ImageLoader;
-})(shooter || (shooter = {}));
+    lib.ImageLoader = ImageLoader;
+})(lib || (lib = {}));
 var shooter;
 (function (shooter) {
     var GameControls = (function () {
@@ -622,7 +622,7 @@ var shooter;
         };
 
         GameMenu.prototype.createBatch = function (context3D) {
-            var source = stageJS.BitmapData.fromImageElement(shooter.ImageLoader.getInstance().get("assets/titlescreen.png"));
+            var source = stageJS.BitmapData.fromImageElement(lib.ImageLoader.getInstance().get("assets/titlescreen.png"));
 
             this.spriteSheet = new GPUSprite.SpriteSheet(source, 0, 0);
 
@@ -770,7 +770,7 @@ var shooter;
                     this.amenuPlaySprite.alpha = 0;
                     this.controlsSprite.alpha = 1;
                     this.showingControls = true;
-                    this.showingControlsUntil = currentTime + 2000;
+                    this.showingControlsUntil = currentTime + 1000;
                     break;
                 case 3:
                     this.menuAboutSprite.alpha = 0;
@@ -781,7 +781,7 @@ var shooter;
                     this.amenuPlaySprite.alpha = 0;
                     this.aboutSprite.alpha = 1;
                     this.showingAbout = true;
-                    this.showingAboutUntil = currentTime + 2000;
+                    this.showingAboutUntil = currentTime + 1000;
                     break;
             }
             return false;
@@ -892,7 +892,7 @@ var shooter;
         };
 
         EntityManager.prototype.createBatch = function (context3D) {
-            var sourceBitmap = shooter.ImageLoader.getInstance().get("assets/sprites.png");
+            var sourceBitmap = lib.ImageLoader.getInstance().get("assets/sprites.png");
 
             this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(sourceBitmap), 8, 8);
 
@@ -967,12 +967,80 @@ var shooter;
     })();
     shooter.EntityManager = EntityManager;
 })(shooter || (shooter = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var shooter;
+(function (shooter) {
+    var GameBackground = (function (_super) {
+        __extends(GameBackground, _super);
+        function GameBackground(view) {
+            _super.call(this, view);
+            this.bgSpeed = -1;
+            this.bgSpritesPerRow = 1;
+            this.bgSpritesPerCol = 1;
+        }
+        GameBackground.prototype.createBatch = function (context3D) {
+            var bgsourceBitmap = lib.ImageLoader.getInstance().get("assets/stars.gif");
+
+            this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(bgsourceBitmap), this.bgSpritesPerRow, this.bgSpritesPerCol);
+
+            this._batch = new GPUSprite.SpriteRenderLayer(context3D, this._spriteSheet);
+
+            return this._batch;
+        };
+
+        GameBackground.prototype.setPosition = function (view) {
+            this.maxX = 256 + 512;
+            this.minX = -256;
+            this.maxY = view.height;
+            this.minY = view.y;
+        };
+
+        GameBackground.prototype.initBackground = function () {
+            console.log("Init background...");
+
+            var anEntity1 = this.respawn(0);
+            anEntity1.sprite.position.x = 256;
+            anEntity1.sprite.position.y = this.maxY / 2;
+            anEntity1.speedX = this.bgSpeed;
+
+            var anEntity2 = this.respawn(0);
+            anEntity2.sprite.position.x = 256 + 512;
+            anEntity2.sprite.position.y = this.maxY / 2;
+            anEntity2.speedX = this.bgSpeed;
+        };
+
+        GameBackground.prototype.update = function (currentTime) {
+            var anEntity;
+
+            for (var i = 0; i < this._entityPool.length; i++) {
+                anEntity = this._entityPool[i];
+                if (anEntity.active) {
+                    anEntity.sprite.position.x += anEntity.speedX;
+
+                    if (anEntity.sprite.position.x >= this.maxX) {
+                        anEntity.sprite.position.x = this.minX;
+                    } else if (anEntity.sprite.position.x <= this.minX) {
+                        anEntity.sprite.position.x = this.maxX;
+                    }
+                }
+            }
+        };
+        return GameBackground;
+    })(shooter.EntityManager);
+    shooter.GameBackground = GameBackground;
+})(shooter || (shooter = {}));
 var shooter;
 (function (shooter) {
     var ShooterMain = (function () {
         function ShooterMain(canvas) {
             var _this = this;
             this._state = 0;
+            this.nothingPressedLastFrame = false;
             this.onContext3DCreate = function (e) {
                 _this.context3D = _this.stage3d.context3D;
                 _this.initSpriteEngine();
@@ -981,15 +1049,20 @@ var shooter;
                 try  {
                     _this.stats.begin();
 
-                    _this._entities.addEntity();
-
-                    var timer = Date.now() - _this._start;
+                    _this.currentTime = _this.getTimer();
 
                     _this.context3D.clear(0, 0, 0, 1);
 
-                    _this._entities.update(timer);
+                    _this.processInput();
 
-                    _this._mainmenu.update(timer);
+                    _this._bg.update(_this.currentTime);
+
+                    if (_this._state == 0)
+                        _this._mainmenu.update(_this.currentTime);
+
+                    _this._entities.addEntity();
+
+                    _this._entities.update(_this.currentTime);
 
                     _this._spriteStage.drawDeferred();
 
@@ -1019,8 +1092,13 @@ var shooter;
             this._spriteStage = new GPUSprite.SpriteRenderStage(this.stage3d, this.context3D, stageRect);
             this._spriteStage.configureBackBuffer(_width, _height);
 
+            this._bg = new shooter.GameBackground(stageRect);
+            var batch = this._bg.createBatch(this.context3D);
+            this._spriteStage.addLayer(batch);
+            this._bg.initBackground();
+
             this._entities = new shooter.EntityManager(stageRect);
-            var batch = this._entities.createBatch(this.context3D);
+            batch = this._entities.createBatch(this.context3D);
             this._spriteStage.addLayer(batch);
 
             this._mainmenu = new shooter.GameMenu(stageRect);
@@ -1031,7 +1109,10 @@ var shooter;
 
             ShooterMain.canvas.onmousedown = function (ev) {
                 if (_this._state == 0) {
-                    if (_this._mainmenu && _this._mainmenu.activateCurrentMenuItem(new Date().valueOf())) {
+                    if (_this._mainmenu && _this._mainmenu.activateCurrentMenuItem(_this.getTimer()))
+                        ;
+                     {
+                        _this.startGame();
                     }
                 }
             };
@@ -1047,6 +1128,39 @@ var shooter;
             };
         };
 
+        ShooterMain.prototype.processInput = function () {
+            if (this._state == 0) {
+                if (this._controls.pressing.down || this._controls.pressing.right) {
+                    if (this.nothingPressedLastFrame) {
+                        this._mainmenu.nextMenuItem();
+                        this.nothingPressedLastFrame = false;
+                    }
+                } else if (this._controls.pressing.up || this._controls.pressing.left) {
+                    if (this.nothingPressedLastFrame) {
+                        this._mainmenu.prevMenuItem();
+                        this.nothingPressedLastFrame = false;
+                    }
+                } else if (this._controls.pressing.fire) {
+                    if (this._mainmenu.activateCurrentMenuItem(this.getTimer())) {
+                        this.startGame();
+                    }
+                } else {
+                    this.nothingPressedLastFrame = true;
+                }
+            } else {
+                if (this._controls.pressing.fire) {
+                }
+            }
+        };
+
+        ShooterMain.prototype.startGame = function () {
+            console.log("Starting game!");
+        };
+
+        ShooterMain.prototype.getTimer = function () {
+            return Date.now() - this._start;
+        };
+
         ShooterMain.prototype.initStats = function () {
             this.stats = new Stats();
             this.stats.setMode(0);
@@ -1058,9 +1172,11 @@ var shooter;
         };
 
         ShooterMain.main = function () {
-            shooter.ImageLoader.getInstance().add("assets/sprites.png");
-            shooter.ImageLoader.getInstance().add("assets/titlescreen.png");
-            shooter.ImageLoader.getInstance().downloadAll(function () {
+            lib.ImageLoader.getInstance().add("assets/sprites.png");
+            lib.ImageLoader.getInstance().add("assets/titlescreen.png");
+            lib.ImageLoader.getInstance().add("assets/stars.gif");
+
+            lib.ImageLoader.getInstance().downloadAll(function () {
                 new ShooterMain(ShooterMain.canvas = document.getElementById("my-canvas"));
             });
         };

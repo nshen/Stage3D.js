@@ -7,8 +7,9 @@
 ///<reference path="../GPUSprite/SpriteRenderStage.ts"/>
 ///<reference path="../GPUSprite/SpriteSheet.ts"/>
 
-//todo:与bunny重复的类
-///<reference path="./ImageLoader.ts"/>
+
+//依赖lib
+///<reference path="../../lib/ImageLoader.ts"/>
 
 
 
@@ -18,5 +19,6 @@
 
 ///<reference path="./Entity.ts"/>
 ///<reference path="./EntityManager.ts"/>
+///<reference path="./GameBackground.ts"/>
 ///<reference path="./ShooterMain.ts"/>
 

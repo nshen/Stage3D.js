@@ -1580,7 +1580,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageWidth", {
             get: function () {
-                return this._canvas.clientWidth;
+                return this._canvas.width;
             },
             enumerable: true,
             configurable: true
@@ -1588,7 +1588,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageHeight", {
             get: function () {
-                return this._canvas.clientHeight;
+                return this._canvas.height;
             },
             enumerable: true,
             configurable: true

@@ -12,8 +12,6 @@ module shooter
 	{
 		// the sprite sheet image
 		public spriteSheet:GPUSprite.SpriteSheet;
-		//[Embed(source="../assets/titlescreen.png")]
-		//private SourceImage : Class;
 		
 		// all the polygons that make up the scene
 		public batch:GPUSprite.SpriteRenderLayer; // : LiteSpriteBatch;
@@ -76,7 +74,7 @@ module shooter
 		
 		public createBatch(context3D:stageJS.Context3D) : GPUSprite.SpriteRenderLayer//LiteSpriteBatch
 		{
-			var source:stageJS.BitmapData = stageJS.BitmapData.fromImageElement(shooter.ImageLoader.getInstance().get("assets/titlescreen.png"));
+			var source:stageJS.BitmapData = stageJS.BitmapData.fromImageElement(lib.ImageLoader.getInstance().get("assets/titlescreen.png"));
 
 			// create a spritesheet using the titlescreen image
 			this.spriteSheet = new GPUSprite.SpriteSheet(source, 0, 0);
@@ -243,7 +241,7 @@ module shooter
 					this.amenuPlaySprite.alpha = 0;
 					this.controlsSprite.alpha = 1;
 					this.showingControls = true;
-					this.showingControlsUntil = currentTime + 2000;
+					this.showingControlsUntil = currentTime + 1000;
 					break;
 				case 3: // about selected
 					this.menuAboutSprite.alpha = 0;
@@ -254,7 +252,7 @@ module shooter
 					this.amenuPlaySprite.alpha = 0;
 					this.aboutSprite.alpha = 1;
 					this.showingAbout = true;
-					this.showingAboutUntil = currentTime + 2000;
+					this.showingAboutUntil = currentTime + 1000;
 					break;
 			}
 			return false;

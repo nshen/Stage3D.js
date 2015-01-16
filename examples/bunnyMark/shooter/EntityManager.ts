@@ -17,7 +17,7 @@ module shooter
 	export class EntityManager
 	{
 		// the sprite sheet image
-		private _spriteSheet:GPUSprite.SpriteSheet;
+		public _spriteSheet:GPUSprite.SpriteSheet;
 		private _SpritesPerRow:number = 8;
 		private _SpritesPerCol:number = 8;
 
@@ -25,7 +25,7 @@ module shooter
 		//private SourceImage : Class;
 		
 		// a reusable pool of entities
-		private _entityPool :Entity[] ;
+		public _entityPool :Entity[] ;
 		
 		// all the polygons that make up the scene
 		public _batch:GPUSprite.SpriteRenderLayer ; //LiteSpriteBatch
@@ -34,10 +34,10 @@ module shooter
 		public numCreated : number = 0;
 		public numReused : number = 0;
 		
-		private maxX:number;
-		private minX:number;
-		private maxY:number;
-		private minY:number;
+		public maxX:number;
+		public minX:number;
+		public maxY:number;
+		public minY:number;
 		
 		constructor(view:GPUSprite.Rectangle)
 		{
@@ -56,7 +56,7 @@ module shooter
 		
 		public createBatch(context3D:stageJS.Context3D):GPUSprite.SpriteRenderLayer//LiteSpriteBatch
 		{
-			var sourceBitmap:HTMLImageElement = shooter.ImageLoader.getInstance().get("assets/sprites.png");
+			var sourceBitmap:HTMLImageElement = lib.ImageLoader.getInstance().get("assets/sprites.png");
 
 			// create a spritesheet with 8x8 (64) sprites on it
 			this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(sourceBitmap), 8, 8);

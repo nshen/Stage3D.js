@@ -11,6 +11,8 @@ module shooter
 
         private _spriteStage:GPUSprite.SpriteRenderStage; // LiteSpriteStage
         private _entities:shooter.EntityManager;
+        // the background stars
+        private _bg : shooter.GameBackground;
 
         private _controls : shooter.GameControls;
 
@@ -19,6 +21,10 @@ module shooter
         private _mainmenu : shooter.GameMenu;
 
         private _start:number;
+        private currentTime:number;
+
+        // don't update the menu too fast
+        private nothingPressedLastFrame:boolean = false;
 
         public constructor(canvas:HTMLCanvasElement)
         {
@@ -43,15 +49,20 @@ module shooter
             var _width:number = this.stage3d.stageWidth;
             var _height:number = this.stage3d.stageHeight;
 
-            //todo:rectangle
             var stageRect:GPUSprite.Rectangle = new GPUSprite.Rectangle(0,0,_width,_height);
             this._spriteStage = new GPUSprite.SpriteRenderStage(this.stage3d,this.context3D,stageRect)
             this._spriteStage.configureBackBuffer(_width,_height);
 
+            // create the background stars
+            this._bg = new shooter.GameBackground(stageRect);
+            var batch:GPUSprite.SpriteRenderLayer = this._bg.createBatch(this.context3D);
+            this._spriteStage.addLayer(batch);
+            this._bg.initBackground();
+
             // create a single rendering batch
             // which will draw all sprites in one pass
             this._entities = new shooter.EntityManager(stageRect);
-            var batch:GPUSprite.SpriteRenderLayer = this._entities.createBatch(this.context3D);
+            batch = this._entities.createBatch(this.context3D);
             this._spriteStage.addLayer(batch); // addBatch
 
             // create the logo/titlescreen main menu
@@ -60,11 +71,6 @@ module shooter
             this._spriteStage.addLayer(batch);
 
 
-            // add the first entity right now
-            //this._entities.addEntity();
-
-            // tell the gui where to grab statistics from
-            //_gui.statsTarget = _entities;
 
             // start the render loop
             this.onEnterFrame();//stage.addEventListener(Event.ENTER_FRAME,onEnterFrame);
@@ -74,9 +80,9 @@ module shooter
             {
                 if (this._state == 0) // are we at the main menu?
                 {
-                    if (this._mainmenu && this._mainmenu.activateCurrentMenuItem(new Date().valueOf()))
+                    if (this._mainmenu && this._mainmenu.activateCurrentMenuItem(this.getTimer()));
                     { // if the above returns true we should start the game
-                        //this.startGame();
+                        this.startGame();
                     }
                 }
             }
@@ -96,6 +102,66 @@ module shooter
             }
         }
 
+        // handle any player input
+        private processInput():void
+        {
+            if (this._state == 0) // are we at the main menu?
+            {
+                // select menu items via keyboard
+                if (this._controls.pressing.down || this._controls.pressing.right)
+                {
+                    if (this.nothingPressedLastFrame)
+                    {
+                        //_sfx.playGun(1);
+                        this._mainmenu.nextMenuItem();
+                        this.nothingPressedLastFrame = false;
+                    }
+                }
+                else if (this._controls.pressing.up || this._controls.pressing.left)
+                {
+                    if (this.nothingPressedLastFrame)
+                    {
+                        //_sfx.playGun(1);
+                        this._mainmenu.prevMenuItem();
+                        this.nothingPressedLastFrame = false;
+                    }
+                }
+                else if (this._controls.pressing.fire)
+                {
+                    if (this._mainmenu.activateCurrentMenuItem(this.getTimer()))
+                    { // if the above returns true we should start the game
+                        this.startGame();
+                    }
+                }
+                else
+                {
+                    // this ensures the menu doesn't change too fast
+                    this.nothingPressedLastFrame = true;
+                }
+            }
+            else
+            {
+                // we are NOT at the main menu: we are actually playing the game
+                // in future versions we will add projectile
+                // spawning functinality here to fire bullets
+                if (this._controls.pressing.fire)
+                {
+                    //_sfx.playGun(1);
+                    //this._entities.shootBullet();
+                }
+            }
+        }
+
+        private startGame():void
+        {
+            console.log("Starting game!");
+            //_state = 1;
+            //_spriteStage.removeBatch(_mainmenu.batch);
+            //_sfx.playMusic();
+            //// add the player entity to the game!
+            //thePlayer = _entities.addPlayer(playerLogic);
+        }
+
         private onEnterFrame = () =>
         {
             //console.log(this._controls.textDescription());
@@ -103,27 +169,35 @@ module shooter
             try
             {
                 this.stats.begin();
+
+                this.currentTime = this.getTimer();
+
+                // erase the previous frame
+                this.context3D.clear(0, 0, 0, 1);
+
+                this.processInput();
+                //this._bg.update(currentTime);
+
+                // scroll the background
+                this._bg.update(this.currentTime);
+
+                if(this._state == 0)
+                  this._mainmenu.update(this.currentTime);
+
                 // keep adding more sprites - FOREVER!
                 // this is a test of the entity manager's
                 // object reuse "pool"
                 this._entities.addEntity();
 
-                var timer:number = Date.now() - this._start;
-
-
-                // erase the previous frame
-                this.context3D.clear(0, 0, 0, 1);
-
                 // move/animate all entities
-                this._entities.update(timer);
-
-                this._mainmenu.update(timer);
+                this._entities.update(this.currentTime);
 
                 // draw all entities
                 this._spriteStage.drawDeferred(); //render
 
                 // update the screen
                 this.context3D.present();
+
 
                 this.stats.end();
             }
@@ -139,6 +213,10 @@ module shooter
             requestAnimationFrame(this.onEnterFrame);
         }
 
+        private getTimer():number
+        {
+            return Date.now() - this._start;
+        }
 
         //------------------------------------
         public stats:any;
@@ -156,9 +234,11 @@ module shooter
         public static canvas:HTMLCanvasElement;
         public static main():void
         {
-            shooter.ImageLoader.getInstance().add("assets/sprites.png");
-            shooter.ImageLoader.getInstance().add("assets/titlescreen.png");
-            shooter.ImageLoader.getInstance().downloadAll(function(){
+            lib.ImageLoader.getInstance().add("assets/sprites.png");
+            lib.ImageLoader.getInstance().add("assets/titlescreen.png");
+            lib.ImageLoader.getInstance().add("assets/stars.gif");
+
+            lib.ImageLoader.getInstance().downloadAll(function(){
                 new ShooterMain(ShooterMain.canvas = <HTMLCanvasElement>document.getElementById("my-canvas"));
             });
 

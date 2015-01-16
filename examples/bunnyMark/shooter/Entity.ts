@@ -18,6 +18,10 @@ module shooter
 		private _sprite:GPUSprite.Sprite; //LiteSprite
 
 		public active : boolean = true;
+
+
+		// if this is set, custom behaviors are run
+		public aiFunction : Function;
 		
 		constructor(gs:GPUSprite.Sprite = null)
 		{

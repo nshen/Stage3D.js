@@ -38,6 +38,9 @@ module shooter
 		public minX:number;
 		public maxY:number;
 		public minY:number;
+
+		// the player entity - a special case
+		public thePlayer:Entity;
 		
 		constructor(view:GPUSprite.Rectangle)
 		{
@@ -94,7 +97,37 @@ module shooter
 			this.numCreated++;
 			return anEntity;
 		}
-		
+
+
+		// this entity is the PLAYER
+		public addPlayer(playerController:Function):Entity
+		{
+			this.thePlayer = this.respawn(10); // sprite #10 looks nice for now
+			this.thePlayer.sprite.position.x = 32;
+			this.thePlayer.sprite.position.y = this.maxY / 2;
+			this.thePlayer.sprite.rotation = 180 * (Math.PI/180); // degrees to radians
+			this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = 2;
+			this.thePlayer.speedX = 0;
+			this.thePlayer.speedY = 0;
+			this.thePlayer.aiFunction = playerController;
+			return this.thePlayer;
+		}
+
+		// shoot a bullet (from the player for now)
+		public shootBullet():Entity
+		{
+			var anEntity:Entity;
+			anEntity = this.respawn(39);
+			anEntity.sprite.position.x = this.thePlayer.sprite.position.x + 8;
+			anEntity.sprite.position.y = this.thePlayer.sprite.position.y + 4;
+			anEntity.sprite.rotation = 180 * (Math.PI/180);
+			anEntity.sprite.scaleX = anEntity.sprite.scaleY = 2;
+			anEntity.speedX = 10;
+			anEntity.speedY = 0;
+			return anEntity;
+		}
+
+
 		// for this test, create random entities that move 
 		// from right to left with random speeds and scales
 		public addEntity():void 
@@ -112,6 +145,9 @@ module shooter
 			anEntity.sprite.scaleY = anEntity.sprite.scaleX;
 			anEntity.sprite.rotation = 15 - Math.random() * 30;
 		}
+
+
+
 		
 		// called every frame: used to update the simulation
 		// this is where you would perform AI, physics, etc.
@@ -125,29 +161,38 @@ module shooter
 				{
 					anEntity.sprite.position.x += anEntity.speedX;
 					anEntity.sprite.position.y += anEntity.speedY;
-					anEntity.sprite.rotation += 0.1;
-					
-					if (anEntity.sprite.position.x > this.maxX)
-					{
-						anEntity.speedX *= -1;
-						anEntity.sprite.position.x = this.maxX;
+
+					// the player follows different rules
+					if(anEntity.aiFunction != null)
+						anEntity.aiFunction(anEntity);
+					else
+					{ // all other entities use the "demo" logic
+
+						anEntity.sprite.rotation += 0.1;
+
+						if (anEntity.sprite.position.x > this.maxX)
+						{
+							anEntity.speedX *= -1;
+							anEntity.sprite.position.x = this.maxX;
+						}
+						else if (anEntity.sprite.position.x < this.minX)
+						{
+							// if we go past the left edge, become inactive
+							// so the sprite can be respawned
+							anEntity.die();
+						}
+						if (anEntity.sprite.position.y > this.maxY)
+						{
+							anEntity.speedY *= -1;
+							anEntity.sprite.position.y = this.maxY;
+						}
+						else if (anEntity.sprite.position.y < this.minY)
+						{
+							anEntity.speedY *= -1;
+							anEntity.sprite.position.y = this.minY;
+						}
 					}
-					else if (anEntity.sprite.position.x < this.minX)
-					{
-						// if we go past the left edge, become inactive
-						// so the sprite can be respawned
-						anEntity.die();
-					}
-					if (anEntity.sprite.position.y > this.maxY)
-					{
-						anEntity.speedY *= -1;
-						anEntity.sprite.position.y = this.maxY;
-					}
-					else if (anEntity.sprite.position.y < this.minY)
-					{
-						anEntity.speedY *= -1;
-						anEntity.sprite.position.y = this.minY;
-					}
+
 				}
 			}
 		}

@@ -26,6 +26,9 @@ module shooter
         // don't update the menu too fast
         private nothingPressedLastFrame:boolean = false;
 
+        // player one's entity
+        public thePlayer:Entity;
+
         public constructor(canvas:HTMLCanvasElement)
         {
             this._start = new Date().valueOf();
@@ -56,8 +59,8 @@ module shooter
             // create the background stars
             this._bg = new shooter.GameBackground(stageRect);
             var batch:GPUSprite.SpriteRenderLayer = this._bg.createBatch(this.context3D);
-            this._spriteStage.addLayer(batch);
             this._bg.initBackground();
+            this._spriteStage.addLayer(batch);
 
             // create a single rendering batch
             // which will draw all sprites in one pass
@@ -80,7 +83,7 @@ module shooter
             {
                 if (this._state == 0) // are we at the main menu?
                 {
-                    if (this._mainmenu && this._mainmenu.activateCurrentMenuItem(this.getTimer()));
+                    if (this._mainmenu && this._mainmenu.activateCurrentMenuItem(this.getTimer()))
                     { // if the above returns true we should start the game
                         this.startGame();
                     }
@@ -147,7 +150,7 @@ module shooter
                 if (this._controls.pressing.fire)
                 {
                     //_sfx.playGun(1);
-                    //this._entities.shootBullet();
+                    this._entities.shootBullet();
                 }
             }
         }
@@ -155,13 +158,35 @@ module shooter
         private startGame():void
         {
             console.log("Starting game!");
-            //_state = 1;
-            //_spriteStage.removeBatch(_mainmenu.batch);
+            this._state = 1;
+            this._spriteStage.removeLayer(this._mainmenu.batch);
             //_sfx.playMusic();
-            //// add the player entity to the game!
-            //thePlayer = _entities.addPlayer(playerLogic);
+            // add the player entity to the game!
+            this.thePlayer = this._entities.addPlayer(this.playerLogic);
         }
 
+        public playerLogic = (me:Entity)=>
+        {
+            me.speedY = me.speedX = 0;
+            if (this._controls.pressing.up)
+                me.speedY = -4;
+            if (this._controls.pressing.down)
+                me.speedY = 4;
+            if (this._controls.pressing.left)
+                me.speedX = -4;
+            if (this._controls.pressing.right)
+                me.speedX = 4;
+
+            // keep on screen
+            if (me.sprite.position.x < 0)
+                me.sprite.position.x = 0;
+            if (me.sprite.position.x > this.stage3d.stageWidth)
+                me.sprite.position.x = this.stage3d.stageWidth;
+            if (me.sprite.position.y < 0)
+                me.sprite.position.y = 0;
+            if (me.sprite.position.y > this.stage3d.stageHeight)
+                me.sprite.position.y = this.stage3d.stageHeight;
+        }
         private onEnterFrame = () =>
         {
             //console.log(this._controls.textDescription());

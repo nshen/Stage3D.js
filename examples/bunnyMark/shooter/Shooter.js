@@ -266,7 +266,7 @@ var GPUSprite;
             }
 
             this._context3D.setProgram(this._shaderProgram);
-            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.ONE, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.SOURCE_ALPHA, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
             this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false);
             this._context3D.setTextureAt("fs0", this._spriteSheet._texture);
 
@@ -923,6 +923,30 @@ var shooter;
             return anEntity;
         };
 
+        EntityManager.prototype.addPlayer = function (playerController) {
+            this.thePlayer = this.respawn(10);
+            this.thePlayer.sprite.position.x = 32;
+            this.thePlayer.sprite.position.y = this.maxY / 2;
+            this.thePlayer.sprite.rotation = 180 * (Math.PI / 180);
+            this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = 2;
+            this.thePlayer.speedX = 0;
+            this.thePlayer.speedY = 0;
+            this.thePlayer.aiFunction = playerController;
+            return this.thePlayer;
+        };
+
+        EntityManager.prototype.shootBullet = function () {
+            var anEntity;
+            anEntity = this.respawn(39);
+            anEntity.sprite.position.x = this.thePlayer.sprite.position.x + 8;
+            anEntity.sprite.position.y = this.thePlayer.sprite.position.y + 4;
+            anEntity.sprite.rotation = 180 * (Math.PI / 180);
+            anEntity.sprite.scaleX = anEntity.sprite.scaleY = 2;
+            anEntity.speedX = 10;
+            anEntity.speedY = 0;
+            return anEntity;
+        };
+
         EntityManager.prototype.addEntity = function () {
             var anEntity;
             var randomSpriteID = Math.floor(Math.random() * 64);
@@ -945,20 +969,25 @@ var shooter;
                 if (anEntity.active) {
                     anEntity.sprite.position.x += anEntity.speedX;
                     anEntity.sprite.position.y += anEntity.speedY;
-                    anEntity.sprite.rotation += 0.1;
 
-                    if (anEntity.sprite.position.x > this.maxX) {
-                        anEntity.speedX *= -1;
-                        anEntity.sprite.position.x = this.maxX;
-                    } else if (anEntity.sprite.position.x < this.minX) {
-                        anEntity.die();
-                    }
-                    if (anEntity.sprite.position.y > this.maxY) {
-                        anEntity.speedY *= -1;
-                        anEntity.sprite.position.y = this.maxY;
-                    } else if (anEntity.sprite.position.y < this.minY) {
-                        anEntity.speedY *= -1;
-                        anEntity.sprite.position.y = this.minY;
+                    if (anEntity.aiFunction != null)
+                        anEntity.aiFunction(anEntity);
+                    else {
+                        anEntity.sprite.rotation += 0.1;
+
+                        if (anEntity.sprite.position.x > this.maxX) {
+                            anEntity.speedX *= -1;
+                            anEntity.sprite.position.x = this.maxX;
+                        } else if (anEntity.sprite.position.x < this.minX) {
+                            anEntity.die();
+                        }
+                        if (anEntity.sprite.position.y > this.maxY) {
+                            anEntity.speedY *= -1;
+                            anEntity.sprite.position.y = this.maxY;
+                        } else if (anEntity.sprite.position.y < this.minY) {
+                            anEntity.speedY *= -1;
+                            anEntity.sprite.position.y = this.minY;
+                        }
                     }
                 }
             }
@@ -994,7 +1023,7 @@ var shooter;
         };
 
         GameBackground.prototype.setPosition = function (view) {
-            this.maxX = 256 + 512;
+            this.maxX = 256 + 512 + 512;
             this.minX = -256;
             this.maxY = view.height;
             this.minY = view.y;
@@ -1012,6 +1041,11 @@ var shooter;
             anEntity2.sprite.position.x = 256 + 512;
             anEntity2.sprite.position.y = this.maxY / 2;
             anEntity2.speedX = this.bgSpeed;
+
+            var anEntity3 = this.respawn(0);
+            anEntity3.sprite.position.x = 256 + 512 + 512;
+            anEntity3.sprite.position.y = this.maxY / 2;
+            anEntity3.speedX = this.bgSpeed;
         };
 
         GameBackground.prototype.update = function (currentTime) {
@@ -1044,6 +1078,26 @@ var shooter;
             this.onContext3DCreate = function (e) {
                 _this.context3D = _this.stage3d.context3D;
                 _this.initSpriteEngine();
+            };
+            this.playerLogic = function (me) {
+                me.speedY = me.speedX = 0;
+                if (_this._controls.pressing.up)
+                    me.speedY = -4;
+                if (_this._controls.pressing.down)
+                    me.speedY = 4;
+                if (_this._controls.pressing.left)
+                    me.speedX = -4;
+                if (_this._controls.pressing.right)
+                    me.speedX = 4;
+
+                if (me.sprite.position.x < 0)
+                    me.sprite.position.x = 0;
+                if (me.sprite.position.x > _this.stage3d.stageWidth)
+                    me.sprite.position.x = _this.stage3d.stageWidth;
+                if (me.sprite.position.y < 0)
+                    me.sprite.position.y = 0;
+                if (me.sprite.position.y > _this.stage3d.stageHeight)
+                    me.sprite.position.y = _this.stage3d.stageHeight;
             };
             this.onEnterFrame = function () {
                 try  {
@@ -1094,8 +1148,8 @@ var shooter;
 
             this._bg = new shooter.GameBackground(stageRect);
             var batch = this._bg.createBatch(this.context3D);
-            this._spriteStage.addLayer(batch);
             this._bg.initBackground();
+            this._spriteStage.addLayer(batch);
 
             this._entities = new shooter.EntityManager(stageRect);
             batch = this._entities.createBatch(this.context3D);
@@ -1109,9 +1163,7 @@ var shooter;
 
             ShooterMain.canvas.onmousedown = function (ev) {
                 if (_this._state == 0) {
-                    if (_this._mainmenu && _this._mainmenu.activateCurrentMenuItem(_this.getTimer()))
-                        ;
-                     {
+                    if (_this._mainmenu && _this._mainmenu.activateCurrentMenuItem(_this.getTimer())) {
                         _this.startGame();
                     }
                 }
@@ -1149,12 +1201,17 @@ var shooter;
                 }
             } else {
                 if (this._controls.pressing.fire) {
+                    this._entities.shootBullet();
                 }
             }
         };
 
         ShooterMain.prototype.startGame = function () {
             console.log("Starting game!");
+            this._state = 1;
+            this._spriteStage.removeLayer(this._mainmenu.batch);
+
+            this.thePlayer = this._entities.addPlayer(this.playerLogic);
         };
 
         ShooterMain.prototype.getTimer = function () {

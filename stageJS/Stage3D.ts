@@ -26,12 +26,12 @@ module stageJS
 
         public get stageWidth(): number
         {
-            return this._canvas.clientWidth;
+            return this._canvas.width;
         }
 
         public get stageHeight(): number
         {
-            return this._canvas.clientHeight;
+            return this._canvas.height;
         }
 
         public requestContext3D():void

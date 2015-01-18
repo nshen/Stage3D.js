@@ -829,10 +829,13 @@ var shooter;
         function Entity(gs) {
             if (typeof gs === "undefined") { gs = null; }
             this.active = true;
+            this.isBullet = false;
+            this.leavesTrail = false;
+            this.collidemode = 0;
+            this.collideradius = 32;
             this.fadeAnim = 0;
             this.zoomAnim = 0;
             this.rotationSpeed = 0;
-            this.collidemode = 0;
             this.recycled = false;
             this._sprite = gs;
             this._speedX = 0.0;
@@ -842,6 +845,11 @@ var shooter;
             this.active = false;
 
             this._sprite.visible = false;
+
+            this.leavesTrail = false;
+            this.isBullet = false;
+            this.touching = null;
+            this.collidemode = 0;
         };
 
         Object.defineProperty(Entity.prototype, "speedX", {
@@ -874,9 +882,128 @@ var shooter;
             enumerable: true,
             configurable: true
         });
+
+        Entity.prototype.colliding = function (checkme) {
+            if (this.collidemode == 1) {
+                if (this.isCollidingSphere(checkme))
+                    return checkme;
+            }
+            return null;
+        };
+
+        Entity.prototype.isCollidingSphere = function (checkme) {
+            if (this == checkme)
+                return false;
+
+            if (!this.collidemode || !checkme.collidemode)
+                return false;
+
+            if (checkme.owner == this)
+                return false;
+
+            if (checkme.owner == this.owner)
+                return false;
+
+            if (this.collideradius == 0 || checkme.collideradius == 0)
+                return false;
+
+            if (((this.sprite.position.x - checkme.sprite.position.x) * (this.sprite.position.x - checkme.sprite.position.x) + (this.sprite.position.y - checkme.sprite.position.y) * (this.sprite.position.y - checkme.sprite.position.y)) <= (this.collideradius + checkme.collideradius) * (this.collideradius + checkme.collideradius)) {
+                this.touching = checkme;
+                return true;
+            }
+
+            return false;
+        };
         return Entity;
     })();
     shooter.Entity = Entity;
+})(shooter || (shooter = {}));
+var shooter;
+(function (shooter) {
+    var GameParticles = (function () {
+        function GameParticles(entityMan) {
+            this.allParticles = [];
+            this.gfx = entityMan;
+        }
+        GameParticles.prototype.addExplosion = function (pos) {
+            this.addShockwave(pos);
+            this.addDebris(pos, 6, 12);
+            this.addFireball(pos);
+            this.addBursts(pos, 10, 20);
+            this.addSparks(pos, 8, 16);
+        };
+
+        GameParticles.prototype.addParticle = function (spr, x, y, startScale, spdX, spdY, startAlpha, rot, rotSpd, fadeSpd, zoomSpd) {
+            if (typeof startScale === "undefined") { startScale = 0.01; }
+            if (typeof spdX === "undefined") { spdX = 0; }
+            if (typeof spdY === "undefined") { spdY = 0; }
+            if (typeof startAlpha === "undefined") { startAlpha = 1; }
+            if (typeof rot === "undefined") { rot = NaN; }
+            if (typeof rotSpd === "undefined") { rotSpd = NaN; }
+            if (typeof fadeSpd === "undefined") { fadeSpd = NaN; }
+            if (typeof zoomSpd === "undefined") { zoomSpd = NaN; }
+            if (isNaN(rot))
+                rot = Math.random() * 360;
+            if (isNaN(rotSpd))
+                rotSpd = Math.random() * 360 - 180;
+            if (isNaN(fadeSpd))
+                fadeSpd = -1 * (Math.random() * 1 + 1);
+            if (isNaN(zoomSpd))
+                zoomSpd = Math.random() * 2 + 1;
+
+            var anEntity;
+            anEntity = this.gfx.respawn(spr);
+            anEntity.sprite.position.x = x;
+            anEntity.sprite.position.y = y;
+            anEntity.speedX = spdX;
+            anEntity.speedY = spdY;
+            anEntity.sprite.rotation = rot * this.gfx.DEGREES_TO_RADIANS;
+            anEntity.rotationSpeed = rotSpd * this.gfx.DEGREES_TO_RADIANS;
+            anEntity.collidemode = 0;
+            anEntity.fadeAnim = fadeSpd;
+            anEntity.zoomAnim = zoomSpd;
+            anEntity.sprite.scaleX = startScale;
+            anEntity.sprite.scaleY = startScale;
+            anEntity.sprite.alpha = startAlpha;
+            if (!anEntity.recycled)
+                this.allParticles.push(anEntity);
+            return anEntity;
+        };
+
+        GameParticles.prototype.addFireball = function (pos) {
+            this.addParticle(this.gfx.spritenumFireball, pos.x, pos.y, 0.01, 0, 0, 1, NaN, NaN, NaN, 4);
+        };
+
+        GameParticles.prototype.addShockwave = function (pos) {
+            this.addParticle(this.gfx.spritenumShockwave, pos.x, pos.y, 0.01, 0, 0, 1, NaN, NaN, -3, 20);
+        };
+
+        GameParticles.prototype.addBursts = function (pos, mincount, maxcount) {
+            var nextparticle = 0;
+            var numparticles = Math.random() * mincount + (maxcount - mincount);
+            for (nextparticle = 0; nextparticle < numparticles; nextparticle++) {
+                this.addParticle(this.gfx.spritenumFireburst, pos.x + Math.random() * 16 - 8, pos.y + +Math.random() * 16 - 8, 0.02, Math.random() * 200 - 100, Math.random() * 200 - 100, 0.75);
+            }
+        };
+
+        GameParticles.prototype.addSparks = function (pos, mincount, maxcount) {
+            var nextparticle = 0;
+            var numparticles = Math.random() * mincount + (maxcount - mincount);
+            for (nextparticle = 0; nextparticle < numparticles; nextparticle++) {
+                this.addParticle(this.gfx.spritenumSpark, pos.x, pos.y, 1, Math.random() * 320 - 160, Math.random() * 320 - 160, 1, NaN, NaN, 0, -1.5);
+            }
+        };
+
+        GameParticles.prototype.addDebris = function (pos, mincount, maxcount) {
+            var nextparticle = 0;
+            var numparticles = Math.random() * mincount + (maxcount - mincount);
+            for (nextparticle = 0; nextparticle < numparticles; nextparticle++) {
+                this.addParticle(this.gfx.spritenumDebris, pos.x, pos.y, 1, Math.random() * 180 - 120, Math.random() * 180 - 90, 1, NaN, NaN, -1, 0);
+            }
+        };
+        return GameParticles;
+    })();
+    shooter.GameParticles = GameParticles;
 })(shooter || (shooter = {}));
 var shooter;
 (function (shooter) {
@@ -884,6 +1011,9 @@ var shooter;
         function EntityManager(view) {
             this._SpritesPerRow = 8;
             this._SpritesPerCol = 8;
+            this.shipScale = 1.5;
+            this.bulletSpeed = 250;
+            this.currentFrameSeconds = 0;
             this.spritenumFireball = 63;
             this.spritenumFireburst = 62;
             this.spritenumShockwave = 61;
@@ -894,27 +1024,21 @@ var shooter;
             this.spritenumBullet1 = 56;
             this.spritenumPlayer = 10;
             this.spritenumOrb = 17;
-            this.numCreated = 0;
-            this.numReused = 0;
             this.DEGREES_TO_RADIANS = Math.PI / 180;
             this.RADIANS_TO_DEGREES = 180 / Math.PI;
-            this.FASTRANDOMTOFLOAT = 1 / Number.MAX_VALUE;
-            this.fastrandomseed = Math.random() * Number.MAX_VALUE;
+            this.numCreated = 0;
+            this.numReused = 0;
             this._entityPool = [];
+            this.allBullets = [];
+            this.allEnemies = [];
+            this.particles = new shooter.GameParticles(this);
             this.setPosition(view);
         }
         EntityManager.prototype.setPosition = function (view) {
-            this.maxX = view.width + 32;
-            this.minX = view.x - 32;
-            this.maxY = view.height;
-            this.minY = view.y;
-        };
-
-        EntityManager.prototype.fastRandom = function () {
-            this.fastrandomseed ^= (this.fastrandomseed << 21);
-            this.fastrandomseed ^= (this.fastrandomseed >>> 35);
-            this.fastrandomseed ^= (this.fastrandomseed << 4);
-            return (this.fastrandomseed * this.FASTRANDOMTOFLOAT);
+            this.maxX = view.width + 64;
+            this.minX = view.x - 64;
+            this.maxY = view.height + 64;
+            this.minY = view.y - 64;
         };
 
         EntityManager.prototype.createBatch = function (context3D) {
@@ -936,6 +1060,7 @@ var shooter;
                 if (!anEntity.active && (anEntity.sprite.spriteId == sprID)) {
                     anEntity.active = true;
                     anEntity.sprite.visible = true;
+                    anEntity.recycled = true;
                     this.numReused++;
                     return anEntity;
                 }
@@ -953,67 +1078,156 @@ var shooter;
             this.thePlayer = this.respawn(10);
             this.thePlayer.sprite.position.x = 32;
             this.thePlayer.sprite.position.y = this.maxY / 2;
-            this.thePlayer.sprite.rotation = 180 * (Math.PI / 180);
-            this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = 2;
+            this.thePlayer.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
+            this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = this.shipScale;
             this.thePlayer.speedX = 0;
             this.thePlayer.speedY = 0;
+            this.thePlayer.active = true;
             this.thePlayer.aiFunction = playerController;
+            this.thePlayer.leavesTrail = true;
+
+            this.theOrb = this.respawn(this.spritenumOrb);
+            this.theOrb.rotationSpeed = 720 * this.DEGREES_TO_RADIANS;
+            this.theOrb.leavesTrail = true;
+            this.theOrb.collidemode = 1;
+            this.theOrb.collideradius = 12;
+            this.theOrb.isBullet = true;
+            this.theOrb.owner = this.thePlayer;
+            this.theOrb.orbiting = this.thePlayer;
+            this.theOrb.orbitingDistance = 180;
+
             return this.thePlayer;
         };
 
-        EntityManager.prototype.shootBullet = function () {
+        EntityManager.prototype.shootBullet = function (powa) {
+            if (typeof powa === "undefined") { powa = 1; }
             var anEntity;
-            anEntity = this.respawn(39);
+
+            if (powa == 1)
+                anEntity = this.respawn(this.spritenumBullet1);
+            else if (powa == 2)
+                anEntity = this.respawn(this.spritenumBullet2);
+            else
+                anEntity = this.respawn(this.spritenumBullet3);
+
             anEntity.sprite.position.x = this.thePlayer.sprite.position.x + 8;
             anEntity.sprite.position.y = this.thePlayer.sprite.position.y + 4;
-            anEntity.sprite.rotation = 180 * (Math.PI / 180);
-            anEntity.sprite.scaleX = anEntity.sprite.scaleY = 2;
-            anEntity.speedX = 10;
+            anEntity.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
+            anEntity.sprite.scaleX = anEntity.sprite.scaleY = 1;
+            anEntity.speedX = this.bulletSpeed;
             anEntity.speedY = 0;
+            anEntity.owner = this.thePlayer;
+            anEntity.collideradius = 10;
+            anEntity.collidemode = 1;
+            anEntity.isBullet = true;
+
+            if (!anEntity.recycled)
+                this.allBullets.push(anEntity);
             return anEntity;
         };
 
         EntityManager.prototype.addEntity = function () {
             var anEntity;
-            var randomSpriteID = Math.floor(Math.random() * 64);
+            var randomSpriteID = Math.floor(Math.random() * 55);
 
             anEntity = this.respawn(randomSpriteID);
 
             anEntity.sprite.position.x = this.maxX;
             anEntity.sprite.position.y = Math.random() * this.maxY;
-            anEntity.speedX = (-1 * Math.random() * 10) - 2;
-            anEntity.speedY = (Math.random() * 5) - 2.5;
-            anEntity.sprite.scaleX = 0.5 + Math.random() * 1.5;
-            anEntity.sprite.scaleY = anEntity.sprite.scaleX;
-            anEntity.sprite.rotation = 15 - Math.random() * 30;
+            anEntity.speedX = 15 * ((-1 * Math.random() * 10) - 2);
+            anEntity.speedY = 15 * ((Math.random() * 5) - 2.5);
+            anEntity.sprite.scaleX = this.shipScale;
+            anEntity.sprite.scaleY = this.shipScale;
+            anEntity.sprite.rotation = this.pointAtRad(anEntity.speedX, anEntity.speedY) - (90 * this.DEGREES_TO_RADIANS);
+            anEntity.collidemode = 1;
+            anEntity.collideradius = 16;
+
+            if (!anEntity.recycled)
+                this.allEnemies.push(anEntity);
+        };
+
+        EntityManager.prototype.pointAngle = function (point1, point2) {
+            var dx = point2.x - point1.x;
+            var dy = point2.y - point1.y;
+            return -Math.atan2(dx, dy);
+        };
+
+        EntityManager.prototype.pointAtDeg = function (x, y) {
+            return -Math.atan2(x, y) * this.RADIANS_TO_DEGREES;
+        };
+
+        EntityManager.prototype.pointAtRad = function (x, y) {
+            return -Math.atan2(x, y);
+        };
+
+        EntityManager.prototype.checkCollisions = function (checkMe) {
+            var anEntity;
+            for (var i = 0; i < this.allEnemies.length; i++) {
+                anEntity = this.allEnemies[i];
+                if (anEntity.active && anEntity.collidemode) {
+                    if (checkMe.colliding(anEntity)) {
+                        this.particles.addExplosion(checkMe.sprite.position);
+                        if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
+                            checkMe.die();
+                        if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
+                            anEntity.die();
+                        return anEntity;
+                    }
+                }
+            }
+            return null;
         };
 
         EntityManager.prototype.update = function (currentTime) {
             var anEntity;
-            for (var i = 0; i < this._entityPool.length; i++) {
+
+            this.currentFrameSeconds = currentTime / 1000;
+
+            var max = this._entityPool.length;
+            for (var i = 0; i < max; i++) {
                 anEntity = this._entityPool[i];
                 if (anEntity.active) {
-                    anEntity.sprite.position.x += anEntity.speedX;
-                    anEntity.sprite.position.y += anEntity.speedY;
+                    anEntity.sprite.position.x += anEntity.speedX * this.currentFrameSeconds;
+                    anEntity.sprite.position.y += anEntity.speedY * this.currentFrameSeconds;
 
                     if (anEntity.aiFunction != null)
                         anEntity.aiFunction(anEntity);
                     else {
-                        anEntity.sprite.rotation += 0.1;
+                        if (anEntity.isBullet && anEntity.collidemode)
+                            this.checkCollisions(anEntity);
 
-                        if (anEntity.sprite.position.x > this.maxX) {
-                            anEntity.speedX *= -1;
-                            anEntity.sprite.position.x = this.maxX;
-                        } else if (anEntity.sprite.position.x < this.minX) {
+                        if (anEntity.orbiting != null) {
+                            anEntity.sprite.position.x = anEntity.orbiting.sprite.position.x + ((Math.sin(anEntity.sprite.rotation / 4) / Math.PI) * anEntity.orbitingDistance);
+                            anEntity.sprite.position.y = anEntity.orbiting.sprite.position.y - ((Math.cos(anEntity.sprite.rotation / 4) / Math.PI) * anEntity.orbitingDistance);
+                        }
+
+                        if (anEntity.leavesTrail) {
+                            if (anEntity == this.theOrb)
+                                this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
+                            else
+                                this.particles.addParticle(63, anEntity.sprite.position.x + 12, anEntity.sprite.position.y + 2, 0.5, 3, 0, 0.6, NaN, NaN, -1.5, -1);
+                        }
+                        if ((anEntity.sprite.position.x > this.maxX) || (anEntity.sprite.position.x < this.minX) || (anEntity.sprite.position.y > this.maxY) || (anEntity.sprite.position.y < this.minY)) {
+                            if ((anEntity != this.thePlayer) && (anEntity != this.theOrb))
+                                anEntity.die();
+                        }
+                    }
+                    if (anEntity.rotationSpeed != 0)
+                        anEntity.sprite.rotation += anEntity.rotationSpeed * this.currentFrameSeconds;
+
+                    if (anEntity.fadeAnim != 0) {
+                        anEntity.sprite.alpha += anEntity.fadeAnim * this.currentFrameSeconds;
+                        if (anEntity.sprite.alpha <= 0.001) {
                             anEntity.die();
+                        } else if (anEntity.sprite.alpha > 1) {
+                            anEntity.sprite.alpha = 1;
                         }
-                        if (anEntity.sprite.position.y > this.maxY) {
-                            anEntity.speedY *= -1;
-                            anEntity.sprite.position.y = this.maxY;
-                        } else if (anEntity.sprite.position.y < this.minY) {
-                            anEntity.speedY *= -1;
-                            anEntity.sprite.position.y = this.minY;
-                        }
+                    }
+                    if (anEntity.zoomAnim != 0) {
+                        anEntity.sprite.scaleX += anEntity.zoomAnim * this.currentFrameSeconds;
+                        anEntity.sprite.scaleY += anEntity.zoomAnim * this.currentFrameSeconds;
+                        if (anEntity.sprite.scaleX < 0 || anEntity.sprite.scaleY < 0)
+                            anEntity.die();
                     }
                 }
             }
@@ -1037,6 +1251,7 @@ var shooter;
             this.bgSpeed = -1;
             this.bgSpritesPerRow = 1;
             this.bgSpritesPerCol = 1;
+            this.yParallaxAmount = (512 - 400);
         }
         GameBackground.prototype.createBatch = function (context3D) {
             var bgsourceBitmap = lib.ImageLoader.getInstance().get("assets/stars.gif");
@@ -1072,6 +1287,14 @@ var shooter;
             anEntity3.sprite.position.x = 256 + 512 + 512;
             anEntity3.sprite.position.y = this.maxY / 2;
             anEntity3.speedX = this.bgSpeed;
+
+            this.yParallaxAmount = (512 - this.maxY) / 2;
+            this.yOffset = this.maxY / 2;
+        };
+
+        GameBackground.prototype.yParallax = function (OffsetPercent) {
+            if (typeof OffsetPercent === "undefined") { OffsetPercent = 0; }
+            this.yOffset = (this.maxY * 0.5) - this.yParallaxAmount * (OffsetPercent);
         };
 
         GameBackground.prototype.update = function (currentTime) {
@@ -1081,7 +1304,7 @@ var shooter;
                 anEntity = this._entityPool[i];
                 if (anEntity.active) {
                     anEntity.sprite.position.x += anEntity.speedX;
-
+                    anEntity.sprite.position.y = this.yOffset;
                     if (anEntity.sprite.position.x >= this.maxX) {
                         anEntity.sprite.position.x = this.minX;
                     } else if (anEntity.sprite.position.x <= this.minX) {
@@ -1101,6 +1324,9 @@ var shooter;
             var _this = this;
             this._state = 0;
             this.nothingPressedLastFrame = false;
+            this.playerSpeed = 128;
+            this.nextFireTime = 0;
+            this.fireDelay = 200;
             this.onContext3DCreate = function (e) {
                 _this.context3D = _this.stage3d.context3D;
                 _this.initSpriteEngine();
@@ -1108,13 +1334,13 @@ var shooter;
             this.playerLogic = function (me) {
                 me.speedY = me.speedX = 0;
                 if (_this._controls.pressing.up)
-                    me.speedY = -4;
+                    me.speedY = -_this.playerSpeed;
                 if (_this._controls.pressing.down)
-                    me.speedY = 4;
+                    me.speedY = _this.playerSpeed;
                 if (_this._controls.pressing.left)
-                    me.speedX = -4;
+                    me.speedX = -_this.playerSpeed;
                 if (_this._controls.pressing.right)
-                    me.speedX = 4;
+                    me.speedX = _this.playerSpeed;
 
                 if (me.sprite.position.x < 0)
                     me.sprite.position.x = 0;
@@ -1124,25 +1350,33 @@ var shooter;
                     me.sprite.position.y = 0;
                 if (me.sprite.position.y > _this.stage3d.stageHeight)
                     me.sprite.position.y = _this.stage3d.stageHeight;
+
+                _this._entities.particles.addParticle(63, me.sprite.position.x - 12, me.sprite.position.y + 2, 0.75, -200, 0, 0.4, NaN, NaN, -1, -1.5);
             };
             this.onEnterFrame = function () {
                 try  {
                     _this.stats.begin();
 
                     _this.currentTime = _this.getTimer();
+                    _this.currentFrameMs = _this.currentTime - _this.previousFrameTime;
+                    _this.previousFrameTime = _this.currentTime;
 
                     _this.context3D.clear(0, 0, 0, 1);
 
                     _this.processInput();
 
+                    if (_this._entities.thePlayer)
+                        _this._bg.yParallax(_this._entities.thePlayer.sprite.position.y / _this.stage3d.stageHeight);
                     _this._bg.update(_this.currentTime);
 
                     if (_this._state == 0)
                         _this._mainmenu.update(_this.currentTime);
 
-                    _this._entities.addEntity();
+                    if (Math.random() > 0.9) {
+                        _this._entities.addEntity();
+                    }
 
-                    _this._entities.update(_this.currentTime);
+                    _this._entities.update(_this.currentFrameMs);
 
                     _this._spriteStage.drawDeferred();
 
@@ -1195,9 +1429,6 @@ var shooter;
                 }
             };
 
-            ShooterMain.canvas.onmouseup = function (ev) {
-            };
-
             ShooterMain.canvas.onmousemove = function (ev) {
                 if (_this._state == 0) {
                     if (_this._mainmenu)
@@ -1227,7 +1458,10 @@ var shooter;
                 }
             } else {
                 if (this._controls.pressing.fire) {
-                    this._entities.shootBullet();
+                    if (this.currentTime >= this.nextFireTime) {
+                        this._entities.shootBullet(3);
+                        this.nextFireTime = this.currentTime + this.fireDelay;
+                    }
                 }
             }
         };

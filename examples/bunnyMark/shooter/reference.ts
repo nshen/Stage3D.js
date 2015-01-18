@@ -18,6 +18,7 @@
 
 
 ///<reference path="./Entity.ts"/>
+///<reference path="./GameParticles.ts"/>
 ///<reference path="./EntityManager.ts"/>
 ///<reference path="./GameBackground.ts"/>
 ///<reference path="./ShooterMain.ts"/>

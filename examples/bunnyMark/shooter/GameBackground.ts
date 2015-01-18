@@ -15,7 +15,9 @@ module shooter
         // the sprite sheet image
         public bgSpritesPerRow:number = 1;
         public bgSpritesPerCol:number = 1;
-
+        // since the image is larger than the screen we have some extra pixels to play with
+        public yParallaxAmount:number = (512 - 400);
+        private yOffset:number;
 
         constructor(view:GPUSprite.Rectangle)
         {
@@ -43,6 +45,8 @@ module shooter
             this.minX = -256;
             this.maxY = view.height;
             this.minY = view.y;
+
+
         }
 
         // for this test, create random entities that move
@@ -51,20 +55,30 @@ module shooter
         {
             console.log("Init background...");
             // we need three 512x512 sprites
-            var anEntity1:Entity = this.respawn(0)
+            var anEntity1:Entity = this.respawn(0);
             anEntity1.sprite.position.x = 256;
             anEntity1.sprite.position.y = this.maxY / 2;
             anEntity1.speedX =  this.bgSpeed;
 
-            var anEntity2:Entity = this.respawn(0)
+            var anEntity2:Entity = this.respawn(0);
             anEntity2.sprite.position.x = 256+512;
             anEntity2.sprite.position.y = this.maxY / 2;
             anEntity2.speedX = this.bgSpeed;
 
-            var anEntity3:Entity = this.respawn(0)
+            var anEntity3:Entity = this.respawn(0);
             anEntity3.sprite.position.x = 256+512+512;
             anEntity3.sprite.position.y = this.maxY / 2;
             anEntity3.speedX = this.bgSpeed;
+
+            this.yParallaxAmount = (512 - this.maxY) / 2;
+            this.yOffset = this.maxY / 2;
+        }
+
+        // scroll slightly up or down to give more parallax
+        public yParallax(OffsetPercent:number = 0) : void
+        {
+            //console.log(OffsetPercent);
+            this.yOffset = (this.maxY * 0.5) - this.yParallaxAmount * (OffsetPercent );
         }
 
         // called every frame: used to update the scrolling background
@@ -79,7 +93,7 @@ module shooter
                 if (anEntity.active)
                 {
                     anEntity.sprite.position.x += anEntity.speedX;
-
+                    anEntity.sprite.position.y = this.yOffset;
                     if (anEntity.sprite.position.x >= this.maxX)
                     {
                         anEntity.sprite.position.x = this.minX;

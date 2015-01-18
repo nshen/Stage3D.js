@@ -15,7 +15,7 @@ module shooter
 
         constructor(entityMan:EntityManager)
         {
-            this.allParticles = []();
+            this.allParticles = [];
             this.gfx = entityMan;
         }
 
@@ -46,10 +46,10 @@ module shooter
         {
             // Defaults tell us to to randomize some properties
             // Why NaN? Can't put fastRandom() inside a function declaration
-            if (isNaN(rot)) rot = this.gfx.fastRandom() * 360;
-            if (isNaN(rotSpd)) rotSpd = this.gfx.fastRandom() * 360 - 180;
-            if (isNaN(fadeSpd)) fadeSpd = -1 * (this.gfx.fastRandom() * 1 + 1);
-            if (isNaN(zoomSpd)) zoomSpd = this.gfx.fastRandom() * 2 + 1;
+            if (isNaN(rot)) rot = Math.random() * 360;
+            if (isNaN(rotSpd)) rotSpd = Math.random() * 360 - 180;
+            if (isNaN(fadeSpd)) fadeSpd = -1 * (Math.random() * 1 + 1);
+            if (isNaN(zoomSpd)) zoomSpd = Math.random() * 2 + 1;
 
             var anEntity:Entity;
             anEntity = this.gfx.respawn(spr);
@@ -71,59 +71,59 @@ module shooter
         }
 
         // one big spinning ball of fire
-        public addFireball(pos:Point):void
+        public addFireball(pos:{x:number;y:number}):void
         {
             this.addParticle(this.gfx.spritenumFireball, pos.x, pos.y, 0.01, 0, 0, 1, NaN, NaN, NaN, 4);
         }
 
         // a shockwave ring that expands quickly
-        public addShockwave(pos:Point):void
+        public addShockwave(pos:{x:number;y:number}):void
         {
             this.addParticle(this.gfx.spritenumShockwave, pos.x, pos.y, 0.01, 0, 0, 1, NaN, NaN, -3, 20);
         }
 
         // several small fireballs that move and spin
-        public addBursts(pos:Point, mincount:number, maxcount:number):void
+        public addBursts(pos:{x:number;y:number}, mincount:number, maxcount:number):void
         {
             var nextparticle:number = 0;
-            var numparticles:number = this.gfx.fastRandom() * mincount + (maxcount-mincount);
+            var numparticles:number = Math.random() * mincount + (maxcount-mincount);
             for (nextparticle = 0; nextparticle < numparticles; nextparticle++)
             {
                 this.addParticle(this.gfx.spritenumFireburst,
-                    pos.x + this.gfx.fastRandom() * 16 - 8,
-                    pos.y + + this.gfx.fastRandom() * 16 - 8,
+                    pos.x + Math.random() * 16 - 8,
+                    pos.y + + Math.random() * 16 - 8,
                     0.02,
-                    this.gfx.fastRandom() * 200 - 100,
-                    this.gfx.fastRandom() * 200 - 100,
+                    Math.random() * 200 - 100,
+                    Math.random() * 200 - 100,
                     0.75);
             }
         }
 
         // several small bright glowing sparks that move quickly
-        public addSparks(pos:Point, mincount:number, maxcount:number):void
+        public addSparks(pos:{x:number;y:number}, mincount:number, maxcount:number):void
         {
             var nextparticle:number = 0;
-            var numparticles:number = this.gfx.fastRandom() * mincount + (maxcount-mincount);
+            var numparticles:number = Math.random() * mincount + (maxcount-mincount);
             for (nextparticle = 0; nextparticle < numparticles; nextparticle++)
             {
                 // small sparks that stay bright but get smaller
                 this.addParticle(this.gfx.spritenumSpark, pos.x, pos.y, 1,
-                    this.gfx.fastRandom() * 320 - 160,
-                    this.gfx.fastRandom() * 320 - 160,
+                    Math.random() * 320 - 160,
+                    Math.random() * 320 - 160,
                     1, NaN, NaN, 0, -1.5);
             }
         }
 
         // small pieces of destroyed spaceship debris, moving on average slightly forward
-        public addDebris(pos:Point, mincount:number, maxcount:number):void
+        public addDebris(pos:{x:number;y:number}, mincount:number, maxcount:number):void
         {
             var nextparticle:number = 0;
-            var numparticles:number = this.gfx.fastRandom() * mincount + (maxcount-mincount);
+            var numparticles:number = Math.random() * mincount + (maxcount-mincount);
             for (nextparticle = 0; nextparticle < numparticles; nextparticle++)
             {
                 this.addParticle(this.gfx.spritenumDebris, pos.x, pos.y, 1,
-                    this.gfx.fastRandom() * 180 - 120,
-                    this.gfx.fastRandom() * 180 - 90,
+                    Math.random() * 180 - 120,
+                    Math.random() * 180 - 90,
                     1, NaN, NaN, -1, 0);
             }
         }

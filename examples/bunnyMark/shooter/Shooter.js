@@ -826,8 +826,16 @@ var shooter;
 var shooter;
 (function (shooter) {
     var Entity = (function () {
-        function Entity(gs) {
-            if (typeof gs === "undefined") { gs = null; }
+        function Entity(gs, myManager) {
+            this.age = 0;
+            this.fireTime = 0;
+            this.fireDelayMin = 1;
+            this.fireDelayMax = 6;
+            this.pathNodeTime = 1;
+            this.aiPathOffsetX = 0;
+            this.aiPathOffsetY = 0;
+            this.aiPathSize = 128;
+            this.aiPathWaypointCount = 8;
             this.active = true;
             this.isBullet = false;
             this.leavesTrail = false;
@@ -838,8 +846,10 @@ var shooter;
             this.rotationSpeed = 0;
             this.recycled = false;
             this._sprite = gs;
+            this.gfx = myManager;
             this._speedX = 0.0;
             this._speedY = 0.0;
+            this.fireTime = (Math.random() * (this.fireDelayMax - this.fireDelayMin)) + this.fireDelayMin;
         }
         Entity.prototype.die = function () {
             this.active = false;
@@ -849,6 +859,8 @@ var shooter;
             this.leavesTrail = false;
             this.isBullet = false;
             this.touching = null;
+            this.owner = null;
+            this.age = 0;
             this.collidemode = 0;
         };
 
@@ -913,6 +925,61 @@ var shooter;
             }
 
             return false;
+        };
+
+        Entity.prototype.spline = function (p0, p1, p2, p3, t) {
+            var xx = 0.5 * ((2 * p1.x) + t * ((-p0.x + p2.x) + t * ((2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) + t * (-p0.x + 3 * p1.x - 3 * p2.x + p3.x))));
+
+            var yy = 0.5 * ((2 * p1.y) + t * ((-p0.y + p2.y) + t * ((2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) + t * (-p0.y + 3 * p1.y - 3 * p2.y + p3.y))));
+
+            return { x: xx, y: yy };
+        };
+
+        Entity.prototype.generatePath = function () {
+            console.log("Generating AI path");
+            this.aiPathWaypoints = [];
+            var N = this.aiPathWaypointCount;
+            for (var i = 0; i < N; i++) {
+                this.aiPathWaypoints.push({
+                    x: this.aiPathSize * Math.random(),
+                    y: this.aiPathSize * Math.random() });
+            }
+        };
+
+        Entity.prototype.calculatePathPosition = function (ratio) {
+            if (typeof ratio === "undefined") { ratio = 0; }
+            var i = Math.round(ratio);
+            var pointratio = ratio - i;
+
+            var p0 = this.aiPathWaypoints[(i - 1 + this.aiPathWaypoints.length) % this.aiPathWaypoints.length];
+            var p1 = this.aiPathWaypoints[i % this.aiPathWaypoints.length];
+            var p2 = this.aiPathWaypoints[(i + 1 + this.aiPathWaypoints.length) % this.aiPathWaypoints.length];
+            var p3 = this.aiPathWaypoints[(i + 2 + this.aiPathWaypoints.length) % this.aiPathWaypoints.length];
+
+            var q = this.spline(p0, p1, p2, p3, pointratio);
+            return q;
+        };
+
+        Entity.prototype.maybeShoot = function (bulletNum, delayMin, delayMax) {
+            if (typeof bulletNum === "undefined") { bulletNum = 1; }
+            if (typeof delayMin === "undefined") { delayMin = NaN; }
+            if (typeof delayMax === "undefined") { delayMax = NaN; }
+            if (this.fireTime < this.age) {
+                if (isNaN(delayMin))
+                    delayMin = this.fireDelayMin;
+                if (isNaN(delayMax))
+                    delayMax = this.fireDelayMax;
+
+                this.gfx.shootBullet(bulletNum, this);
+
+                this.fireTime = this.age + (Math.random() * (delayMax - delayMin)) + delayMin;
+            }
+        };
+
+        Entity.prototype.straightAI = function (seconds) {
+            this.age += seconds;
+            this.maybeShoot(1);
+            this.sprite.rotation = this.gfx.pointAtRad(this.speedX, this.speedY) - (90 * this.gfx.DEGREES_TO_RADIANS);
         };
         return Entity;
     })();
@@ -1006,12 +1073,13 @@ var shooter;
     shooter.GameParticles = GameParticles;
 })(shooter || (shooter = {}));
 var shooter;
-(function (shooter) {
+(function (_shooter) {
     var EntityManager = (function () {
         function EntityManager(view) {
             this._SpritesPerRow = 8;
             this._SpritesPerCol = 8;
-            this.shipScale = 1.5;
+            this.defaultScale = 1;
+            this.defaultSpeed = 128;
             this.bulletSpeed = 250;
             this.currentFrameSeconds = 0;
             this.spritenumFireball = 63;
@@ -1031,7 +1099,7 @@ var shooter;
             this._entityPool = [];
             this.allBullets = [];
             this.allEnemies = [];
-            this.particles = new shooter.GameParticles(this);
+            this.particles = new _shooter.GameParticles(this);
             this.setPosition(view);
         }
         EntityManager.prototype.setPosition = function (view) {
@@ -1068,7 +1136,7 @@ var shooter;
 
             var sprite;
             sprite = this._batch.createChild(sprID);
-            anEntity = new shooter.Entity(sprite);
+            anEntity = new _shooter.Entity(sprite, this);
             this._entityPool.push(anEntity);
             this.numCreated++;
             return anEntity;
@@ -1079,7 +1147,7 @@ var shooter;
             this.thePlayer.sprite.position.x = 32;
             this.thePlayer.sprite.position.y = this.maxY / 2;
             this.thePlayer.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
-            this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = this.shipScale;
+            this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = this.defaultScale;
             this.thePlayer.speedX = 0;
             this.thePlayer.speedY = 0;
             this.thePlayer.active = true;
@@ -1099,31 +1167,45 @@ var shooter;
             return this.thePlayer;
         };
 
-        EntityManager.prototype.shootBullet = function (powa) {
+        EntityManager.prototype.shootBullet = function (powa, shooter) {
             if (typeof powa === "undefined") { powa = 1; }
-            var anEntity;
+            if (typeof shooter === "undefined") { shooter = null; }
+            if (this.thePlayer == null)
+                return null;
 
+            if (shooter == null)
+                shooter = this.thePlayer;
+
+            var theBullet;
             if (powa == 1)
-                anEntity = this.respawn(this.spritenumBullet1);
+                theBullet = this.respawn(this.spritenumBullet1);
             else if (powa == 2)
-                anEntity = this.respawn(this.spritenumBullet2);
+                theBullet = this.respawn(this.spritenumBullet2);
             else
-                anEntity = this.respawn(this.spritenumBullet3);
+                theBullet = this.respawn(this.spritenumBullet3);
 
-            anEntity.sprite.position.x = this.thePlayer.sprite.position.x + 8;
-            anEntity.sprite.position.y = this.thePlayer.sprite.position.y + 4;
-            anEntity.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
-            anEntity.sprite.scaleX = anEntity.sprite.scaleY = 1;
-            anEntity.speedX = this.bulletSpeed;
-            anEntity.speedY = 0;
-            anEntity.owner = this.thePlayer;
-            anEntity.collideradius = 10;
-            anEntity.collidemode = 1;
-            anEntity.isBullet = true;
+            theBullet.sprite.position.x = this.thePlayer.sprite.position.x + 8;
+            theBullet.sprite.position.y = this.thePlayer.sprite.position.y + 4;
+            theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
+            theBullet.sprite.scaleX = theBullet.sprite.scaleY = 1;
+            if (shooter == this.thePlayer) {
+                theBullet.speedX = this.bulletSpeed;
+                theBullet.speedY = 0;
+            } else {
+                theBullet.sprite.rotation = this.pointAtRad(theBullet.sprite.position.x - this.thePlayer.sprite.position.x, theBullet.sprite.position.y - this.thePlayer.sprite.position.y) - (90 * this.DEGREES_TO_RADIANS);
 
-            if (!anEntity.recycled)
-                this.allBullets.push(anEntity);
-            return anEntity;
+                theBullet.speedX = this.defaultSpeed * 1.5 * Math.cos(theBullet.sprite.rotation);
+                theBullet.speedY = this.defaultSpeed * 1.5 * Math.sin(theBullet.sprite.rotation);
+            }
+
+            theBullet.owner = shooter;
+            theBullet.collideradius = 10;
+            theBullet.collidemode = 1;
+            theBullet.isBullet = true;
+
+            if (!theBullet.recycled)
+                this.allBullets.push(theBullet);
+            return theBullet;
         };
 
         EntityManager.prototype.addEntity = function () {
@@ -1136,8 +1218,8 @@ var shooter;
             anEntity.sprite.position.y = Math.random() * this.maxY;
             anEntity.speedX = 15 * ((-1 * Math.random() * 10) - 2);
             anEntity.speedY = 15 * ((Math.random() * 5) - 2.5);
-            anEntity.sprite.scaleX = this.shipScale;
-            anEntity.sprite.scaleY = this.shipScale;
+            anEntity.sprite.scaleX = this.defaultScale;
+            anEntity.sprite.scaleY = this.defaultScale;
             anEntity.sprite.rotation = this.pointAtRad(anEntity.speedX, anEntity.speedY) - (90 * this.DEGREES_TO_RADIANS);
             anEntity.collidemode = 1;
             anEntity.collideradius = 16;
@@ -1234,7 +1316,7 @@ var shooter;
         };
         return EntityManager;
     })();
-    shooter.EntityManager = EntityManager;
+    _shooter.EntityManager = EntityManager;
 })(shooter || (shooter = {}));
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];

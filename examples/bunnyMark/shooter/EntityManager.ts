@@ -27,8 +27,11 @@ module shooter
 		private _SpritesPerRow:number = 8;
 		private _SpritesPerCol:number = 8;
 
+
+
 		// the general size of the player and enemies
-		private shipScale:number = 1.5;
+		private defaultScale:number = 1;//1.5;
+		public defaultSpeed:number = 128;
 		// how fast player bullets go per second
 		public bulletSpeed:number = 250;
 
@@ -113,11 +116,9 @@ module shooter
 		public createBatch(context3D:stageJS.Context3D):GPUSprite.SpriteRenderLayer//LiteSpriteBatch
 		{
 			var sourceBitmap:HTMLImageElement = lib.ImageLoader.getInstance().get("assets/sprites.png");
-
 			// create a spritesheet with 8x8 (64) sprites on it
 			this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(sourceBitmap), 8, 8);
-			
-			// Create new render batch 
+			// Create new render batch
 			this._batch = new GPUSprite.SpriteRenderLayer(context3D, this._spriteSheet);
 			return this._batch;
 		}
@@ -146,7 +147,7 @@ module shooter
 			//console.log('Need to create a new Entity #' + i);
 			var sprite:GPUSprite.Sprite; //LiteSprite
 			sprite = this._batch.createChild(sprID);
-			anEntity = new Entity(sprite);
+			anEntity = new Entity(sprite,this);
 			this._entityPool.push(anEntity); //todo:这里应该死掉再放在pool里效率才会高嘛?
 			this.numCreated++;
 			return anEntity;
@@ -160,7 +161,7 @@ module shooter
 			this.thePlayer.sprite.position.x = 32;
 			this.thePlayer.sprite.position.y = this.maxY / 2;
 			this.thePlayer.sprite.rotation = 180 * this.DEGREES_TO_RADIANS; // degrees to radians
-			this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = this.shipScale;
+			this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = this.defaultScale;
 			this.thePlayer.speedX = 0;
 			this.thePlayer.speedY = 0;
 			this.thePlayer.active = true;
@@ -181,32 +182,56 @@ module shooter
 			return this.thePlayer;
 		}
 
-		// shoot a bullet (from the player for now)
-		public shootBullet(powa:number = 1):Entity
+		// shoot a bullet
+		public shootBullet(powa:number = 1 , shooter:Entity = null):Entity
 		{
-			var anEntity:Entity;
+			// just in case the AI is running during the main menu
+			// and we've not yet created the player entity
+			if (this.thePlayer == null) return null;
+			// assume the player shot it
+			// otherwise maybe an enemy did
+			if (shooter == null)
+				shooter = this.thePlayer;
 
-			if(powa == 1)
-				anEntity = this.respawn(this.spritenumBullet1);
-			else if(powa == 2)
-				anEntity = this.respawn(this.spritenumBullet2);
-			else
-				anEntity = this.respawn(this.spritenumBullet3);
+			var theBullet:Entity;
+			if (powa == 1)
+				theBullet = this.respawn(this.spritenumBullet1); else if (powa == 2)
+				theBullet = this.respawn(this.spritenumBullet2); else
+				theBullet = this.respawn(this.spritenumBullet3);
 
-			anEntity.sprite.position.x = this.thePlayer.sprite.position.x + 8;
-			anEntity.sprite.position.y = this.thePlayer.sprite.position.y + 4;
-			anEntity.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
-			anEntity.sprite.scaleX = anEntity.sprite.scaleY = 1;
-			anEntity.speedX = this.bulletSpeed;
-			anEntity.speedY = 0;
-			anEntity.owner = this.thePlayer;
-			anEntity.collideradius = 10;
-			anEntity.collidemode = 1;
-			anEntity.isBullet = true;
+			theBullet.sprite.position.x = this.thePlayer.sprite.position.x + 8;
+			theBullet.sprite.position.y = this.thePlayer.sprite.position.y + 4;
+			theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
+			theBullet.sprite.scaleX = theBullet.sprite.scaleY = 1;
+			if (shooter == this.thePlayer)
+			{
+				theBullet.speedX = this.bulletSpeed;
+				theBullet.speedY = 0;
+			} else // enemy bullets move slower and towards the player
+			{
+				theBullet.sprite.rotation =
+					this.pointAtRad(theBullet.sprite.position.x - this.thePlayer.sprite.position.x,
+									theBullet.sprite.position.y - this.thePlayer.sprite.position.y) - (90 * this.DEGREES_TO_RADIANS);
 
-			if(!anEntity.recycled)
-				this.allBullets.push(anEntity);
-			return anEntity;
+				// move in the direction we're facing
+				theBullet.speedX = this.defaultSpeed * 1.5 * Math.cos(theBullet.sprite.rotation);
+				theBullet.speedY = this.defaultSpeed * 1.5 * Math.sin(theBullet.sprite.rotation);
+
+				// optionally, we could just fire straight ahead in the direction we're heading:
+				// theBullet.speedX = shooter.speedX * 1.5;
+				// theBullet.speedY = shooter.speedY * 1.5;
+				// and we could point where we're going like this:
+				// pointAtRad(theBullet.speedX,theBullet.speedY) - (90*DEGREES_TO_RADIANS);
+			}
+
+			theBullet.owner = shooter;
+			theBullet.collideradius = 10;
+			theBullet.collidemode = 1;
+			theBullet.isBullet = true;
+
+			if(!theBullet.recycled)
+				this.allBullets.push(theBullet);
+			return theBullet;
 		}
 
 
@@ -223,8 +248,8 @@ module shooter
 			anEntity.sprite.position.y = Math.random() * this.maxY;
 			anEntity.speedX = 15 * ((-1 * Math.random() * 10) - 2);
 			anEntity.speedY = 15 * ((Math.random() * 5) - 2.5);
-			anEntity.sprite.scaleX = this.shipScale;
-			anEntity.sprite.scaleY = this.shipScale;
+			anEntity.sprite.scaleX = this.defaultScale;
+			anEntity.sprite.scaleY = this.defaultScale;
 			anEntity.sprite.rotation =  this.pointAtRad(anEntity.speedX,anEntity.speedY) - (90 * this.DEGREES_TO_RADIANS);
 			anEntity.collidemode = 1;
 			anEntity.collideradius = 16;

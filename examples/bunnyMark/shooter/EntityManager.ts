@@ -1,14 +1,13 @@
-// Stage3D Shoot-em-up Tutorial Part 1
+// Stage3D Shoot-em-up Tutorial Part 4
 // by Christer Kaitila - www.mcfunkypants.com
 
 // EntityManager.as
 // The entity manager handles a list of all known game entities.
 // This object pool will allow for reuse (respawning) of
 // sprites: for example, when enemy ships are destroyed,
-// they will be re-spawned when <an> needed optimization 
+// they will be re-spawned when needed as an optimization
 // that increases fps and decreases ram use.
-// This is where you would add all in-game simulation steps,
-// <gravity> such, movement, collision detection and more.
+
 
 ///<reference path="reference.ts"/>
 module shooter
@@ -16,6 +15,24 @@ module shooter
 
 	export class EntityManager
 	{
+
+		// the level data parser
+		public level:GameLevels;
+		// the current level number
+		public levelNum:number = 0;
+		// where in the level we are in pixels
+		public levelCurrentScrollX:number = 0;
+		// the last spawned column of level data
+		public levelPrevCol:number = -1;
+		// pixels we need to scroll before spawning the next col
+		public levelTilesize:number = 48;
+		// this is used to ensure all terrain tiles line up exactly
+		public lastTerrainEntity:Entity;
+		// we need to allow at least enough space for ship movement
+		// entities that move beyond the edges of the screen
+		// plus this amount are recycled (destroyed for reuse)
+		public cullingDistance:number = 200;
+
 		// a particle system class that updates our sprites
 		public particles:shooter.GameParticles;
 
@@ -26,8 +43,6 @@ module shooter
 		public _spriteSheet:GPUSprite.SpriteSheet;
 		private _SpritesPerRow:number = 8;
 		private _SpritesPerCol:number = 8;
-
-
 
 		// the general size of the player and enemies
 		private defaultScale:number = 1;//1.5;
@@ -70,7 +85,6 @@ module shooter
 		// all the polygons that make up the scene
 		public _batch:GPUSprite.SpriteRenderLayer ; //LiteSpriteBatch
 
-
 		// for statistics
 		public numCreated : number = 0;
 		public numReused : number = 0;
@@ -79,6 +93,7 @@ module shooter
 		public minX:number;
 		public maxY:number;
 		public minY:number;
+		public midpoint:number;
 
 		constructor(view:GPUSprite.Rectangle)
 		{
@@ -87,15 +102,18 @@ module shooter
 			this.allEnemies = [];
 			this.particles = new GameParticles(this);
 			this.setPosition(view);
+			this.level = new shooter.GameLevels();
 		}
 		
 		public setPosition(view:GPUSprite.Rectangle):void
 		{
 			// allow moving fully offscreen before looping around
-			this.maxX = view.width + 64;
-			this.minX = view.x - 64;
-			this.maxY = view.height + 64;
-			this.minY = view.y - 64;
+			this.maxX = view.width + this.cullingDistance;
+			this.minX = view.x - this.cullingDistance;
+			this.maxY = view.height + this.cullingDistance;
+			this.minY = view.y - this.cullingDistance;
+
+			this.midpoint = view.height / 2;
 		}
 
 		//todo: not work in js
@@ -157,20 +175,24 @@ module shooter
 		// this entity is the PLAYER
 		public addPlayer(playerController:Function):Entity
 		{
-			this.thePlayer = this.respawn(10); // sprite #10 looks nice for now
-			this.thePlayer.sprite.position.x = 32;
-			this.thePlayer.sprite.position.y = this.maxY / 2;
+			this.thePlayer = this.respawn(this.spritenumPlayer); // sprite #10 looks nice for now
+			this.thePlayer.sprite.position.x = 64;
+			this.thePlayer.sprite.position.y = this.midpoint;
 			this.thePlayer.sprite.rotation = 180 * this.DEGREES_TO_RADIANS; // degrees to radians
 			this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = this.defaultScale;
 			this.thePlayer.speedX = 0;
 			this.thePlayer.speedY = 0;
 			this.thePlayer.active = true;
+			this.thePlayer.collidemode = 1;
+			this.thePlayer.collideradius = 10;
+			this.thePlayer.owner = this.thePlayer; // collisions require this
 			this.thePlayer.aiFunction = playerController;
-			this.thePlayer.leavesTrail = true;
+			//this.thePlayer.leavesTrail = true;
 
 			// just for fun, spawn an orbiting "power orb"
 			this.theOrb = this.respawn(this.spritenumOrb);
 			this.theOrb.rotationSpeed = 720 * this.DEGREES_TO_RADIANS;
+			this.theOrb.sprite.scaleX = this.theOrb.sprite.scaleY = this.defaultScale / 2;
 			this.theOrb.leavesTrail = true;
 			this.theOrb.collidemode = 1;
 			this.theOrb.collideradius = 12;
@@ -195,12 +217,15 @@ module shooter
 
 			var theBullet:Entity;
 			if (powa == 1)
-				theBullet = this.respawn(this.spritenumBullet1); else if (powa == 2)
-				theBullet = this.respawn(this.spritenumBullet2); else
+				theBullet = this.respawn(this.spritenumBullet1);
+			else if (powa == 2)
+				theBullet = this.respawn(this.spritenumBullet2);
+			else
 				theBullet = this.respawn(this.spritenumBullet3);
 
 			theBullet.sprite.position.x = this.thePlayer.sprite.position.x + 8;
-			theBullet.sprite.position.y = this.thePlayer.sprite.position.y + 4;
+			theBullet.sprite.position.y = this.thePlayer.sprite.position.y + 2;
+
 			theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
 			theBullet.sprite.scaleX = theBullet.sprite.scaleY = 1;
 			if (shooter == this.thePlayer)
@@ -237,7 +262,7 @@ module shooter
 
 		// for this test, create random entities that move 
 		// from right to left with random speeds and scales
-		public addEntity():void
+		public addRandomEntity():void
 		{
 			var anEntity:Entity;
 			var randomSpriteID:number = Math.floor(Math.random() * 55);
@@ -278,10 +303,31 @@ module shooter
 			return -Math.atan2(x,y);
 		}
 
+		// as an optimization to saver millions of checks, only
+		// the player's bullets check for collisions with all enemy ships
+		// (enemy bullets only check to hit the player)
 		public checkCollisions(checkMe:Entity):Entity
 		{
 			//checkMe is a bullet , a orb or thePlayer
 			var anEntity:Entity;
+			var collided:boolean = false;
+			if(checkMe.owner != this.thePlayer)
+			{
+				anEntity = this.thePlayer;
+				if(checkMe.owner != this.thePlayer)
+				{
+					// quick check ONLY to see if we have hit the player
+					anEntity = this.thePlayer;
+					if (checkMe.colliding(anEntity))
+					{
+						console.log("Player was HIT!");
+						collided = true;
+					}
+
+				}
+
+			}
+			//todo:从这里开始
 			for(var i:number=0; i< this.allEnemies.length;i++)
 			{
 				anEntity = this.allEnemies[i];

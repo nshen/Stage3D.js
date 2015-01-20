@@ -297,14 +297,28 @@ module shooter
         public static canvas:HTMLCanvasElement;
         public static main():void
         {
+            ShooterMain.canvas = <HTMLCanvasElement>document.getElementById("my-canvas")
+
             lib.ImageLoader.getInstance().add("assets/sprites.png");
             lib.ImageLoader.getInstance().add("assets/titlescreen.png");
             lib.ImageLoader.getInstance().add("assets/stars.gif");
 
             lib.ImageLoader.getInstance().downloadAll(function(){
-                new ShooterMain(ShooterMain.canvas = <HTMLCanvasElement>document.getElementById("my-canvas"));
+                if(lib.FileLoader.getInstance().isDone())
+                    new ShooterMain( ShooterMain.canvas);
             });
 
+
+            lib.FileLoader.getInstance().add("assets/level0.oel");
+            lib.FileLoader.getInstance().add("assets/terrain0.oel");
+            lib.FileLoader.getInstance().add("assets/level1.oel");
+            lib.FileLoader.getInstance().add("assets/terrain1.oel");
+
+            lib.FileLoader.getInstance().downloadAll(()=>
+            {
+                if (lib.ImageLoader.getInstance().isDone())
+                    new ShooterMain(ShooterMain.canvas);
+            })
         }
 
     }

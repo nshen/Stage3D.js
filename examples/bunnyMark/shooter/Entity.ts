@@ -247,6 +247,61 @@ module shooter
 			this.sprite.rotation = this.gfx.pointAtRad(this.speedX, this.speedY) - (90 * this.gfx.DEGREES_TO_RADIANS);
 		}
 
+		public wobbleAI(seconds:number):void
+		{
+			this.age += seconds;
+			this.maybeShoot(1);
+			this.aiPathOffsetY = (Math.sin(this.age * 2) / Math.PI) * 128;
+		}
+
+		// simply point at the player: good for sentry guns
+		public sentryAI(seconds:number):void
+		{
+			this.age += seconds;
+			this.maybeShoot(3,3,6);
+			if (this.gfx.thePlayer)
+				this.sprite.rotation = this.gfx.pointAtRad(
+					this.gfx.thePlayer.sprite.position.x - this.sprite.position.x,
+					this.gfx.thePlayer.sprite.position.y - this.sprite.position.y)
+				- (90 * this.gfx.DEGREES_TO_RADIANS);
+		}
+
+		// move around on a random spline path
+		// in future versions, you could upgrade this function
+		// to (instead of random) follow a predefined array of points
+		// that were designed by hand in code (or even in the level editor!)
+		public droneAI(seconds:number):void
+		{
+			//console.log('droneAI');
+
+			this.age += seconds;
+			this.maybeShoot(1);
+
+			// movement style inspired by Galaga, R-Type, Centipede
+			// performed by easing through a catmull-rom spline curve
+			// defined by an array of points
+			if (this.aiPathWaypoints == null)
+				this.generatePath();
+
+			// how many spline nodes have we passed? (loops around to beginning)
+			var pathProgress:number = this.age / this.pathNodeTime;
+
+			var newPos:{x:number;y:number} = this.calculatePathPosition(pathProgress);
+
+			// point in the correct direction
+			//sprite.rotation = gfx.pointAtRad(newPos.x-sprite.position.x,newPos.y-sprite.position.y) - (90*gfx.DEGREES_TO_RADIANS);
+			this.sprite.rotation = this.gfx.pointAtRad(newPos.x-this.aiPathOffsetX,newPos.y-this.aiPathOffsetY) - (90 * this.gfx.DEGREES_TO_RADIANS);
+
+			// change path offset location
+			// this is added to the sprite scrolling location
+			// so that ships eventually move offscreen
+			// sprite.position.x = newPos.x;
+			// sprite.position.y = newPos.y;
+
+			this.aiPathOffsetX = newPos.x;
+			this.aiPathOffsetY = newPos.x;
+
+		}
 
 	} // end class
 } // enDate package

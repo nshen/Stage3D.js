@@ -20,11 +20,12 @@ module test {
 
         // available blend/texture/mesh
         private blendNum:number = -1;
-        private blendNumMax:number = 4;
+        private blendNumMax:number = 5;
         private texNum:number = -1;
-        private texNumMax:number = 4;
+        private texNumMax:number = 5;
         private meshNum:number = -1;
         private meshNumMax:number = 4;
+        private _depthTestEnabled:boolean = true;
 
 
         // the compiled shaders used to render our mesh
@@ -49,6 +50,7 @@ module test {
         private myTexture3:Texture;
         private myTexture4:Texture;
         private myTexture5:Texture;
+        private myTexture6:Texture;
         private terrainTexture:Texture;
 
         // Points to whatever the current mesh is
@@ -86,6 +88,9 @@ module test {
                     case 116: // the t key
                         this.nextTexture();
                         break;
+                    case 100: // the d key
+                        this.toggleDepthTest();
+                        break;
                 }
             }
 
@@ -94,6 +99,7 @@ module test {
             this.nextMesh();
             this.nextTexture();
             this.nextBlendmode();
+            this.toggleDepthTest();
 
             this.stage3d = new Stage3D(canvas);
             this.stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, this.onCreated);
@@ -111,7 +117,7 @@ module test {
             this.initData();
             this.initShaders();
 
-            var myTextureData1 = lib.ImageLoader.getInstance().get("blendAssets/leaf.png");
+            var myTextureData1 = lib.ImageLoader.getInstance().get("blendAssets/titlescreen.png");
             this.myTexture1 = this.context3D.createTexture(myTextureData1.width, myTextureData1.height, Context3DTextureFormat.BGRA, false);
             //uploadTextureWithMipmaps(this.myTexture1, myTextureData1.bitmapData);
             this.myTexture1.uploadFromBitmapData(myTextureData1, 0);
@@ -134,6 +140,11 @@ module test {
             this.myTexture5 = this.context3D.createTexture(myTextureData5.width, myTextureData5.height, Context3DTextureFormat.BGRA, false);
             //uploadTextureWithMipmaps(this.myTexture5, myTextureData5.bitmapData);
             this.myTexture5.uploadFromBitmapData(myTextureData5, 0);
+
+            var myTextureData6 = lib.ImageLoader.getInstance().get("blendAssets/leaf.png");
+            this.myTexture6 = this.context3D.createTexture(myTextureData6.width, myTextureData6.height, Context3DTextureFormat.BGRA, false);
+            //uploadTextureWithMipmaps(this.myTexture5, myTextureData5.bitmapData);
+            this.myTexture6.uploadFromBitmapData(myTextureData6, 0);
 
             //terrainTexture = context3D.createTexture(terrainTextureData.width, terrainTextureData.height, Context3DTextureFormat.BGRA, false);
             //uploadTextureWithMipmaps(terrainTexture, terrainTextureData.bitmapData);
@@ -174,13 +185,10 @@ module test {
 
         private renderMesh():void
         {
-            if (this.blendNum > 1)
-            // ignore depth zbuffer
-            // always draw polies even those that are behind others
-                this.context3D.setDepthTest(false, Context3DCompareMode.LESS);
-            else
-            // use the depth zbuffer
-                this.context3D.setDepthTest(true, Context3DCompareMode.LESS);
+
+            this.context3D.setDepthTest(this._depthTestEnabled, Context3DCompareMode.LESS);
+
+
 
             // for our tests, don't cull any polies
             //context3D.setCulling(Context3DTriangleFace.NONE);
@@ -194,6 +202,7 @@ module test {
             this.modelmatrix.appendRotation(this.t*0.7, Vector3D.Y_AXIS);
             this.modelmatrix.appendRotation(this.t*0.6, Vector3D.X_AXIS);
             this.modelmatrix.appendRotation(this.t*1.0, Vector3D.Y_AXIS);
+
             // clear the matrix and append new angles
             this.modelViewProjection.identity();
             this.modelViewProjection.append(this.modelmatrix);
@@ -255,6 +264,9 @@ module test {
                 case 4:
                     this.context3D.setTextureAt("fs0", this.myTexture5);
                     break;
+                case 5:
+                    this.context3D.setTextureAt("fs0", this.myTexture6);
+                    break;
             }
         }
 
@@ -303,6 +315,12 @@ module test {
                         Context3DBlendFactor.DESTINATION_COLOR,
                         Context3DBlendFactor.ZERO);
                     break;
+                case 5:
+                    this.context3D.setBlendFactors(
+                        Context3DBlendFactor.ONE,
+                        Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA
+                    )
+                    break;
             }
         }
 
@@ -330,6 +348,7 @@ module test {
                     break;
             }
         }
+
         private nextTexture():void
         {
             this.texNum++;
@@ -338,7 +357,7 @@ module test {
             switch(this.texNum)
             {
                 case 0:
-                    document.getElementById("p2").innerText =  '[T] Transparent Leaf Texture';
+                    document.getElementById("p2").innerText =  '[T] Transparent titlescreen Texture';
                     break;
                 case 1:
                     document.getElementById("p2").innerText = '[T] Fire Texture';
@@ -351,6 +370,9 @@ module test {
                     break;
                 case 4:
                     document.getElementById("p2").innerText = '[T] Smoke Texture';
+                    break;
+                case 5:
+                    document.getElementById("p2").innerText =  '[T] Transparent Leaf Texture';
                     break;
             }
         }
@@ -379,8 +401,19 @@ module test {
                 case 4:
                     document.getElementById("p1").innerText = '[B] DESTINATION_COLOR,ZERO';
                     break;
+                case 5:
+                    document.getElementById("p1").innerText = '[B] ONE,ONE_MINUS_SOURCE_ALPHA';
+                    break;
             }
         }
+
+        private toggleDepthTest():void
+        {
+            this._depthTestEnabled = !this._depthTestEnabled;
+            document.getElementById("p4").innerText = '[D] DepthTest :  ' + this._depthTestEnabled + " , LESS";
+        }
+
+
         private initData():void
         {
             // parse the OBJ file and create buffers
@@ -413,11 +446,12 @@ module test {
 
             var canvas:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
 
-            lib.ImageLoader.getInstance().add("blendAssets/leaf.png"); //256 256
+            lib.ImageLoader.getInstance().add("blendAssets/titlescreen.png"); //256 256
             lib.ImageLoader.getInstance().add("blendAssets/fire.jpg"); //256 256
             lib.ImageLoader.getInstance().add("blendAssets/flare.jpg");//128 128
             lib.ImageLoader.getInstance().add("blendAssets/glow.jpg"); //128 128
             lib.ImageLoader.getInstance().add("blendAssets/smoke.jpg");//128 128
+            lib.ImageLoader.getInstance().add("blendAssets/leaf.png"); //256 256
             //lib.ImageLoader.getInstance().add("blendAssets/terrain_texture.jpg"); //512 512
 
             lib.ImageLoader.getInstance().downloadAll(()=>

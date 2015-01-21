@@ -6,29 +6,9 @@ module shooter
     export class ShooterMain
     {
 
-        public stage3d:stageJS.Stage3D;
-        public context3D:stageJS.Context3D;
-
-        private _spriteStage:GPUSprite.SpriteRenderStage; // LiteSpriteStage
 
         // the keyboard control system
         private _controls : shooter.GameControls;
-
-        private _entities:shooter.EntityManager;
-        // the background stars
-        private _bg : shooter.GameBackground;
-        // the title screen batch
-        private _mainmenu : shooter.GameMenu;
-
-        //todo:sound
-        //private _sfx:shooter.GameSound;
-
-        // main menu = 0 or current level number
-        private _state:number = 0;
-        // the title screen batch
-
-        private _start:number;
-
 
         // don't update the menu too fast
         private nothingPressedLastFrame:boolean = false;
@@ -47,13 +27,27 @@ module shooter
         // how many ms between shots
         private fireDelay:number = 200;
 
+        // main menu = 0 or current level number
+        private _state:number = 0;
+        // the title screen batch
+        private _mainmenu : shooter.GameMenu;
+        //todo:sound
+        //private _sfx:shooter.GameSound;
+        // the background stars
+        private _bg : shooter.GameBackground;
+
+        private _terrain:shooter.EntityManager;
+        private _entities:shooter.EntityManager;
+        private _spriteStage:GPUSprite.SpriteRenderStage; // LiteSpriteStage
+
+        public stage3d:stageJS.Stage3D;
+        public context3D:stageJS.Context3D;
+
+        private _start:number; //getTimer
+
+
         public constructor(canvas:HTMLCanvasElement)
         {
-            this._start = new Date().valueOf();
-            this.initStats();
-            this._controls = new shooter.GameControls(window);
-
-
             this.stage3d = new stageJS.Stage3D(canvas);
             this.stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, this.onContext3DCreate);
             this.stage3d.requestContext3D();
@@ -67,6 +61,10 @@ module shooter
 
         private initSpriteEngine():void
         {
+            this._start = new Date().valueOf();
+            this.initStats();
+            this._controls = new shooter.GameControls(window);
+
             var _width:number = this.stage3d.stageWidth;
             var _height:number = this.stage3d.stageHeight;
 
@@ -80,18 +78,32 @@ module shooter
             this._bg.initBackground();
             this._spriteStage.addLayer(batch);
 
+            //Terrain
+            this._terrain = new shooter.EntityManager(stageRect);
+            this._terrain.sourceImage = "assets/terrain.png";
+            this._terrain.defaultSpeed = 90;
+            this._terrain.defaultScale = 1.5;
+            this._terrain.levelTilesize = 48;
+            batch = this._terrain.createBatch(this.context3D,16,16,0.002);
+            this._spriteStage.addLayer(batch);
+            this._terrain.level.loadLevel("terrain0");//demo level Now
+
+
             // create a single rendering batch
             // which will draw all sprites in one pass
             this._entities = new shooter.EntityManager(stageRect);
+            this._entities.sourceImage = "assets/sprites.png";
+            this._entities.defaultScale = 1.5;
+            this._entities.levelTilesize = 48;
             batch = this._entities.createBatch(this.context3D);
             this._spriteStage.addLayer(batch); // addBatch
+            this._entities.level.loadLevel("level10"); //demo Level
+            this._entities.streamLevelEntities(true); // spawn first row of the level immediately
 
             // create the logo/titlescreen main menu
             this._mainmenu = new shooter.GameMenu(stageRect);
             batch = this._mainmenu.createBatch(this.context3D);
             this._spriteStage.addLayer(batch);
-
-
 
             // start the render loop
             this.onEnterFrame();//stage.addEventListener(Event.ENTER_FRAME,onEnterFrame);
@@ -123,8 +135,9 @@ module shooter
             }
         }
 
-        public playerLogic = (me:Entity)=>
+        public playerLogic = (seconds:number)=>
         {
+            var me:Entity = this._entities.thePlayer;
             me.speedY = me.speedX = 0;
             if (this._controls.pressing.up)
                 me.speedY = -this.playerSpeed;
@@ -198,7 +211,7 @@ module shooter
                 {
                     if(this.currentTime >= this.nextFireTime)
                     {
-                        //_sfx.playGun(1); // todo sound
+                        //_sfx.playGun(1); // todo: sound
                         this._entities.shootBullet(3);
                         this.nextFireTime = this.currentTime + this.fireDelay;
                     }
@@ -215,6 +228,8 @@ module shooter
             //_sfx.playMusic(); // todo sound
             // add the player entity to the game!
             this.thePlayer = this._entities.addPlayer(this.playerLogic);
+            this._entities.changeLevels("level1");
+            this._terrain.changeLevels("terrain1");
         }
 
 
@@ -244,23 +259,27 @@ module shooter
                 if(this._state == 0)
                   this._mainmenu.update(this.currentTime);
 
+                // move/animate all entities
+                this._terrain.update(this.currentFrameMs);
+                this._entities.update(this.currentFrameMs);
+
+                // keep adding more sprites - IF we need to
+                this._terrain.streamLevelEntities(false);
+                this._entities.streamLevelEntities(true);
+
                 // keep adding more sprites - FOREVER!
                 // this is a test of the entity manager's
                 // object reuse "pool"
-                if(Math.random() > 0.9)
-                {
-                    this._entities.addEntity();
-                }
-
-                // move/animate all entities
-                this._entities.update(this.currentFrameMs);
+                //if(Math.random() > 0.9)
+                //{
+                //    this._entities.addEntity();
+                //}
 
                 // draw all entities
                 this._spriteStage.drawDeferred(); //render
 
                 // update the screen
                 this.context3D.present();
-
 
                 this.stats.end();
             }
@@ -302,6 +321,7 @@ module shooter
             lib.ImageLoader.getInstance().add("assets/sprites.png");
             lib.ImageLoader.getInstance().add("assets/titlescreen.png");
             lib.ImageLoader.getInstance().add("assets/stars.gif");
+            lib.ImageLoader.getInstance().add("assets/terrain.png");
 
             lib.ImageLoader.getInstance().downloadAll(function(){
                 if(lib.FileLoader.getInstance().isDone())

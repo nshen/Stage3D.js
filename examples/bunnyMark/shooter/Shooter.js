@@ -18,12 +18,15 @@ var GPUSprite;
 var GPUSprite;
 (function (GPUSprite) {
     var SpriteSheet = (function () {
-        function SpriteSheet(spriteSheetBitmapData, numSpritesW, numSpritesH) {
+        function SpriteSheet(spriteSheetBitmapData, numSpritesW, numSpritesH, uvPad) {
             if (typeof numSpritesW === "undefined") { numSpritesW = 8; }
             if (typeof numSpritesH === "undefined") { numSpritesH = 8; }
+            if (typeof uvPad === "undefined") { uvPad = 0; }
+            this.uvPadding = 0;
             this._spriteSheet = spriteSheetBitmapData;
             this._uvCoords = [];
             this._rects = [];
+            this.uvPadding = uvPad;
             this.createUVs(numSpritesW, numSpritesH);
         }
         SpriteSheet.prototype.createUVs = function (numSpritesW, numSpritesH) {
@@ -31,7 +34,7 @@ var GPUSprite;
 
             for (var y = 0; y < numSpritesH; y++) {
                 for (var x = 0; x < numSpritesW; x++) {
-                    this._uvCoords.push(x / numSpritesW, (y + 1) / numSpritesH, x / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, (y + 1) / numSpritesH);
+                    this._uvCoords.push((x / numSpritesW) + this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding, (x / numSpritesW) + this.uvPadding, (y / numSpritesH) + this.uvPadding, ((x + 1) / numSpritesW) - this.uvPadding, (y / numSpritesH) + this.uvPadding, ((x + 1) / numSpritesW) - this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding);
 
                     destRect = new GPUSprite.Rectangle();
                     destRect.x = 0;
@@ -512,6 +515,82 @@ var lib;
     })();
     lib.ImageLoader = ImageLoader;
 })(lib || (lib = {}));
+var lib;
+(function (lib) {
+    
+    var FileLoader = (function () {
+        function FileLoader() {
+            this._queue = [];
+            this._successCount = 0;
+            this._errorCount = 0;
+            this._cache = {};
+            this._resType = "text";
+            if (FileLoader._instance)
+                throw new Error("singleton error");
+        }
+        FileLoader.getInstance = function () {
+            if (!FileLoader._instance)
+                FileLoader._instance = new FileLoader();
+            return FileLoader._instance;
+        };
+
+        FileLoader.prototype.add = function (path) {
+            this._queue.push(path);
+        };
+
+        FileLoader.prototype.downloadAll = function (p_callback) {
+            var _this = this;
+            if (this._queue.length <= 0)
+                return p_callback();
+
+            for (var i = 0; i < this._queue.length; i++) {
+                var xhr = new XMLHttpRequest();
+                xhr.responseType = this._resType;
+                xhr.onreadystatechange = function (e) {
+                };
+                xhr.onload = function (e) {
+                    if (xhr.status == 0) {
+                        _this._successCount++;
+                        if (_this.isDone())
+                            p_callback();
+                        return;
+                    }
+
+                    if (xhr.readyState == 4 || xhr.status == 0) {
+                        _this._successCount++;
+                        if (_this.isDone())
+                            p_callback();
+                    } else {
+                        throw new Error("error");
+                    }
+                    console.log("readState:", xhr.readyState, xhr.status);
+                };
+                xhr.onerror = function (e) {
+                    _this._errorCount++;
+                    if (_this.isDone())
+                        p_callback();
+                };
+                xhr.open('GET', this._queue[i], true);
+                xhr.send();
+                this._cache[this._queue[i]] = xhr;
+            }
+        };
+
+        FileLoader.prototype.isDone = function () {
+            return this._queue.length == (this._successCount + this._errorCount);
+        };
+
+        FileLoader.prototype.get = function (path) {
+            return this._cache[path];
+        };
+        FileLoader.RES_TYPE_TEXT = "text";
+        FileLoader.RES_TYPE_BUFFER = "arraybuffer";
+        FileLoader.RES_TYPE_BLOB = "blob";
+        FileLoader.RES_TYPE_DOCUMENT = "document";
+        return FileLoader;
+    })();
+    lib.FileLoader = FileLoader;
+})(lib || (lib = {}));
 var shooter;
 (function (shooter) {
     var GameControls = (function () {
@@ -825,8 +904,75 @@ var shooter;
 })(shooter || (shooter = {}));
 var shooter;
 (function (shooter) {
+    var GameLevels = (function () {
+        function GameLevels() {
+            this.level0data = lib.FileLoader.getInstance().get("assets/level0.oel").responseText;
+            this.level0terrain = lib.FileLoader.getInstance().get("assets/terrain0.oel").responseText;
+            this.level1data = lib.FileLoader.getInstance().get("assets/level1.oel").responseText;
+            this.level1terrain = lib.FileLoader.getInstance().get("assets/terrain1.oel").responseText;
+            this.data = [];
+        }
+        GameLevels.prototype.stripTags = function (str) {
+            var pattern = /<\/?[a-zA-Z0-9]+.*?>/gim;
+            return str.replace(pattern, "");
+        };
+
+        GameLevels.prototype.parseLevelData = function (lvl) {
+            var levelString;
+            var temps;
+            var nextValue;
+            var output = [];
+            var nextrow;
+            switch (lvl) {
+                case "level0":
+                    levelString = this.stripTags(this.level0data);
+                    break;
+                case "terrain0":
+                    levelString = this.stripTags(this.level0terrain);
+                    break;
+                case "level1":
+                    levelString = this.stripTags(this.level1data);
+                    break;
+                case "terrain1":
+                    levelString = this.stripTags(this.level1terrain);
+                    break;
+                default:
+                    return output;
+            }
+
+            var lines = levelString.split(/\r\n|\n|\r/);
+            for (var row = 0; row < lines.length; row++) {
+                temps = lines[row].split(",");
+                if (temps.length > 1) {
+                    nextrow = output.push([]) - 1;
+
+                    for (var col = 0; col < temps.length; col++) {
+                        if (temps[col] == "")
+                            temps[col] = "-1";
+                        nextValue = parseInt(temps[col]);
+                        if (nextValue < 0)
+                            nextValue = -1;
+
+                        output[nextrow].push(nextValue);
+                    }
+                }
+            }
+
+            return output;
+        };
+
+        GameLevels.prototype.loadLevel = function (lvl) {
+            this.data = this.parseLevelData(lvl);
+        };
+        return GameLevels;
+    })();
+    shooter.GameLevels = GameLevels;
+})(shooter || (shooter = {}));
+var shooter;
+(function (shooter) {
     var Entity = (function () {
         function Entity(gs, myManager) {
+            this.name = "null";
             this.age = 0;
             this.fireTime = 0;
             this.fireDelayMin = 1;
@@ -936,7 +1082,6 @@ var shooter;
         };
 
         Entity.prototype.generatePath = function () {
-            console.log("Generating AI path");
             this.aiPathWaypoints = [];
             var N = this.aiPathWaypointCount;
             for (var i = 0; i < N; i++) {
@@ -948,7 +1093,7 @@ var shooter;
 
         Entity.prototype.calculatePathPosition = function (ratio) {
             if (typeof ratio === "undefined") { ratio = 0; }
-            var i = Math.round(ratio);
+            var i = Math.floor(ratio);
             var pointratio = ratio - i;
 
             var p0 = this.aiPathWaypoints[(i - 1 + this.aiPathWaypoints.length) % this.aiPathWaypoints.length];
@@ -980,6 +1125,36 @@ var shooter;
             this.age += seconds;
             this.maybeShoot(1);
             this.sprite.rotation = this.gfx.pointAtRad(this.speedX, this.speedY) - (90 * this.gfx.DEGREES_TO_RADIANS);
+        };
+
+        Entity.prototype.wobbleAI = function (seconds) {
+            this.age += seconds;
+            this.maybeShoot(1);
+            this.aiPathOffsetY = (Math.sin(this.age * 2) / Math.PI) * 128;
+        };
+
+        Entity.prototype.sentryAI = function (seconds) {
+            this.age += seconds;
+            this.maybeShoot(3, 3, 6);
+            if (this.gfx.thePlayer)
+                this.sprite.rotation = this.gfx.pointAtRad(this.gfx.thePlayer.sprite.position.x - this.sprite.position.x, this.gfx.thePlayer.sprite.position.y - this.sprite.position.y) - (90 * this.gfx.DEGREES_TO_RADIANS);
+        };
+
+        Entity.prototype.droneAI = function (seconds) {
+            this.age += seconds;
+            this.maybeShoot(1);
+
+            if (this.aiPathWaypoints == null)
+                this.generatePath();
+
+            var pathProgress = this.age / this.pathNodeTime;
+
+            var newPos = this.calculatePathPosition(pathProgress);
+
+            this.sprite.rotation = this.gfx.pointAtRad(newPos.x - this.aiPathOffsetX, newPos.y - this.aiPathOffsetY) - (90 * this.gfx.DEGREES_TO_RADIANS);
+
+            this.aiPathOffsetX = newPos.x;
+            this.aiPathOffsetY = newPos.x;
         };
         return Entity;
     })();
@@ -1076,6 +1251,11 @@ var shooter;
 (function (_shooter) {
     var EntityManager = (function () {
         function EntityManager(view) {
+            this.levelNum = 0;
+            this.levelCurrentScrollX = 0;
+            this.levelPrevCol = -1;
+            this.levelTilesize = 48;
+            this.cullingDistance = 200;
             this._SpritesPerRow = 8;
             this._SpritesPerCol = 8;
             this.defaultScale = 1;
@@ -1096,23 +1276,30 @@ var shooter;
             this.RADIANS_TO_DEGREES = 180 / Math.PI;
             this.numCreated = 0;
             this.numReused = 0;
+            this.sourceImage = "assets/sprites.png";
             this._entityPool = [];
             this.allBullets = [];
             this.allEnemies = [];
             this.particles = new _shooter.GameParticles(this);
             this.setPosition(view);
+            this.level = new shooter.GameLevels();
         }
         EntityManager.prototype.setPosition = function (view) {
-            this.maxX = view.width + 64;
-            this.minX = view.x - 64;
-            this.maxY = view.height + 64;
-            this.minY = view.y - 64;
+            this.maxX = view.width + this.cullingDistance;
+            this.minX = view.x - this.cullingDistance;
+            this.maxY = view.height + this.cullingDistance;
+            this.minY = view.y - this.cullingDistance;
+
+            this.midpoint = view.height / 2;
         };
 
-        EntityManager.prototype.createBatch = function (context3D) {
-            var sourceBitmap = lib.ImageLoader.getInstance().get("assets/sprites.png");
+        EntityManager.prototype.createBatch = function (context3D, SpritesPerRow, SpritesPerCol, uvPadding) {
+            if (typeof SpritesPerRow === "undefined") { SpritesPerRow = 8; }
+            if (typeof SpritesPerCol === "undefined") { SpritesPerCol = 8; }
+            if (typeof uvPadding === "undefined") { uvPadding = 0; }
+            var sourceBitmap = lib.ImageLoader.getInstance().get(this.sourceImage);
 
-            this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(sourceBitmap), 8, 8);
+            this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(sourceBitmap), SpritesPerRow, SpritesPerCol, uvPadding);
 
             this._batch = new GPUSprite.SpriteRenderLayer(context3D, this._spriteSheet);
             return this._batch;
@@ -1143,19 +1330,23 @@ var shooter;
         };
 
         EntityManager.prototype.addPlayer = function (playerController) {
-            this.thePlayer = this.respawn(10);
-            this.thePlayer.sprite.position.x = 32;
-            this.thePlayer.sprite.position.y = this.maxY / 2;
+            this.thePlayer = this.respawn(this.spritenumPlayer);
+            this.thePlayer.sprite.position.x = 64;
+            this.thePlayer.sprite.position.y = this.midpoint;
             this.thePlayer.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
             this.thePlayer.sprite.scaleX = this.thePlayer.sprite.scaleY = this.defaultScale;
             this.thePlayer.speedX = 0;
             this.thePlayer.speedY = 0;
             this.thePlayer.active = true;
+            this.thePlayer.collidemode = 1;
+            this.thePlayer.collideradius = 10;
+            this.thePlayer.owner = this.thePlayer;
             this.thePlayer.aiFunction = playerController;
-            this.thePlayer.leavesTrail = true;
+            this.thePlayer.name = "thePlayer";
 
             this.theOrb = this.respawn(this.spritenumOrb);
             this.theOrb.rotationSpeed = 720 * this.DEGREES_TO_RADIANS;
+            this.theOrb.sprite.scaleX = this.theOrb.sprite.scaleY = this.defaultScale / 2;
             this.theOrb.leavesTrail = true;
             this.theOrb.collidemode = 1;
             this.theOrb.collideradius = 12;
@@ -1163,6 +1354,7 @@ var shooter;
             this.theOrb.owner = this.thePlayer;
             this.theOrb.orbiting = this.thePlayer;
             this.theOrb.orbitingDistance = 180;
+            this.theOrb.name = "theOrb";
 
             return this.thePlayer;
         };
@@ -1184,8 +1376,10 @@ var shooter;
             else
                 theBullet = this.respawn(this.spritenumBullet3);
 
-            theBullet.sprite.position.x = this.thePlayer.sprite.position.x + 8;
-            theBullet.sprite.position.y = this.thePlayer.sprite.position.y + 4;
+            theBullet.name = "bullet";
+            theBullet.sprite.position.x = shooter.sprite.position.x + 8;
+            theBullet.sprite.position.y = shooter.sprite.position.y + 2;
+
             theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
             theBullet.sprite.scaleX = theBullet.sprite.scaleY = 1;
             if (shooter == this.thePlayer) {
@@ -1208,7 +1402,7 @@ var shooter;
             return theBullet;
         };
 
-        EntityManager.prototype.addEntity = function () {
+        EntityManager.prototype.addRandomEntity = function () {
             var anEntity;
             var randomSpriteID = Math.floor(Math.random() * 55);
 
@@ -1223,6 +1417,7 @@ var shooter;
             anEntity.sprite.rotation = this.pointAtRad(anEntity.speedX, anEntity.speedY) - (90 * this.DEGREES_TO_RADIANS);
             anEntity.collidemode = 1;
             anEntity.collideradius = 16;
+            anEntity.name = "randomEnemy";
 
             if (!anEntity.recycled)
                 this.allEnemies.push(anEntity);
@@ -1244,18 +1439,30 @@ var shooter;
 
         EntityManager.prototype.checkCollisions = function (checkMe) {
             var anEntity;
-            for (var i = 0; i < this.allEnemies.length; i++) {
-                anEntity = this.allEnemies[i];
-                if (anEntity.active && anEntity.collidemode) {
-                    if (checkMe.colliding(anEntity)) {
-                        this.particles.addExplosion(checkMe.sprite.position);
-                        if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
-                            checkMe.die();
-                        if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
-                            anEntity.die();
-                        return anEntity;
+            var collided = false;
+            if (checkMe.owner != this.thePlayer) {
+                anEntity = this.thePlayer;
+                if (checkMe.colliding(anEntity)) {
+                    collided = true;
+                }
+            } else {
+                for (var i = 0; i < this.allEnemies.length; i++) {
+                    anEntity = this.allEnemies[i];
+                    if (anEntity.active && anEntity.collidemode) {
+                        if (checkMe.colliding(anEntity)) {
+                            collided = true;
+                            break;
+                        }
                     }
                 }
+            }
+            if (collided) {
+                this.particles.addExplosion(checkMe.sprite.position);
+                if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
+                    checkMe.die();
+                if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
+                    anEntity.die();
+                return anEntity;
             }
             return null;
         };
@@ -1269,31 +1476,38 @@ var shooter;
             for (var i = 0; i < max; i++) {
                 anEntity = this._entityPool[i];
                 if (anEntity.active) {
+                    anEntity.sprite.position.x -= anEntity.aiPathOffsetX;
+                    anEntity.sprite.position.y -= anEntity.aiPathOffsetY;
+
                     anEntity.sprite.position.x += anEntity.speedX * this.currentFrameSeconds;
                     anEntity.sprite.position.y += anEntity.speedY * this.currentFrameSeconds;
 
                     if (anEntity.aiFunction != null)
-                        anEntity.aiFunction(anEntity);
-                    else {
-                        if (anEntity.isBullet && anEntity.collidemode)
-                            this.checkCollisions(anEntity);
+                        anEntity.aiFunction(this.currentFrameSeconds);
 
-                        if (anEntity.orbiting != null) {
-                            anEntity.sprite.position.x = anEntity.orbiting.sprite.position.x + ((Math.sin(anEntity.sprite.rotation / 4) / Math.PI) * anEntity.orbitingDistance);
-                            anEntity.sprite.position.y = anEntity.orbiting.sprite.position.y - ((Math.cos(anEntity.sprite.rotation / 4) / Math.PI) * anEntity.orbitingDistance);
-                        }
+                    anEntity.sprite.position.x += anEntity.aiPathOffsetX;
+                    anEntity.sprite.position.y += anEntity.aiPathOffsetY;
 
-                        if (anEntity.leavesTrail) {
-                            if (anEntity == this.theOrb)
-                                this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
-                            else
-                                this.particles.addParticle(63, anEntity.sprite.position.x + 12, anEntity.sprite.position.y + 2, 0.5, 3, 0, 0.6, NaN, NaN, -1.5, -1);
-                        }
-                        if ((anEntity.sprite.position.x > this.maxX) || (anEntity.sprite.position.x < this.minX) || (anEntity.sprite.position.y > this.maxY) || (anEntity.sprite.position.y < this.minY)) {
-                            if ((anEntity != this.thePlayer) && (anEntity != this.theOrb))
-                                anEntity.die();
-                        }
+                    if (anEntity.collidemode)
+                        this.checkCollisions(anEntity);
+
+                    if (anEntity.orbiting != null) {
+                        anEntity.sprite.position.x = anEntity.orbiting.sprite.position.x + ((Math.sin(anEntity.sprite.rotation / 4) / Math.PI) * anEntity.orbitingDistance);
+                        anEntity.sprite.position.y = anEntity.orbiting.sprite.position.y - ((Math.cos(anEntity.sprite.rotation / 4) / Math.PI) * anEntity.orbitingDistance);
                     }
+
+                    if (anEntity.leavesTrail) {
+                        if (anEntity == this.theOrb)
+                            this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
+                        else
+                            this.particles.addParticle(63, anEntity.sprite.position.x + 12, anEntity.sprite.position.y + 2, 0.5, 3, 0, 0.6, NaN, NaN, -1.5, -1);
+                    }
+
+                    if ((anEntity.sprite.position.x > this.maxX) || (anEntity.sprite.position.x < this.minX) || (anEntity.sprite.position.y > this.maxY) || (anEntity.sprite.position.y < this.minY)) {
+                        if ((anEntity != this.thePlayer) && (anEntity != this.theOrb))
+                            anEntity.die();
+                    }
+
                     if (anEntity.rotationSpeed != 0)
                         anEntity.sprite.rotation += anEntity.rotationSpeed * this.currentFrameSeconds;
 
@@ -1312,6 +1526,127 @@ var shooter;
                             anEntity.die();
                     }
                 }
+            }
+        };
+
+        EntityManager.prototype.killEmAll = function () {
+            var anEntity;
+            var i;
+            var max;
+            max = this._entityPool.length;
+            for (i = 0; i < max; i++) {
+                anEntity = this._entityPool[i];
+                if ((anEntity != this.thePlayer) && (anEntity != this.theOrb))
+                    anEntity.die();
+            }
+        };
+
+        EntityManager.prototype.changeLevels = function (lvl) {
+            this.killEmAll();
+            this.level.loadLevel(lvl);
+            this.levelCurrentScrollX = 0;
+            this.levelPrevCol = -1;
+        };
+
+        EntityManager.prototype.streamLevelEntities = function (theseAreEnemies) {
+            if (typeof theseAreEnemies === "undefined") { theseAreEnemies = false; }
+            var anEntity;
+            var sprID;
+
+            this.levelCurrentScrollX += this.defaultSpeed * this.currentFrameSeconds;
+
+            if (this.levelCurrentScrollX >= this.levelTilesize) {
+                this.levelCurrentScrollX = 0;
+                this.levelPrevCol++;
+
+                var currentLevelXCoord;
+                if (this.lastTerrainEntity && !theseAreEnemies)
+                    currentLevelXCoord = this.lastTerrainEntity.sprite.position.x + this.levelTilesize;
+                else
+                    currentLevelXCoord = this.maxX;
+
+                var rows = this.level.data.length;
+
+                if (this.level.data && this.level.data.length) {
+                    for (var row = 0; row < rows; row++) {
+                        if (this.level.data[row].length > this.levelPrevCol) {
+                            sprID = this.level.data[row][this.levelPrevCol];
+                            if (sprID > -1) {
+                                anEntity = this.respawn(sprID);
+                                anEntity.sprite.position.x = currentLevelXCoord;
+                                anEntity.sprite.position.y = (row * this.levelTilesize) + (this.levelTilesize / 2);
+
+                                anEntity.speedX = -this.defaultSpeed;
+                                anEntity.speedY = 0;
+                                anEntity.sprite.scaleX = this.defaultScale;
+                                anEntity.sprite.scaleY = this.defaultScale;
+                                anEntity.name = "tile";
+                                if (theseAreEnemies) {
+                                    anEntity.name = "tile_enemy";
+
+                                    switch (sprID) {
+                                        case 1:
+                                        case 2:
+                                        case 3:
+                                        case 4:
+                                        case 5:
+                                        case 6:
+                                        case 7:
+                                            anEntity.speedX = 15 * ((-1 * Math.random() * 10) - 2);
+                                            anEntity.speedY = 15 * ((Math.random() * 5) - 2.5);
+                                            anEntity.aiFunction = anEntity.straightAI;
+                                            break;
+                                        case 8:
+                                        case 9:
+                                        case 10:
+                                        case 11:
+                                        case 12:
+                                        case 13:
+                                        case 14:
+                                        case 15:
+                                            anEntity.aiFunction = anEntity.wobbleAI;
+                                            break;
+                                        case 16:
+                                        case 24:
+                                            anEntity.aiFunction = anEntity.sentryAI;
+                                            anEntity.speedX = -90;
+                                            break;
+                                        case 17:
+                                        case 18:
+                                        case 19:
+                                        case 20:
+                                        case 21:
+                                        case 22:
+                                        case 23:
+                                            anEntity.speedX = 15 * ((-1 * Math.random() * 10) - 2);
+                                            anEntity.speedY = 15 * ((Math.random() * 5) - 2.5);
+                                            anEntity.aiFunction = anEntity.wobbleAI;
+                                            break;
+                                        case 32:
+                                        case 40:
+                                        case 48:
+                                            anEntity.aiFunction = null;
+                                            anEntity.rotationSpeed = Math.random() * 8 - 4;
+                                            anEntity.speedY = Math.random() * 64 - 32;
+                                            break;
+                                        default:
+                                            anEntity.aiFunction = anEntity.droneAI;
+                                            break;
+                                    }
+
+                                    anEntity.sprite.rotation = this.pointAtRad(anEntity.speedX, anEntity.speedY) - (90 * this.DEGREES_TO_RADIANS);
+                                    anEntity.collidemode = 1;
+                                    anEntity.collideradius = 16;
+                                    if (!anEntity.recycled)
+                                        this.allEnemies.push(anEntity);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!theseAreEnemies)
+                    this.lastTerrainEntity = anEntity;
             }
         };
         return EntityManager;
@@ -1404,16 +1739,17 @@ var shooter;
     var ShooterMain = (function () {
         function ShooterMain(canvas) {
             var _this = this;
-            this._state = 0;
             this.nothingPressedLastFrame = false;
             this.playerSpeed = 128;
             this.nextFireTime = 0;
             this.fireDelay = 200;
+            this._state = 0;
             this.onContext3DCreate = function (e) {
                 _this.context3D = _this.stage3d.context3D;
                 _this.initSpriteEngine();
             };
-            this.playerLogic = function (me) {
+            this.playerLogic = function (seconds) {
+                var me = _this._entities.thePlayer;
                 me.speedY = me.speedX = 0;
                 if (_this._controls.pressing.up)
                     me.speedY = -_this.playerSpeed;
@@ -1454,11 +1790,11 @@ var shooter;
                     if (_this._state == 0)
                         _this._mainmenu.update(_this.currentTime);
 
-                    if (Math.random() > 0.9) {
-                        _this._entities.addEntity();
-                    }
-
+                    _this._terrain.update(_this.currentFrameMs);
                     _this._entities.update(_this.currentFrameMs);
+
+                    _this._terrain.streamLevelEntities(false);
+                    _this._entities.streamLevelEntities(true);
 
                     _this._spriteStage.drawDeferred();
 
@@ -1471,16 +1807,16 @@ var shooter;
 
                 requestAnimationFrame(_this.onEnterFrame);
             };
-            this._start = new Date().valueOf();
-            this.initStats();
-            this._controls = new shooter.GameControls(window);
-
             this.stage3d = new stageJS.Stage3D(canvas);
             this.stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, this.onContext3DCreate);
             this.stage3d.requestContext3D();
         }
         ShooterMain.prototype.initSpriteEngine = function () {
             var _this = this;
+            this._start = new Date().valueOf();
+            this.initStats();
+            this._controls = new shooter.GameControls(window);
+
             var _width = this.stage3d.stageWidth;
             var _height = this.stage3d.stageHeight;
 
@@ -1493,9 +1829,23 @@ var shooter;
             this._bg.initBackground();
             this._spriteStage.addLayer(batch);
 
+            this._terrain = new shooter.EntityManager(stageRect);
+            this._terrain.sourceImage = "assets/terrain.png";
+            this._terrain.defaultSpeed = 90;
+            this._terrain.defaultScale = 1.5;
+            this._terrain.levelTilesize = 48;
+            batch = this._terrain.createBatch(this.context3D, 16, 16, 0.002);
+            this._spriteStage.addLayer(batch);
+            this._terrain.level.loadLevel("terrain0");
+
             this._entities = new shooter.EntityManager(stageRect);
+            this._entities.sourceImage = "assets/sprites.png";
+            this._entities.defaultScale = 1.5;
+            this._entities.levelTilesize = 48;
             batch = this._entities.createBatch(this.context3D);
             this._spriteStage.addLayer(batch);
+            this._entities.level.loadLevel("level10");
+            this._entities.streamLevelEntities(true);
 
             this._mainmenu = new shooter.GameMenu(stageRect);
             batch = this._mainmenu.createBatch(this.context3D);
@@ -1554,6 +1904,8 @@ var shooter;
             this._spriteStage.removeLayer(this._mainmenu.batch);
 
             this.thePlayer = this._entities.addPlayer(this.playerLogic);
+            this._entities.changeLevels("level1");
+            this._terrain.changeLevels("terrain1");
         };
 
         ShooterMain.prototype.getTimer = function () {
@@ -1571,12 +1923,26 @@ var shooter;
         };
 
         ShooterMain.main = function () {
+            ShooterMain.canvas = document.getElementById("my-canvas");
+
             lib.ImageLoader.getInstance().add("assets/sprites.png");
             lib.ImageLoader.getInstance().add("assets/titlescreen.png");
             lib.ImageLoader.getInstance().add("assets/stars.gif");
+            lib.ImageLoader.getInstance().add("assets/terrain.png");
 
             lib.ImageLoader.getInstance().downloadAll(function () {
-                new ShooterMain(ShooterMain.canvas = document.getElementById("my-canvas"));
+                if (lib.FileLoader.getInstance().isDone())
+                    new ShooterMain(ShooterMain.canvas);
+            });
+
+            lib.FileLoader.getInstance().add("assets/level0.oel");
+            lib.FileLoader.getInstance().add("assets/terrain0.oel");
+            lib.FileLoader.getInstance().add("assets/level1.oel");
+            lib.FileLoader.getInstance().add("assets/terrain1.oel");
+
+            lib.FileLoader.getInstance().downloadAll(function () {
+                if (lib.ImageLoader.getInstance().isDone())
+                    new ShooterMain(ShooterMain.canvas);
             });
         };
         return ShooterMain;

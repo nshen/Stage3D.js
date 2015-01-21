@@ -14,6 +14,8 @@ module shooter
 	export class Entity
 	{
 
+		public name:string = "null" ; //for debug
+
 		// if this is set, custom behaviors are run
 		public aiFunction : Function;
 		// the AI routines might want access to the entity manager
@@ -190,7 +192,7 @@ module shooter
 		// generate a random path
 		public generatePath():void
 		{
-			console.log("Generating AI path");
+			//console.log("Generating AI path");
 			this.aiPathWaypoints = [];
 			var N:number = this.aiPathWaypointCount;
 			for (var i:number = 0; i < N; i++)
@@ -203,7 +205,7 @@ module shooter
 		// find the point on a spline at ratio (0 to 1)
 		public calculatePathPosition(ratio:number = 0):{x:number;y:number}
 		{
-			var i:number = Math.round(ratio);
+			var i:number = Math.floor(ratio);
 			var pointratio:number = ratio - i;
 			//console.log(ratio + ' ratio = path point ' + i + ' segment ratio ' + pointratio);
 			var p0:{x:number;y:number} = this.aiPathWaypoints [(i -1 + this.aiPathWaypoints.length) % this.aiPathWaypoints.length];

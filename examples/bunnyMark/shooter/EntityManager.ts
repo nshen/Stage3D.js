@@ -45,7 +45,7 @@ module shooter
 		private _SpritesPerCol:number = 8;
 
 		// the general size of the player and enemies
-		private defaultScale:number = 1;//1.5;
+		public defaultScale:number = 1;//1.5;
 		public defaultSpeed:number = 128;
 		// how fast player bullets go per second
 		public bulletSpeed:number = 250;
@@ -95,6 +95,8 @@ module shooter
 		public minY:number;
 		public midpoint:number;
 
+		public sourceImage:string = "assets/sprites.png" // must in lib.ImageLoader
+
 		constructor(view:GPUSprite.Rectangle)
 		{
 			this._entityPool = [];
@@ -131,11 +133,11 @@ module shooter
 		//	return (this.fastrandomseed * this.FASTRANDOMTOFLOAT);
 		//}
 
-		public createBatch(context3D:stageJS.Context3D):GPUSprite.SpriteRenderLayer//LiteSpriteBatch
+		public createBatch(context3D:stageJS.Context3D , SpritesPerRow:number = 8 , SpritesPerCol:number = 8 , uvPadding:number=0):GPUSprite.SpriteRenderLayer//LiteSpriteBatch
 		{
-			var sourceBitmap:HTMLImageElement = lib.ImageLoader.getInstance().get("assets/sprites.png");
+			var sourceBitmap:HTMLImageElement = lib.ImageLoader.getInstance().get(this.sourceImage);
 			// create a spritesheet with 8x8 (64) sprites on it
-			this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(sourceBitmap), 8, 8);
+			this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(sourceBitmap), SpritesPerRow, SpritesPerCol,uvPadding);
 			// Create new render batch
 			this._batch = new GPUSprite.SpriteRenderLayer(context3D, this._spriteSheet);
 			return this._batch;
@@ -187,6 +189,7 @@ module shooter
 			this.thePlayer.collideradius = 10;
 			this.thePlayer.owner = this.thePlayer; // collisions require this
 			this.thePlayer.aiFunction = playerController;
+			this.thePlayer.name = "thePlayer"
 			//this.thePlayer.leavesTrail = true;
 
 			// just for fun, spawn an orbiting "power orb"
@@ -200,6 +203,7 @@ module shooter
 			this.theOrb.owner = this.thePlayer;
 			this.theOrb.orbiting = this.thePlayer;
 			this.theOrb.orbitingDistance = 180;
+			this.theOrb.name = "theOrb"
 
 			return this.thePlayer;
 		}
@@ -223,8 +227,9 @@ module shooter
 			else
 				theBullet = this.respawn(this.spritenumBullet3);
 
-			theBullet.sprite.position.x = this.thePlayer.sprite.position.x + 8;
-			theBullet.sprite.position.y = this.thePlayer.sprite.position.y + 2;
+			theBullet.name = "bullet"
+			theBullet.sprite.position.x = shooter.sprite.position.x + 8;
+			theBullet.sprite.position.y = shooter.sprite.position.y + 2;
 
 			theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
 			theBullet.sprite.scaleX = theBullet.sprite.scaleY = 1;
@@ -278,6 +283,7 @@ module shooter
 			anEntity.sprite.rotation =  this.pointAtRad(anEntity.speedX,anEntity.speedY) - (90 * this.DEGREES_TO_RADIANS);
 			anEntity.collidemode = 1;
 			anEntity.collideradius = 16;
+			anEntity.name = "randomEnemy";
 
 			if(!anEntity.recycled)
 				this.allEnemies.push(anEntity);
@@ -308,45 +314,41 @@ module shooter
 		// (enemy bullets only check to hit the player)
 		public checkCollisions(checkMe:Entity):Entity
 		{
-			//checkMe is a bullet , a orb or thePlayer
 			var anEntity:Entity;
 			var collided:boolean = false;
 			if(checkMe.owner != this.thePlayer)
-			{
+			{ // quick check ONLY to see if we have hit the player
 				anEntity = this.thePlayer;
-				if(checkMe.owner != this.thePlayer)
+				if (checkMe.colliding(anEntity))
 				{
-					// quick check ONLY to see if we have hit the player
-					anEntity = this.thePlayer;
-					if (checkMe.colliding(anEntity))
+					//console.log("Player was HIT!");
+					collided = true;
+				}
+			}else // check all active enemies
+			{
+				for(var i:number = 0; i< this.allEnemies.length;i++)
+				{
+					anEntity = this.allEnemies[i];
+					if (anEntity.active && anEntity.collidemode)
 					{
-						console.log("Player was HIT!");
-						collided = true;
+						if (checkMe.colliding(anEntity))
+						{
+							collided = true;
+							break;
+						}
 					}
-
 				}
 
 			}
-			//todo:从这里开始
-			for(var i:number=0; i< this.allEnemies.length;i++)
+			if(collided)
 			{
-				anEntity = this.allEnemies[i];
-				if (anEntity.active && anEntity.collidemode)
-				{
-					if (checkMe.colliding(anEntity))
-					{
-						//console.log('Collision! checkMe.owner == anEntity.owner is ' + (checkMe.owner == anEntity.owner ? "TRUE!" : "FALSE"));
-
-						//if (this.sfx) sfx.playExplosion(number(fastRandom() * 2 + 1.5)); // todo：声音
-
-						this.particles.addExplosion(checkMe.sprite.position);
-						if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
-							checkMe.die(); // the bullet
-						if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
-							anEntity.die(); // the victim
-						return anEntity;
-					}
-				}
+				//if (this.sfx) sfx.playExplosion(number(Math.random() * 2 + 1.5)); // todo：声音
+				this.particles.addExplosion(checkMe.sprite.position);
+				if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
+					checkMe.die(); // the bullet
+				if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
+					anEntity.die(); // the victim
+				return anEntity;
 			}
 			return null;
 		}
@@ -354,64 +356,70 @@ module shooter
 
 		// called every frame: used to update the simulation
 		// this is where you would perform AI, physics, etc.
-
-		//currentTime is seconds since the previous frame
+		// in this version, currentTime is seconds since the previous frame
 		public update(currentTime:number) : void
 		{		
 			var anEntity:Entity;
-
 			// what portion of a full second has passed since the previous update?
 			this.currentFrameSeconds = currentTime / 1000;
 
-
 			var max:number = this._entityPool.length;
-			for(var i:number=0; i < max;i++)
+			for(var i:number = 0; i < max;i++)
 			{
 				anEntity = this._entityPool[i];
 				if (anEntity.active)
 				{
+					// subtract the previous aiPathOffset
+					anEntity.sprite.position.x -= anEntity.aiPathOffsetX;
+					anEntity.sprite.position.y -= anEntity.aiPathOffsetY;
+
+					// calculate location on screen with scrolling
 					anEntity.sprite.position.x += anEntity.speedX * this.currentFrameSeconds;
 					anEntity.sprite.position.y += anEntity.speedY * this.currentFrameSeconds;
 
 					// the player follows different rules
 					if(anEntity.aiFunction != null)
-						anEntity.aiFunction(anEntity);
-					else
-					{ // all other entities use the "demo" logic
+						anEntity.aiFunction(this.currentFrameSeconds);
 
-						if(anEntity.isBullet && anEntity.collidemode)
-							this.checkCollisions(anEntity);
+					// add the new aiPathOffset
+					anEntity.sprite.position.x += anEntity.aiPathOffsetX;
+					anEntity.sprite.position.y += anEntity.aiPathOffsetY;
 
-						// entities can orbit other entities
-						// (uses their <the> rotation position)
-						if (anEntity.orbiting != null)
-						{
-							anEntity.sprite.position.x = anEntity.orbiting.sprite.position.x + ((Math.sin(anEntity.sprite.rotation/4)/Math.PI) * anEntity.orbitingDistance);
-							anEntity.sprite.position.y = anEntity.orbiting.sprite.position.y - ((Math.cos(anEntity.sprite.rotation/4)/Math.PI) * anEntity.orbitingDistance);
-						}
+					// collision detection
+					if(anEntity.collidemode)
+						this.checkCollisions(anEntity);
 
-						// entities can leave an engine emitter trail
-						if (anEntity.leavesTrail)
-						{
-							// leave a trail of particles
-							if (anEntity == this.theOrb)
-								this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
-							else // player
-								this.particles.addParticle(63, anEntity.sprite.position.x + 12, anEntity.sprite.position.y + 2, 0.5, 3, 0, 0.6, NaN, NaN, -1.5, -1);
+					// entities can orbit other entities
+					// (uses their <the> rotation position)
+					if (anEntity.orbiting != null)
+					{
+						anEntity.sprite.position.x = anEntity.orbiting.sprite.position.x + ((Math.sin(anEntity.sprite.rotation/4)/Math.PI) * anEntity.orbitingDistance);
+						anEntity.sprite.position.y = anEntity.orbiting.sprite.position.y - ((Math.cos(anEntity.sprite.rotation/4)/Math.PI) * anEntity.orbitingDistance);
+					}
 
-						}
-						if ((anEntity.sprite.position.x > this.maxX) ||
-							(anEntity.sprite.position.x < this.minX) ||
-							(anEntity.sprite.position.y > this.maxY) ||
-							(anEntity.sprite.position.y < this.minY))
-						{
-							// if we go past any edge, become inactive
-							// so the sprite can be respawned
-							if ((anEntity != this.thePlayer) && (anEntity != this.theOrb))
-								anEntity.die();
-						}
+					// entities can leave an engine emitter trail
+					if (anEntity.leavesTrail)
+					{
+						// leave a trail of particles
+						if (anEntity == this.theOrb)
+							this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
+						else // player
+							this.particles.addParticle(63, anEntity.sprite.position.x + 12, anEntity.sprite.position.y + 2, 0.5, 3, 0, 0.6, NaN, NaN, -1.5, -1);
 
 					}
+
+					if ((anEntity.sprite.position.x > this.maxX) ||
+						(anEntity.sprite.position.x < this.minX) ||
+						(anEntity.sprite.position.y > this.maxY) ||
+						(anEntity.sprite.position.y < this.minY))
+					{
+						// if we go past any edge, become inactive
+						// so the sprite can be respawned
+						if ((anEntity != this.thePlayer) && (anEntity != this.theOrb))
+							anEntity.die();
+					}
+
+
 					if (anEntity.rotationSpeed != 0)
 						anEntity.sprite.rotation += anEntity.rotationSpeed * this.currentFrameSeconds;
 
@@ -425,6 +433,7 @@ module shooter
 						else if (anEntity.sprite.alpha > 1)
 						{
 							anEntity.sprite.alpha = 1;
+							//anEntity.fadeAnim = 0; //todo:加上这句？
 						}
 					}
 					if (anEntity.zoomAnim != 0)
@@ -436,6 +445,151 @@ module shooter
 					}
 
 				}
+			}
+		}
+
+		// kill (recycle) all known entities
+		// this is run when we change levels
+		public killEmAll():void
+		{
+			//console.log('Killing all entities...');
+			var anEntity:Entity;
+			var i:number;
+			var max:number;
+			max = this._entityPool.length;
+			for (i = 0; i < max; i++)
+			{
+				anEntity = this._entityPool[i];
+				if ((anEntity != this.thePlayer) && (anEntity != this.theOrb))
+					anEntity.die();
+			}
+		}
+
+		// load a new level for entity generation
+		public changeLevels(lvl:string):void
+		{
+			this.killEmAll();
+			this.level.loadLevel(lvl);
+			this.levelCurrentScrollX = 0;
+			this.levelPrevCol = -1;
+		}
+
+		// check to see if another row from the level data should be spawned
+		public streamLevelEntities(theseAreEnemies:boolean = false):void
+		{
+			var anEntity:Entity;
+			var sprID:number;
+			// time-based with overflow remembering (increment and floor)
+			this.levelCurrentScrollX += this.defaultSpeed * this.currentFrameSeconds;
+			// is it time to spawn the next col from our level data?
+			if (this.levelCurrentScrollX >= this.levelTilesize)
+			{
+				this.levelCurrentScrollX = 0;
+				this.levelPrevCol++;
+
+				// this prevents small "seams" due to floating point inaccuracies over time
+				var currentLevelXCoord:number;
+				if (this.lastTerrainEntity && !theseAreEnemies)
+					currentLevelXCoord = this.lastTerrainEntity.sprite.position.x + this.levelTilesize;
+				else
+					currentLevelXCoord = this.maxX;
+
+				var rows:number = this.level.data.length;
+				//console.log('levelCurrentScrollX = ' + levelCurrentScrollX +
+				//' - spawning next level column ' + levelPrevCol + ' row count: ' + rows);
+
+				if (this.level.data && this.level.data.length)
+				{
+					for (var row:number = 0; row < rows; row++)
+					{
+						if (this.level.data[row].length > this.levelPrevCol) // data exists? NOP?
+						{
+							//console.log('Next row data: ' + string(level.data[row]));
+							sprID = this.level.data[row][this.levelPrevCol];
+							if (sprID > -1) // zero is a valid number, -1 means blank
+							{
+								anEntity = this.respawn(sprID);
+								anEntity.sprite.position.x = currentLevelXCoord;
+								anEntity.sprite.position.y = (row * this.levelTilesize) + (this.levelTilesize/2);
+								//console.log('Spawning a level sprite ID ' + sprID + ' at ' + anEntity.sprite.position.x + ',' + anEntity.sprite.position.y);
+								anEntity.speedX = -this.defaultSpeed;
+								anEntity.speedY = 0;
+								anEntity.sprite.scaleX = this.defaultScale;
+								anEntity.sprite.scaleY = this.defaultScale;
+								anEntity.name = "tile";
+								if (theseAreEnemies)
+								{
+									anEntity.name = "tile_enemy";
+									// which AI should we give this enemy?
+									switch (sprID)
+									{
+										case 1:
+										case 2:
+										case 3:
+										case 4:
+										case 5:
+										case 6:
+										case 7:
+											// move forward at a random angle
+											anEntity.speedX = 15 * ((-1 * Math.random() * 10) - 2);
+											anEntity.speedY = 15 * ((Math.random() * 5) - 2.5);
+											anEntity.aiFunction = anEntity.straightAI;
+											break;
+										case 8:
+										case 9:
+										case 10:
+										case 11:
+										case 12:
+										case 13:
+										case 14:
+										case 15:
+											// move straight with a wobble
+											anEntity.aiFunction = anEntity.wobbleAI;
+											break
+										case 16:
+										case 24: // sentry guns don't move and always look at the player
+											anEntity.aiFunction = anEntity.sentryAI;
+											anEntity.speedX = -90; // same <background> speed
+											break;
+										case 17:
+										case 18:
+										case 19:
+										case 20:
+										case 21:
+										case 22:
+										case 23:
+											// move at a random angle with a wobble
+											anEntity.speedX = 15 * ((-1 * Math.random() * 10) - 2);
+											anEntity.speedY = 15 * ((Math.random() * 5) - 2.5);
+											anEntity.aiFunction = anEntity.wobbleAI;
+											break;
+										case 32:
+										case 40:
+										case 48: // asteroids don't move or shoot but they do spin and drift
+											anEntity.aiFunction = null;
+											anEntity.rotationSpeed = Math.random() * 8 - 4;
+											anEntity.speedY = Math.random() * 64 - 32;
+											break;
+										default: // follow a complex random spline curve path
+											anEntity.aiFunction = anEntity.droneAI;
+											break;
+									}
+
+									anEntity.sprite.rotation = this.pointAtRad(anEntity.speedX, anEntity.speedY)
+									- (90 * this.DEGREES_TO_RADIANS);
+									anEntity.collidemode = 1;
+									anEntity.collideradius = 16;
+									if (!anEntity.recycled)
+										this.allEnemies.push(anEntity);
+								} // end if these were enemies
+							}// end loop for level data rows
+						}
+					}
+				}
+				// remember the last created terrain entity
+				// (might be null if the level data was blank for this column)
+				// to avoid slight seams due to terrain scrolling speed over time
+				if (!theseAreEnemies) this.lastTerrainEntity = anEntity;
 			}
 		}
 	} // end class

@@ -10,7 +10,7 @@
 
 //依赖lib
 ///<reference path="../../lib/ImageLoader.ts"/>
-
+///<reference path="../../lib/FileLoader.ts"/>
 
 
 ///<reference path="./GameControls.ts" />

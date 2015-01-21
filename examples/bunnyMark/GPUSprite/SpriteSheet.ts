@@ -12,11 +12,16 @@ module GPUSprite
         private _uvCoords:number[];
         private _rects:{x:number;y:number;width:number;height:number}[];
 
-        public constructor(spriteSheetBitmapData:stageJS.BitmapData ,numSpritesW:number = 8 , numSpritesH:number = 8)
+        // because the edge pixels of some sprites are bleeding through,
+        // we zoom in the texture just the slightest bit for terrain tiles
+        public uvPadding:number = 0;
+
+        public constructor(spriteSheetBitmapData:stageJS.BitmapData ,numSpritesW:number = 8 , numSpritesH:number = 8 ,uvPad:number = 0)
         {
             this._spriteSheet = spriteSheetBitmapData;
             this._uvCoords = [];
             this._rects = [];
+            this.uvPadding = uvPad;
             this.createUVs(numSpritesW,numSpritesH);
         }
 
@@ -30,10 +35,10 @@ module GPUSprite
                 {
                     this._uvCoords.push(
                         // bl, tl, tr, br
-                        x / numSpritesW, (y+1) / numSpritesH,
-                        x / numSpritesW, y / numSpritesH,
-                        (x+1) / numSpritesW, y / numSpritesH,
-                        (x + 1) / numSpritesW, (y + 1) / numSpritesH);
+                        (x / numSpritesW) + this.uvPadding, ((y+1) / numSpritesH) - this.uvPadding,
+                        (x / numSpritesW) + this.uvPadding, (y / numSpritesH) + this.uvPadding,
+                        ((x+1) / numSpritesW) - this.uvPadding, (y / numSpritesH) + this.uvPadding,
+                        ((x + 1) / numSpritesW) - this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding);
 
                     destRect = new GPUSprite.Rectangle();
                     destRect.x = 0;

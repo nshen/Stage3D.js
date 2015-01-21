@@ -76,19 +76,19 @@ module shooter
                         if (temps[col] == "") temps[col] = "-1";
                         nextValue = parseInt(temps[col]);
                         if (nextValue < 0) nextValue = -1; // we still need blanks
-                        console.log('row '+ nextrow + ' nextValue=' + nextValue);
+                        //console.log('row '+ nextrow + ' nextValue=' + nextValue);
                         output[nextrow].push(nextValue);
                     }
                     //console.log('Level row '+nextrow+':\n' + string(output[nextrow]));
                 }
             }
-            console.log('Level output data:\n' + String(output));
+            //console.log('Level output data:\n' + String(output));
             return output;
         }
 
         public loadLevel(lvl:string):void
         {
-            console.log("Loading level " + lvl);
+            //console.log("Loading level " + lvl);
             this.data = this.parseLevelData(lvl);
         }
 

@@ -12,7 +12,7 @@
 ///<reference path="../../lib/ImageLoader.ts"/>
 ///<reference path="../../lib/FileLoader.ts"/>
 
-
+///<reference path="./GameSaves.ts/>
 ///<reference path="./GameControls.ts" />
 ///<reference path="./GameMenu.ts" />
 ///<reference path="./GameLevels.ts" />

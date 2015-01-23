@@ -42,7 +42,7 @@ module shooter
         private _entities:shooter.EntityManager;
         private _spriteStage:GPUSprite.SpriteRenderStage; // LiteSpriteStage
 
-        //private _gui:GameGUI; //todo:gui
+        private _gui:GameGUI;
 
         public stage3d:stageJS.Stage3D;
         public context3D:stageJS.Context3D;
@@ -68,7 +68,6 @@ module shooter
             this._start = new Date().valueOf();
             this.initStats();
 
-            //this._gui = new
             //this._sfx = new //todo sound gui
 
             this._controls = new shooter.GameControls(window);
@@ -114,9 +113,9 @@ module shooter
             this._spriteStage.addLayer(batch);
 
 
-            //this._gui = new shooter.GameGUI();
-            //batch = this._gui.createBatch(this.context3D);
-            //this._spriteStage.addLayer(batch);
+            this._gui = new shooter.GameGUI();
+            batch = this._gui.createBatch(this.context3D);
+            this._spriteStage.addLayer(batch);
             // tell the gui where to grab statistics from
 
             //_gui.statsTarget = _entities; // todo:gui
@@ -568,6 +567,7 @@ module shooter
             lib.ImageLoader.getInstance().add("assets/titlescreen.png");
             lib.ImageLoader.getInstance().add("assets/stars.gif");
             lib.ImageLoader.getInstance().add("assets/terrain.png");
+            lib.ImageLoader.getInstance().add("assets/hud_overlay.png");
 
             lib.ImageLoader.getInstance().downloadAll(function(){
                 if(lib.FileLoader.getInstance().isDone())

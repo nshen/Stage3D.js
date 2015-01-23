@@ -958,6 +958,34 @@ var shooter;
 })(shooter || (shooter = {}));
 var shooter;
 (function (shooter) {
+    var GameGUI = (function () {
+        function GameGUI(title, inX, inY, inCol) {
+            if (typeof title === "undefined") { title = ""; }
+            if (typeof inX === "undefined") { inX = 0; }
+            if (typeof inY === "undefined") { inY = 0; }
+            if (typeof inCol === "undefined") { inCol = 0xFFFFFF; }
+        }
+        GameGUI.prototype.createBatch = function (context3D) {
+            var b = new stageJS.BitmapData(1024, 64, true);
+            b.draw(lib.ImageLoader.getInstance().get("assets/hud_overlay.png"));
+
+            this.spriteSheet = new GPUSprite.SpriteSheet(b, 0, 0);
+
+            this.batch = new GPUSprite.SpriteRenderLayer(context3D, this.spriteSheet);
+
+            var bg = this.spriteSheet.defineSprite(0, 0, 600, 40);
+            this.bgSprite = this.batch.createChild(bg);
+            this.bgSprite.position.x = 300;
+            this.bgSprite.position.y = 20;
+
+            return this.batch;
+        };
+        return GameGUI;
+    })();
+    shooter.GameGUI = GameGUI;
+})(shooter || (shooter = {}));
+var shooter;
+(function (shooter) {
     var GameLevels = (function () {
         function GameLevels() {
             this.levelLength = 0;
@@ -2014,6 +2042,10 @@ var shooter;
             batch = this._mainmenu.createBatch(this.context3D);
             this._spriteStage.addLayer(batch);
 
+            this._gui = new shooter.GameGUI();
+            batch = this._gui.createBatch(this.context3D);
+            this._spriteStage.addLayer(batch);
+
             this.saved = new shooter.GameSaves();
 
             ShooterMain.canvas.onmousedown = function (ev) {
@@ -2211,6 +2243,7 @@ var shooter;
             lib.ImageLoader.getInstance().add("assets/titlescreen.png");
             lib.ImageLoader.getInstance().add("assets/stars.gif");
             lib.ImageLoader.getInstance().add("assets/terrain.png");
+            lib.ImageLoader.getInstance().add("assets/hud_overlay.png");
 
             lib.ImageLoader.getInstance().downloadAll(function () {
                 if (lib.FileLoader.getInstance().isDone())

@@ -15,6 +15,7 @@
 ///<reference path="./GameSaves.ts" />
 ///<reference path="./GameControls.ts" />
 ///<reference path="./GameMenu.ts" />
+///<reference path="./GameGUI.ts" />
 ///<reference path="./GameLevels.ts" />
 
 ///<reference path="./Entity.ts"/>

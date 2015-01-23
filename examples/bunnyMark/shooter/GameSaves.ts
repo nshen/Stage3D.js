@@ -42,14 +42,14 @@ module shooter
             return this._saves["score"];
         }
 
-        public set level(num:number):void
+        public set level(num:number)
         {
             if (!this._saves) return;
             this._saves["level"] = num;
             console.log("Saved level set to: " + num);
         }
 
-        public set score(num:number):void
+        public set score(num:number)
         {
             if (!this._saves) return;
             this._saves["score"] = num;

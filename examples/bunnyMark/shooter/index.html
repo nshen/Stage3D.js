@@ -4,6 +4,18 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title></title>
 
+    <style>
+        @font-face {
+            font-family: 'gui_font';
+            src: url('assets/gui_font.ttf');
+        }
+
+        #my-canvas{
+            font-family: gui_font;
+            border: dashed;
+        }
+
+    </style>
 
     <script type="text/javascript" src="../../lib/stats.min.js"></script>
     <script type="text/javascript" src="../../lib/jquery-1.11.1.min.js"></script>
@@ -56,7 +68,7 @@ function handleClick() {
 -->
 
 <body onload="shooter.ShooterMain.main()" onselectstart="return false;" onmousedown="return false;" oncontextmenu="return false;" style="-moz-user-select:none;margin: 0px;padding: 0px;">
-    <canvas id='my-canvas' width='600' height='400' style="float: left;padding-right: 50px" >
+    <canvas id='my-canvas' width='600' height='400'>
         Your browser does not support the HTML5 canvas element.
     </canvas>
     <p id="counter" style="position: absolute;left: 350px;font-size: 18px"></p>

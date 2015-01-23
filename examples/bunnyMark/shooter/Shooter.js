@@ -593,6 +593,60 @@ var lib;
 })(lib || (lib = {}));
 var shooter;
 (function (shooter) {
+    var GameSaves = (function () {
+        function GameSaves() {
+            console.log("Initializing game save system");
+
+            this._saves = window['localStorage'];
+            if (this._saves == null)
+                throw new Error("Unable to init game save system");
+        }
+        Object.defineProperty(GameSaves.prototype, "level", {
+            get: function () {
+                if (!this._saves)
+                    return 0;
+                if (this._saves["level"] == null)
+                    return 0;
+
+                console.log("Loaded level is " + this._saves["level"]);
+                return this._saves["level"];
+            },
+            set: function (num) {
+                if (!this._saves)
+                    return;
+                this._saves["level"] = num;
+                console.log("Saved level set to: " + num);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(GameSaves.prototype, "score", {
+            get: function () {
+                if (!this._saves)
+                    return 0;
+                if (this._saves["score"] == null)
+                    return 0;
+                console.log("Loaded score is " + this._saves["score"]);
+                return this._saves["score"];
+            },
+            set: function (num) {
+                if (!this._saves)
+                    return;
+                this._saves["score"] = num;
+                console.log("Saved score set to: " + num);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        return GameSaves;
+    })();
+    shooter.GameSaves = GameSaves;
+})(shooter || (shooter = {}));
+var shooter;
+(function (shooter) {
     var GameControls = (function () {
         function GameControls(theStage) {
             var _this = this;
@@ -692,7 +746,7 @@ var shooter;
         }
         GameMenu.prototype.setPosition = function (view) {
             this.logoX = view.width / 2;
-            this.logoY = view.height / 2 - 64;
+            this.logoY = view.height / 2 - 56;
             this.menuX = view.width / 2;
             this.menuY = view.height / 2 + 64;
             this.menuY1 = this.menuY - (this.menuItemHeight / 2);
@@ -870,8 +924,8 @@ var shooter;
             this.logoSprite.position.x = this.logoX;
             this.logoSprite.position.y = this.logoY;
             var wobble = (Math.cos(currentTime / 500) / Math.PI) * 0.2;
-            this.logoSprite.scaleX = 1 + wobble;
-            this.logoSprite.scaleY = 1 + wobble;
+            this.logoSprite.scaleX = .8 + wobble;
+            this.logoSprite.scaleY = .8 + wobble;
             wobble = (Math.cos(currentTime / 777) / Math.PI) * 0.1;
             this.logoSprite.rotation = wobble;
 
@@ -906,10 +960,15 @@ var shooter;
 (function (shooter) {
     var GameLevels = (function () {
         function GameLevels() {
+            this.levelLength = 0;
             this.level0data = lib.FileLoader.getInstance().get("assets/level0.oel").responseText;
             this.level0terrain = lib.FileLoader.getInstance().get("assets/terrain0.oel").responseText;
             this.level1data = lib.FileLoader.getInstance().get("assets/level1.oel").responseText;
             this.level1terrain = lib.FileLoader.getInstance().get("assets/terrain1.oel").responseText;
+            this.level2data = lib.FileLoader.getInstance().get("assets/level2.oel").responseText;
+            this.level2terrain = lib.FileLoader.getInstance().get("assets/terrain2.oel").responseText;
+            this.level3data = lib.FileLoader.getInstance().get("assets/level3.oel").responseText;
+            this.level3terrain = lib.FileLoader.getInstance().get("assets/terrain3.oel").responseText;
             this.data = [];
         }
         GameLevels.prototype.stripTags = function (str) {
@@ -923,6 +982,9 @@ var shooter;
             var nextValue;
             var output = [];
             var nextrow;
+
+            this.levelLength = 0;
+
             switch (lvl) {
                 case "level0":
                     levelString = this.stripTags(this.level0data);
@@ -935,6 +997,18 @@ var shooter;
                     break;
                 case "terrain1":
                     levelString = this.stripTags(this.level1terrain);
+                    break;
+                case "level2":
+                    levelString = this.stripTags(this.level2data);
+                    break;
+                case "terrain2":
+                    levelString = this.stripTags(this.level2terrain);
+                    break;
+                case "level3":
+                    levelString = this.stripTags(this.level3data);
+                    break;
+                case "terrain3":
+                    levelString = this.stripTags(this.level3terrain);
                     break;
                 default:
                     return output;
@@ -953,6 +1027,9 @@ var shooter;
                         if (nextValue < 0)
                             nextValue = -1;
 
+                        if (col > this.levelLength)
+                            this.levelLength = col;
+
                         output[nextrow].push(nextValue);
                     }
                 }
@@ -962,6 +1039,7 @@ var shooter;
         };
 
         GameLevels.prototype.loadLevel = function (lvl) {
+            console.log("Loading level " + lvl);
             this.data = this.parseLevelData(lvl);
         };
         return GameLevels;
@@ -991,6 +1069,16 @@ var shooter;
             this.zoomAnim = 0;
             this.rotationSpeed = 0;
             this.recycled = false;
+            this.health = 100;
+            this.lives = 3;
+            this.score = 0;
+            this.level = 0;
+            this.invulnerabilityTimeLeft = 0;
+            this.invulnerabilitySecsWhenHit = 4;
+            this.transitionTimeLeft = 0;
+            this.transitionSeconds = 5;
+            this.damage = 49;
+            this.collidepoints = 25;
             this._sprite = gs;
             this.gfx = myManager;
             this._speedX = 0.0;
@@ -1438,8 +1526,12 @@ var shooter;
         };
 
         EntityManager.prototype.checkCollisions = function (checkMe) {
+            if (!this.thePlayer)
+                return null;
+
             var anEntity;
             var collided = false;
+
             if (checkMe.owner != this.thePlayer) {
                 anEntity = this.thePlayer;
                 if (checkMe.colliding(anEntity)) {
@@ -1451,18 +1543,49 @@ var shooter;
                     if (anEntity.active && anEntity.collidemode) {
                         if (checkMe.colliding(anEntity)) {
                             collided = true;
+
+                            if (this.thePlayer.sprite.visible)
+                                this.thePlayer.score += anEntity.collidepoints;
+
                             break;
                         }
                     }
                 }
             }
             if (collided) {
-                this.particles.addExplosion(checkMe.sprite.position);
-                if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
-                    checkMe.die();
-                if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
-                    anEntity.die();
-                return anEntity;
+                if ((anEntity == this.thePlayer) || (checkMe == this.thePlayer)) {
+                    if (this.thePlayer.invulnerabilityTimeLeft <= 0) {
+                        this.thePlayer.health -= anEntity.damage;
+                        this.thePlayer.invulnerabilityTimeLeft = this.thePlayer.invulnerabilitySecsWhenHit;
+
+                        var explosionPos = { x: 0, y: 0 };
+                        for (var numExplosions = 0; numExplosions < 6; numExplosions++) {
+                            explosionPos.x = this.thePlayer.sprite.position.x + Math.random() * 64 - 32;
+                            explosionPos.y = this.thePlayer.sprite.position.y + Math.random() * 64 - 32;
+                            this.particles.addExplosion(explosionPos);
+                        }
+                        if (this.thePlayer.health > 0) {
+                            console.log("Player was HIT!");
+                        } else {
+                            console.log('Player was HIT... and DIED!');
+                            this.thePlayer.lives--;
+
+                            this.thePlayer.invulnerabilityTimeLeft = this.thePlayer.invulnerabilitySecsWhenHit + this.thePlayer.transitionSeconds;
+                            this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+                        }
+                    } else {
+                        collided = false;
+                    }
+                }
+
+                if (collided) {
+                    this.particles.addExplosion(checkMe.sprite.position);
+                    if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
+                        checkMe.die();
+                    if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
+                        anEntity.die();
+                    return anEntity;
+                }
             }
             return null;
         };
@@ -1471,7 +1594,6 @@ var shooter;
             var anEntity;
 
             this.currentFrameSeconds = currentTime / 1000;
-
             var max = this._entityPool.length;
             for (var i = 0; i < max; i++) {
                 anEntity = this._entityPool[i];
@@ -1497,9 +1619,10 @@ var shooter;
                     }
 
                     if (anEntity.leavesTrail) {
-                        if (anEntity == this.theOrb)
-                            this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
-                        else
+                        if (anEntity == this.theOrb) {
+                            if (this.theOrb.sprite.visible)
+                                this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
+                        } else
                             this.particles.addParticle(63, anEntity.sprite.position.x + 12, anEntity.sprite.position.y + 2, 0.5, 3, 0, 0.6, NaN, NaN, -1.5, -1);
                     }
 
@@ -1546,12 +1669,15 @@ var shooter;
             this.level.loadLevel(lvl);
             this.levelCurrentScrollX = 0;
             this.levelPrevCol = -1;
+            this.lastTerrainEntity = null;
         };
 
         EntityManager.prototype.streamLevelEntities = function (theseAreEnemies) {
             if (typeof theseAreEnemies === "undefined") { theseAreEnemies = false; }
             var anEntity;
             var sprID;
+            if (!this.levelCurrentScrollX)
+                this.levelCurrentScrollX = 0;
 
             this.levelCurrentScrollX += this.defaultSpeed * this.currentFrameSeconds;
 
@@ -1740,6 +1866,9 @@ var shooter;
         function ShooterMain(canvas) {
             var _this = this;
             this.nothingPressedLastFrame = false;
+            this.currentTime = 0;
+            this.currentFrameMs = 0;
+            this.previousFrameTime = 0;
             this.playerSpeed = 128;
             this.nextFireTime = 0;
             this.fireDelay = 200;
@@ -1748,9 +1877,16 @@ var shooter;
                 _this.context3D = _this.stage3d.context3D;
                 _this.initSpriteEngine();
             };
+            this.currentTransitionSeconds = 0;
             this.playerLogic = function (seconds) {
-                var me = _this._entities.thePlayer;
+                var me = _this.thePlayer;
+                me.age += seconds;
+                _this.handleTransitions(seconds);
                 me.speedY = me.speedX = 0;
+
+                if (_this._state == 0)
+                    return;
+
                 if (_this._controls.pressing.up)
                     me.speedY = -_this.playerSpeed;
                 if (_this._controls.pressing.down)
@@ -1759,6 +1895,14 @@ var shooter;
                     me.speedX = -_this.playerSpeed;
                 if (_this._controls.pressing.right)
                     me.speedX = _this.playerSpeed;
+
+                if (_this._controls.pressing.fire && (_this.thePlayer.health > 0)) {
+                    if (_this.currentTime >= _this.nextFireTime) {
+                        _this.nextFireTime = _this.currentTime + _this.fireDelay;
+
+                        _this._entities.shootBullet(3);
+                    }
+                }
 
                 if (me.sprite.position.x < 0)
                     me.sprite.position.x = 0;
@@ -1770,6 +1914,19 @@ var shooter;
                     me.sprite.position.y = _this.stage3d.stageHeight;
 
                 _this._entities.particles.addParticle(63, me.sprite.position.x - 12, me.sprite.position.y + 2, 0.75, -200, 0, 0.4, NaN, NaN, -1, -1.5);
+
+                if (me.health < 10)
+                    _this._entities.particles.addSparks(me.sprite.position, 1, 2);
+
+                if (_this.thePlayer.invulnerabilityTimeLeft > 0) {
+                    _this.thePlayer.invulnerabilityTimeLeft -= seconds;
+                    if (_this.thePlayer.invulnerabilityTimeLeft <= 0) {
+                        console.log("Invulnerability wore off.");
+                        _this.thePlayer.sprite.alpha = 1;
+                    } else {
+                        _this.thePlayer.sprite.alpha = Math.sin(_this.thePlayer.age * 30) / Math.PI + 0.25;
+                    }
+                }
             };
             this.onEnterFrame = function () {
                 try  {
@@ -1785,6 +1942,7 @@ var shooter;
 
                     if (_this._entities.thePlayer)
                         _this._bg.yParallax(_this._entities.thePlayer.sprite.position.y / _this.stage3d.stageHeight);
+
                     _this._bg.update(_this.currentTime);
 
                     if (_this._state == 0)
@@ -1799,6 +1957,10 @@ var shooter;
                     _this._spriteStage.drawDeferred();
 
                     _this.context3D.present();
+
+                    _this.checkPlayerState();
+
+                    _this.checkMapState();
 
                     _this.stats.end();
                 } catch (e) {
@@ -1815,6 +1977,7 @@ var shooter;
             var _this = this;
             this._start = new Date().valueOf();
             this.initStats();
+
             this._controls = new shooter.GameControls(window);
 
             var _width = this.stage3d.stageWidth;
@@ -1834,24 +1997,24 @@ var shooter;
             this._terrain.defaultSpeed = 90;
             this._terrain.defaultScale = 1.5;
             this._terrain.levelTilesize = 48;
-            batch = this._terrain.createBatch(this.context3D, 16, 16, 0.002);
+            batch = this._terrain.createBatch(this.context3D, 16, 16, 0.0015);
             this._spriteStage.addLayer(batch);
-            this._terrain.level.loadLevel("terrain0");
+            this._terrain.changeLevels("terrain" + this._state);
 
             this._entities = new shooter.EntityManager(stageRect);
             this._entities.sourceImage = "assets/sprites.png";
             this._entities.defaultScale = 1.5;
             this._entities.levelTilesize = 48;
             batch = this._entities.createBatch(this.context3D);
+
             this._spriteStage.addLayer(batch);
-            this._entities.level.loadLevel("level10");
-            this._entities.streamLevelEntities(true);
+            this._entities.changeLevels("level" + this._state);
 
             this._mainmenu = new shooter.GameMenu(stageRect);
             batch = this._mainmenu.createBatch(this.context3D);
             this._spriteStage.addLayer(batch);
 
-            this.onEnterFrame();
+            this.saved = new shooter.GameSaves();
 
             ShooterMain.canvas.onmousedown = function (ev) {
                 if (_this._state == 0) {
@@ -1867,6 +2030,64 @@ var shooter;
                         _this._mainmenu.mouseHighlight(ev.clientX, ev.clientY);
                 }
             };
+
+            this.onEnterFrame();
+        };
+
+        ShooterMain.prototype.handleTransitions = function (seconds) {
+            if (this.thePlayer.transitionTimeLeft > 0) {
+                this.currentTransitionSeconds += seconds;
+
+                this.thePlayer.transitionTimeLeft -= seconds;
+
+                if (this.thePlayer.transitionTimeLeft > 0) {
+                    if (this.thePlayer.level != this._state) {
+                    } else {
+                    }
+                    if (this.thePlayer.lives < 0 || this.thePlayer.health <= 0) {
+                        if (Math.random() < 0.2) {
+                            var explosionPos = {};
+                            explosionPos.x = this.thePlayer.sprite.position.x + Math.random() * 128 - 64;
+                            explosionPos.y = this.thePlayer.sprite.position.y + Math.random() * 128 - 64;
+                            this._entities.particles.addExplosion(explosionPos);
+                        }
+                    }
+                } else {
+                    this.currentTransitionSeconds = 0;
+
+                    this.thePlayer.transitionTimeLeft = 0;
+
+                    if (this._state == -1)
+                        this._state = 0;
+
+                    if ((this.thePlayer.health <= 0) && (this._state != 0)) {
+                        console.log("Death transition over. Respawning player.");
+                        this.thePlayer.sprite.position.y = this._entities.midpoint;
+                        this.thePlayer.sprite.position.x = 64;
+                        this.thePlayer.health = 100;
+
+                        this._entities.changeLevels('level' + this._state);
+                        this._terrain.changeLevels('terrain' + this._state);
+                    }
+                    if (this.thePlayer.level != this._state) {
+                        console.log('Level transition over. Starting level ' + this._state);
+                        this.thePlayer.level = this._state;
+                        if (this._state > 1) {
+                            this._entities.changeLevels('level' + this._state);
+                            this._terrain.changeLevels('terrain' + this._state);
+                        }
+                        if (this._state == 0) {
+                            this.thePlayer.health = 100;
+                            this.thePlayer.lives = 3;
+                            this.thePlayer.sprite.visible = false;
+                            this._entities.theOrb.sprite.visible = false;
+                            this._spriteStage.addLayer(this._mainmenu.batch);
+                            this._entities.changeLevels('level' + this._state);
+                            this._terrain.changeLevels('terrain' + this._state);
+                        }
+                    }
+                }
+            }
         };
 
         ShooterMain.prototype.processInput = function () {
@@ -1888,13 +2109,6 @@ var shooter;
                 } else {
                     this.nothingPressedLastFrame = true;
                 }
-            } else {
-                if (this._controls.pressing.fire) {
-                    if (this.currentTime >= this.nextFireTime) {
-                        this._entities.shootBullet(3);
-                        this.nextFireTime = this.currentTime + this.fireDelay;
-                    }
-                }
             }
         };
 
@@ -1903,9 +2117,77 @@ var shooter;
             this._state = 1;
             this._spriteStage.removeLayer(this._mainmenu.batch);
 
-            this.thePlayer = this._entities.addPlayer(this.playerLogic);
-            this._entities.changeLevels("level1");
-            this._terrain.changeLevels("terrain1");
+            if (!this.thePlayer)
+                this.thePlayer = this._entities.addPlayer(this.playerLogic);
+            else
+                this.thePlayer.sprite.visible = true;
+
+            if (this._entities.theOrb)
+                this._entities.theOrb.sprite.visible = true;
+
+            this._entities.changeLevels("level" + this._state);
+            this._terrain.changeLevels("terrain" + this._state);
+
+            this.thePlayer.level = 0;
+            this.thePlayer.score = 0;
+            this.thePlayer.lives = 3;
+            this.thePlayer.sprite.position.x = 64;
+            this.thePlayer.sprite.position.y = this._entities.midpoint;
+
+            this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+
+            this.thePlayer.invulnerabilityTimeLeft = this.thePlayer.transitionSeconds + this.thePlayer.invulnerabilitySecsWhenHit;
+        };
+
+        ShooterMain.prototype.gameOver = function () {
+            console.log("================ GAME OVER ================");
+
+            if (this.saved.level < this.thePlayer.level)
+                this.saved.level = this.thePlayer.level;
+            if (this.saved.score < this.thePlayer.score) {
+                this.saved.score = this.thePlayer.score;
+            }
+
+            this._state = 0;
+
+            this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+        };
+
+        ShooterMain.prototype.checkPlayerState = function () {
+            if (this._state == 0)
+                return;
+            if (this.thePlayer) {
+                if (this.thePlayer.lives < 0) {
+                    this.gameOver();
+                }
+            }
+        };
+
+        ShooterMain.prototype.checkMapState = function () {
+            if (this._state < 1)
+                return;
+
+            if (this.thePlayer.level != this._state)
+                return;
+
+            if (this._terrain.levelPrevCol > this._terrain.level.levelLength + 16) {
+                console.log("LEVEL " + this._state + " COMPLETED!");
+
+                this._state++;
+
+                this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+
+                if (this._entities.level.levelLength == 0) {
+                    console.log("NO MORE LEVELS REMAIN! GAME OVER!");
+                    this.rollTheCredits();
+                }
+            }
+        };
+
+        ShooterMain.prototype.rollTheCredits = function () {
+            this.gameOver();
+            this._state = -1;
+            this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds * 3;
         };
 
         ShooterMain.prototype.getTimer = function () {
@@ -1939,6 +2221,10 @@ var shooter;
             lib.FileLoader.getInstance().add("assets/terrain0.oel");
             lib.FileLoader.getInstance().add("assets/level1.oel");
             lib.FileLoader.getInstance().add("assets/terrain1.oel");
+            lib.FileLoader.getInstance().add("assets/level2.oel");
+            lib.FileLoader.getInstance().add("assets/terrain2.oel");
+            lib.FileLoader.getInstance().add("assets/level3.oel");
+            lib.FileLoader.getInstance().add("assets/terrain3.oel");
 
             lib.FileLoader.getInstance().downloadAll(function () {
                 if (lib.ImageLoader.getInstance().isDone())

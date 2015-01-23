@@ -27,7 +27,6 @@ module shooter
 		public menuY3:number = 0;
 		
 		// the sprites
-
 		public logoSprite:GPUSprite.Sprite;//LiteSprite;
 
 		// menu items when idle
@@ -64,7 +63,7 @@ module shooter
 		public setPosition(view:GPUSprite.Rectangle):void
 		{
 			this.logoX = view.width / 2;
-			this.logoY = view.height / 2 - 64;
+			this.logoY = view.height / 2 - 56;
 			this.menuX = view.width / 2;
 			this.menuY = view.height / 2 + 64;
 			this.menuY1 = this.menuY - (this.menuItemHeight / 2);
@@ -264,8 +263,8 @@ module shooter
 			this.logoSprite.position.x = this.logoX;
 			this.logoSprite.position.y = this.logoY;
 			var wobble:number = (Math.cos(currentTime / 500) / Math.PI) * 0.2;
-			this.logoSprite.scaleX = 1 + wobble;
-			this.logoSprite.scaleY = 1 + wobble;
+			this.logoSprite.scaleX = .8 + wobble;
+			this.logoSprite.scaleY = .8 + wobble;
 			wobble = (Math.cos(currentTime / 777) / Math.PI) * 0.1;
 			this.logoSprite.rotation = wobble;
 

@@ -95,7 +95,7 @@ module shooter
 		public minY:number;
 		public midpoint:number;
 
-		public sourceImage:string = "assets/sprites.png" // must in lib.ImageLoader
+		public sourceImage:string = "assets/sprites.png"; // must in lib.ImageLoader
 
 		constructor(view:GPUSprite.Rectangle)
 		{
@@ -314,14 +314,18 @@ module shooter
 		// (enemy bullets only check to hit the player)
 		public checkCollisions(checkMe:Entity):Entity
 		{
+			if(!this.thePlayer)
+				return null;
+
 			var anEntity:Entity;
 			var collided:boolean = false;
+
+
 			if(checkMe.owner != this.thePlayer)
 			{ // quick check ONLY to see if we have hit the player
 				anEntity = this.thePlayer;
 				if (checkMe.colliding(anEntity))
 				{
-					//console.log("Player was HIT!");
 					collided = true;
 				}
 			}else // check all active enemies
@@ -334,6 +338,10 @@ module shooter
 						if (checkMe.colliding(anEntity))
 						{
 							collided = true;
+
+							if(this.thePlayer.sprite.visible)
+								this.thePlayer.score += anEntity.collidepoints;
+
 							break;
 						}
 					}
@@ -342,13 +350,54 @@ module shooter
 			}
 			if(collided)
 			{
-				//if (this.sfx) sfx.playExplosion(number(Math.random() * 2 + 1.5)); // todo：声音
-				this.particles.addExplosion(checkMe.sprite.position);
-				if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
-					checkMe.die(); // the bullet
-				if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
-					anEntity.die(); // the victim
-				return anEntity;
+				// handle player health and possible gameover
+				if((anEntity == this.thePlayer) || (checkMe == this.thePlayer))
+				{
+					// when the player gets damaged, they become
+					// invulnerable for a short perod of time
+					if (this.thePlayer.invulnerabilityTimeLeft <= 0)
+					{
+						this.thePlayer.health -= anEntity.damage;
+						this.thePlayer.invulnerabilityTimeLeft = this.thePlayer.invulnerabilitySecsWhenHit;
+						// extra explosions for a bigger boom
+						var explosionPos:{x:number;y:number} = {x:0,y:0};
+						for (var numExplosions:number = 0; numExplosions < 6; numExplosions++)
+						{
+							explosionPos.x = this.thePlayer.sprite.position.x + Math.random() * 64 - 32;
+							explosionPos.y = this.thePlayer.sprite.position.y + Math.random() * 64 - 32;
+							this.particles.addExplosion(explosionPos);
+						}
+						if (this.thePlayer.health > 0)
+						{
+							console.log("Player was HIT!");
+						}
+						else
+						{
+							console.log('Player was HIT... and DIED!');
+							this.thePlayer.lives--;
+							// will be reset after transition
+							// thePlayer.health = 100;
+							this.thePlayer.invulnerabilityTimeLeft = this.thePlayer.invulnerabilitySecsWhenHit + this.thePlayer.transitionSeconds;
+							this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+						}
+					}
+					else // we are currently invulnerable and flickering
+					{	// ignore the collision
+						collided = false;
+					}
+
+				}
+
+				if (collided) // still
+				{
+					//if (this.sfx) sfx.playExplosion(number(Math.random() * 2 + 1.5)); // todo：声音
+					this.particles.addExplosion(checkMe.sprite.position);
+					if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
+						checkMe.die(); // the bullet
+					if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
+						anEntity.die(); // the victim
+					return anEntity;
+				}
 			}
 			return null;
 		}
@@ -362,7 +411,6 @@ module shooter
 			var anEntity:Entity;
 			// what portion of a full second has passed since the previous update?
 			this.currentFrameSeconds = currentTime / 1000;
-
 			var max:number = this._entityPool.length;
 			for(var i:number = 0; i < max;i++)
 			{
@@ -402,7 +450,10 @@ module shooter
 					{
 						// leave a trail of particles
 						if (anEntity == this.theOrb)
-							this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
+						{
+							if(this.theOrb.sprite.visible)
+								this.particles.addParticle(63, anEntity.sprite.position.x, anEntity.sprite.position.y, 0.25, 0, 0, 0.6, NaN, NaN, -1.5, -1);
+						}
 						else // player
 							this.particles.addParticle(63, anEntity.sprite.position.x + 12, anEntity.sprite.position.y + 2, 0.5, 3, 0, 0.6, NaN, NaN, -1.5, -1);
 
@@ -472,6 +523,7 @@ module shooter
 			this.level.loadLevel(lvl);
 			this.levelCurrentScrollX = 0;
 			this.levelPrevCol = -1;
+			this.lastTerrainEntity = null;
 		}
 
 		// check to see if another row from the level data should be spawned
@@ -479,8 +531,13 @@ module shooter
 		{
 			var anEntity:Entity;
 			var sprID:number;
+			if(!this.levelCurrentScrollX)
+				this.levelCurrentScrollX = 0;
 			// time-based with overflow remembering (increment and floor)
 			this.levelCurrentScrollX += this.defaultSpeed * this.currentFrameSeconds;
+
+			//console.log("##",this.levelCurrentScrollX,this.defaultSpeed,this.currentFrameSeconds);
+
 			// is it time to spawn the next col from our level data?
 			if (this.levelCurrentScrollX >= this.levelTilesize)
 			{

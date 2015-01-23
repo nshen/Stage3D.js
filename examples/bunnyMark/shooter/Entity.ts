@@ -67,6 +67,32 @@ module shooter
 		// freshly created or reused from an inactive one
 		public recycled:boolean = false;
 
+
+		//v5---------------------------------------
+		// v5 stats used by the player entity
+		// but could optionally be used by some enemies too
+		public health:number = 100;
+		// how many reserve ships you have until game over
+		public lives:number = 3;
+		// matches the score on the GUI
+		public score:number = 0;
+		// what level the player is on
+		public level:number = 0;
+		// when you get hit, for a short while you are impervious
+		// to damage (otherwise nearby ships could add up to instant death)
+		public invulnerabilityTimeLeft:number = 0;
+		public invulnerabilitySecsWhenHit:number = 4;
+		// when you die, change levels or get to a game over state,
+		// this is the period of time that the GUI tells you
+		// before switching to the new state
+		public transitionTimeLeft:number = 0;
+		public transitionSeconds:number = 5;
+		// how much damage the player will take when getting hit
+		// since the player has 100HP, 49 means you can be hit 3x
+		public damage:number = 49;
+
+		public collidepoints:number = 25; // score earned if destroyed
+
 		constructor(gs:GPUSprite.Sprite ,myManager:shooter.EntityManager)
 		{
 			this._sprite = gs;

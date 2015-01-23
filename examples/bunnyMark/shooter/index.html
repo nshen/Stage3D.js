@@ -40,8 +40,22 @@
 
 </head>
 
+<!--
 
-<body onload="shooter.ShooterMain.main()" onselectstart="return false;" style="-moz-user-select:none;margin: 0px;padding: 0px;">
+
+onmouseDown
+
+function handleClick() {
+	// Handle Click!
+	// FYI - event.button = 0 left click, = 1 Middle Click, = 2 Right Click
+
+	// Prevent the default action
+	return false;
+}
+
+-->
+
+<body onload="shooter.ShooterMain.main()" onselectstart="return false;" onmousedown="return false;" oncontextmenu="return false;" style="-moz-user-select:none;margin: 0px;padding: 0px;">
     <canvas id='my-canvas' width='600' height='400' style="float: left;padding-right: 50px" >
         Your browser does not support the HTML5 canvas element.
     </canvas>

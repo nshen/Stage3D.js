@@ -12,7 +12,21 @@
 
         #my-canvas{
             font-family: gui_font;
-            border: dashed;
+            /*border: dashed;*/
+        }
+
+        /* make the body fill the window */
+        html, body {
+            margin: 0px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        /* make any canvas fill its container */
+        canvas {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
     </style>

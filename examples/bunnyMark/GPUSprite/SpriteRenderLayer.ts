@@ -22,6 +22,8 @@ module GPUSprite
         private _shaderProgram:stageJS.Program3D;
         private _updateVBOs:boolean;
 
+        public name:string = "";
+
         public constructor(context3D:stageJS.Context3D , spriteSheet:SpriteSheet)
         {
             this._context3D = context3D;

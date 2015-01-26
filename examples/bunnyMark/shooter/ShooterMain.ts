@@ -6,6 +6,17 @@ module shooter
     export class ShooterMain
     {
 
+        // v6 fill the entire screen for HD gaming
+        public enableFullscreen:boolean = true;
+
+        // v6 players generally hold down the fire button anyway
+        // plus in fullscreen only arrow keys can be relied upon
+        public enableAutofire:boolean = true;
+
+        // v6 this allows for SLOW-MO and fast forward
+        public timeDilation:number = 1;
+
+
         // the game save/load system
         public saved:GameSaves;
 
@@ -23,7 +34,7 @@ module shooter
         // player one's entity
         public thePlayer:Entity;
         // movement speed in pixels per second
-        public playerSpeed:number = 128;
+        public playerSpeed:number = 180;
         // timestamp when next shot can be fired
         private nextFireTime:number = 0;
         // how many ms between shots
@@ -63,17 +74,76 @@ module shooter
             this.initSpriteEngine();
         };
 
+        private onResizeEvent(event:Event) : void // v6
+        {
+            return;
+            console.log("resize event...");
+
+            console.log(this.stage3d.stageWidth ,this.stage3d.stageHeight);
+
+
+            // Get the canvas from the WebGL context
+            var canvas = ShooterMain.canvas;
+
+            // Lookup the size the browser is displaying the canvas.
+            var displayWidth  = canvas.clientWidth;
+            var displayHeight = canvas.clientHeight;
+
+            // Check if the canvas is not the same size.
+            if (canvas.width  != displayWidth ||
+                canvas.height != displayHeight) {
+
+                // Make the canvas the same size
+                canvas.width  = displayWidth;
+                canvas.height = displayHeight;
+
+                // Set the viewport to match
+                this._spriteStage.configureBackBuffer(canvas.width, canvas.height);
+            }
+
+
+            // Set correct dimensions if we resize
+            //_width = stage.stageWidth;
+            //_height = stage.stageHeight;
+
+            // Resize Stage3D to continue to fit screen
+            var view:{x:number;y:number;width:number;height:number} = {x:0,y:0,width:this.stage3d.stageWidth,height:this.stage3d.stageHeight};
+            //if ( this._spriteStage != null ) {
+            //    this._spriteStage.position = view;
+            //}
+            //if (this._terrain != null) {
+            //    this._terrain.setPosition(view);
+            //}
+            //if (this._entities != null) {
+            //    this._entities.setPosition(view);
+            //}
+            //if (this._mainmenu != null) {
+            //    this._mainmenu.setPosition(view);
+            //}
+            //if (this._bg != null) {
+            //    this._bg.setPosition(view);
+            //}
+            //if (this._gui != null)
+            //    this._gui.setPosition(view);
+        }
+
+
         private initSpriteEngine():void
         {
+           // this.onResizeEvent(null);
             this._start = new Date().valueOf();
+
             this.initStats();
 
             //this._sfx = new //todo sound gui
 
             this._controls = new shooter.GameControls(window);
 
+            this.resize(stageJS.Context3D.GL);
             var _width:number = this.stage3d.stageWidth;
             var _height:number = this.stage3d.stageHeight;
+
+
 
             var stageRect:GPUSprite.Rectangle = new GPUSprite.Rectangle(0,0,_width,_height);
             this._spriteStage = new GPUSprite.SpriteRenderStage(this.stage3d,this.context3D,stageRect);
@@ -83,7 +153,7 @@ module shooter
             this._bg = new shooter.GameBackground(stageRect);
             var batch:GPUSprite.SpriteRenderLayer = this._bg.createBatch(this.context3D);
             this._bg.initBackground();
-            this._spriteStage.addLayer(batch);
+            this._spriteStage.addLayer(batch,"bg");
 
             //Terrain
             this._terrain = new shooter.EntityManager(stageRect);
@@ -92,7 +162,7 @@ module shooter
             this._terrain.defaultScale = 1.5;
             this._terrain.levelTilesize = 48;
             batch = this._terrain.createBatch(this.context3D,16,16,0.0015);
-            this._spriteStage.addLayer(batch);
+            this._spriteStage.addLayer(batch,"terrain");
             this._terrain.changeLevels("terrain" + this._state);
 
             // create a single rendering batch
@@ -101,9 +171,9 @@ module shooter
             this._entities.sourceImage = "assets/sprites.png";
             this._entities.defaultScale = 1.5;
             this._entities.levelTilesize = 48;
-            batch = this._entities.createBatch(this.context3D);
+            batch = this._entities.createBatch(this.context3D,8,8,0.0005);
             //this._entities.sfx = this._sfx; todo:sound
-            this._spriteStage.addLayer(batch); // addBatch
+            this._spriteStage.addLayer(batch,"entities"); // addBatch
             this._entities.changeLevels("level" + this._state);
             //this._entities.streamLevelEntities(true); // spawn first row of the level immediately
 
@@ -150,12 +220,58 @@ module shooter
                 }
             }
 
+            // this forces the game to fill the screen
+            this.onResizeEvent(null); // v6
             // start the render loop
             this.onEnterFrame();//stage.addEventListener(Event.ENTER_FRAME,onEnterFrame);
 
-
+        }
+        // v6 initialize a boss battle
+        private bossSpriteID:number = 0;
+        private bossBattle():void
+        {
+            console.log("Boss battle begins!");
+            // a special sprite that is larger than the rest
+            if (!this.bossSpriteID) this.bossSpriteID = this._entities._spriteSheet.defineSprite(160, 128, 96, 96); // 256x256 texture // v6
+            //if (!bossSpriteID) bossSpriteID = _entities.spriteSheet.defineSprite(320, 256, 192, 192); // 512x512 texture
+            var anEntity:Entity;
+            anEntity = this._entities.respawn(this.bossSpriteID);
+            anEntity.sprite.position.x = this.stage3d.stageWidth + 64;
+            anEntity.sprite.position.y = this.stage3d.stageHeight / 2;
+            anEntity.sprite.scaleX = anEntity.sprite.scaleY = 2; // v6
+            anEntity.aiFunction = anEntity.bossAI;
+            anEntity.isBoss = true;
+            anEntity.collideradius = 96;
+            anEntity.collidemode = 1;
+            //_gui.addChild(_gui.bosshealthTf); todo:gui
+            anEntity.health = 100;
+            // ensure that our bullets can hit it
+            if (!anEntity.recycled)
+                this._entities.allEnemies.push(anEntity);
+            this._entities.theBoss = anEntity;
+            this._entities.bossDestroyedCallback = this.bossComplete;
         }
 
+        // the entity manager calls this when a boss is destroyed
+        public bossComplete():void
+        {
+            console.log("bossComplete!");
+
+            this.thePlayer.score += 1000;
+
+            // remove the boss health bar
+            //if (_gui.contains(_gui.bosshealthTf)) todo:gui
+            //    _gui.removeChild(_gui.bosshealthTf);
+
+            // so next time we get a fresh one
+            this._entities.theBoss = null;
+
+            // remove the +1000 boss battle state
+            // and add one so that we go to the next level
+            this._state -= 999;
+            // trigger a "level complete" transition
+            this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+        }
 
         // check player transition state (deaths, game over, etc)
         private currentTransitionSeconds:number = 0;
@@ -170,35 +286,81 @@ module shooter
 
                 if (this.thePlayer.transitionTimeLeft > 0)
                 {	//was it a level change?
-                    if (this.thePlayer.level != this._state)
+                    if (this.thePlayer.level != this._state && this._state < 1000)
                     {
-                        /* todo:gui
-                        if (this._state == -1)
-                        {
-                            this._gui.transitionText = "\n\n\n\n\n\nCONGRATULATIONS\n\n" +
-                            "You fought bravely and defended\n" +
-                            "the universe from certain doom.\n\nYou got to level " +
-                            this.thePlayer.level + "\nwith " + this.thePlayer.score + " points." +
-                            "\n\nCREDITS:\n\nProgramming: McFunkypants\n(mcfunkypants.com)\n\n" +
-                            "Art: Daniel Cook\n(lostgarden.com)\n\n" +
-                            "Music: MaF\n(maf464.com)\n\n" +
-                            "Thanks for playing!";
-                            this._gui.transitionTf.scrollRect = new Rectangle(0,this.currentTransitionSeconds * 40,600,160);
-                        }
-                        else if (this._state == 0)
-                            this._gui.transitionText = "GAME OVER\nYou got to level " + this.thePlayer.level
-                            + "\nwith " + this.thePlayer.score + " points.";
-                        else if (this._state > 1)
-                            this._gui.transitionText = "\nLEVEL " + (this._state-1) + " COMPLETE!";
-                        else
-                            this._gui.transitionText = "\nLEVEL " + this._state;*/
+                        // todo:gui
+                         if (this._state == -1)
+                         {
+                             //_gui.transitionText = "\n\n\n\n\n\nCONGRATULATIONS\n\n" +
+                             //"You fought bravely and defended\n" +
+                             //"the universe from certain doom.\n\nYou got to level " +
+                             //thePlayer.level + "\nwith " + thePlayer.score + " points." +
+                             //"\n\nCREDITS:\n\nProgramming: McFunkypants\n(mcfunkypants.com)\n\n" +
+                             //"Art: Daniel Cook\n(lostgarden.com)\n\n" +
+                             //"Music: MaF\n(maf464.com)\n\n" +
+                             //"Thanks for playing!";
+                             //_gui.transitionTf.scrollRect = new Rectangle(0, currentTransitionSeconds * 40, 600, 160);
+                             console.log("thanks for playing");
+
+                            this.timeDilation = 0.5; // slow mo
+
+                         // v6
+                         //if (_gui.npcText == "") _sfx.playNPCthanks();
+                         //_gui.npcText = "You saved us!\nThank you!\nMy hero!";
+                         }
+                         else if (this._state == 0)
+                         {
+                             //_gui.transitionText = "GAME OVER\nYou got to level " + thePlayer.level
+                             //+ "\nwith " + thePlayer.score + " points.";
+                             //
+                             //if (_gui.npcText == "") _sfx.playNPCgameover();
+                             //_gui.npcText = "You were incredible.\nThere were simply too many of them.\nYou'll win next time. I know it.";
+                             //
+
+                             console.log("GAME OVER\nYou got to level"+ this.thePlayer.level);
+                             this.timeDilation = 0.5; // slow mo
+                         }
+                         else if (this._state > 1)
+                         {
+                             //_gui.transitionText = "\nLEVEL " + (_state-1) + " COMPLETE!";
+                             //
+                             //if (_gui.npcText == "") _sfx.playNPCnextlevel();
+                             //_gui.npcText = "That was amazing!\nYou destroyed it!\nYour skill is legendary.";
+                             console.log("level "+(this._state -1)+" complete!");
+                         }
+                         else
+                         {
+                             console.log("level "+this._state);
+                             //_gui.transitionText = "\nLEVEL " + _state;
+                             //
+                             //if (_gui.npcText == "") _sfx.playNPCwelcome();
+                             //_gui.npcText = "We're under attack! Please help us!\nYou're our only hope for survival.\nUse the arrow keys to move.";
+                         }
                     }
-                    else // must be a death or start of a map
+                    else  // must be a death or boss battle
                     {
-                       /*
-                        todo:gui
-                       this._gui.transitionText = "Your ship was destroyed.\n\nYou have "
-                        + this.thePlayer.lives + (this.thePlayer.lives != 1 ? " lives" : " life") + " left.";*/
+
+                        if ((this._state > 1000) && (this.thePlayer.health > 0)) // v6
+                        {
+                            console.log("incoming boss battle");
+                            //_gui.transitionText = "\nINCOMING BOSS BATTLE!";todo:gui
+                            //
+                            //if (_gui.npcText == "") _sfx.playNPCboss();
+                            //_gui.npcText = "Be careful! That ship is HUGE!\nKeep moving and watch out for\nany burst attacks. Good luck!";
+                        }
+                        else
+                        {
+                            //_gui.transitionText = "Your ship was destroyed.\n\nYou have "
+                            //+ thePlayer.lives + (thePlayer.lives != 1 ? " lives" : " life") + " left.";
+                            //
+                            //if (_gui.npcText == "") _sfx.playNPCdeath();
+                            //_gui.npcText = "Nooooo!\nDon't give up! I believe in you!\nYou can do it.";
+
+
+                            this.timeDilation = 0.5; // slow mo
+                            console.log("your ship was destroyed!");
+                        }
+
                     }
                     if (this.thePlayer.lives < 0 || this.thePlayer.health <= 0)
                     {
@@ -214,6 +376,8 @@ module shooter
                 }
                 else // transition time has elapsed
                 {
+                    //_gui.npcText = ""; // todo:gui
+                    this.timeDilation = 1; // turn off slow-mo
                     this.currentTransitionSeconds = 0;
 
                     this.thePlayer.transitionTimeLeft = 0;
@@ -229,11 +393,29 @@ module shooter
                         this.thePlayer.sprite.position.y = this._entities.midpoint;
                         this.thePlayer.sprite.position.x = 64;
                         this.thePlayer.health = 100;
+
+                        // failed to kill boss:
+                        if (this._state > 1000)
+                        {
+                            console.log('Filed to kill boss. Resetting.');
+                            this._state -= 1000;
+                            //_gui.bosshealth = -999; todo:gui
+                            // remove the boss health bar
+                            //if (_gui.contains(_gui.bosshealthTf))
+                            //    _gui.removeChild(_gui.bosshealthTf);
+                            //// remove the boss itself
+                            //if (_entities.theBoss)
+                            //{
+                            //    _entities.theBoss.die();
+                            //    _entities.theBoss = null;
+                            //}
+                        }
+
                         // start the level again
                         this._entities.changeLevels('level' + this._state);
                         this._terrain.changeLevels('terrain' + this._state);
                     }
-                    if (this.thePlayer.level != this._state)
+                    if (this.thePlayer.level != this._state && (this._state < 1000))
                     {
                         console.log('Level transition over. Starting level ' + this._state);
                         this.thePlayer.level = this._state;
@@ -241,16 +423,30 @@ module shooter
                         {
                             this._entities.changeLevels('level' + this._state);
                             this._terrain.changeLevels('terrain' + this._state);
+                            //_gui.statsText = "Level " + _state; // todo:gui
                         }
                         if (this._state == 0) // game over
                         {
+                            console.log('Game Over transition over: starting main menu');
                             this.thePlayer.health = 100;
                             this.thePlayer.lives = 3;
                             this.thePlayer.sprite.visible = false;
                             this._entities.theOrb.sprite.visible = false;
-                            this._spriteStage.addLayer(this._mainmenu.batch);
                             this._entities.changeLevels('level' + this._state);
                             this._terrain.changeLevels('terrain' + this._state);
+                            this._spriteStage.addLayer(this._mainmenu.batch);
+                            //_gui.statsText = "GAME OVER"; // v6
+                            //_gui.bosshealth = 0;
+                            // remove the boss health bar if any
+                            //if (_gui.contains(_gui.bosshealthTf))
+                            //    _gui.removeChild(_gui.bosshealthTf);
+                            // go back to normal size
+                            if (this.enableFullscreen)
+                            {
+                                console.log('Leaving fullscreen...');
+                                //todo:leave fullscreen
+                                //stage.displayState = StageDisplayState.NORMAL;
+                            }
                         }
                     }
                 }
@@ -376,6 +572,66 @@ module shooter
 
             //_sfx.playMusic(); // todo sound
 
+            if (this.enableAutofire) // v6
+            {
+                this._controls.autofire = true;
+            }
+
+            // v6 fullscreen mode!
+            // Note: security blocks keyboard except
+            // arrows and space, so WASD keys don't work...
+            // also pressing left+up+space doesn't work on
+            // normal keyboards (therefore we implemented autofire)
+            if (this.enableFullscreen)
+            {
+                try
+                {
+                    console.log('Going fullscreen...');
+                    // remember to add this to your HTML:
+                    // <param name="allowFullScreen" value="true" />
+                    //todo:fullscreen stage.displayState = StageDisplayState.FULL_SCREEN;
+                    var i:any = document.getElementById("my-canvas");
+
+                    // go full-screen
+                    if (i.requestFullscreen) {
+                        i.requestFullscreen();
+                    } else if (i.webkitRequestFullscreen) {
+                        i.webkitRequestFullscreen();
+                    } else if (i.mozRequestFullScreen) {
+                        i.mozRequestFullScreen();
+                    } else if (i.msRequestFullscreen) {
+                        i.msRequestFullscreen();
+                    }
+
+                   var FShandler = () =>
+                    {
+                        //ShooterMain.canvas.width = window.innerWidth;
+                        //ShooterMain.canvas.height = window.innerHeight;
+                        ////this.onResizeEvent(null);
+                        //console.log(ShooterMain.canvas.clientWidth,"###");
+                        //this._spriteStage.configureBackBuffer(ShooterMain.canvas.width, ShooterMain.canvas.height);
+
+                    }
+
+                    document.addEventListener("fullscreenchange", FShandler);
+                    document.addEventListener("webkitfullscreenchange", FShandler);
+                    document.addEventListener("mozfullscreenchange", FShandler);
+                    document.addEventListener("MSFullscreenChange", FShandler);
+
+                }
+                catch (err)
+                {
+                    console.log("Error going fullscreen.");
+                }
+                // in Flash 11.3 (summer 2012) you can use the following
+                // for full keyboard access but it asks the user for permission first
+                // stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+                // you also need to add this to your html
+                // <param name="allowFullScreenInteractive" value="true" />
+            }
+
+
+
             // add the player entity to the game!
             if(!this.thePlayer)
                 this.thePlayer = this._entities.addPlayer(this.playerLogic);
@@ -389,6 +645,7 @@ module shooter
 
             this._entities.changeLevels("level" + this._state);
             this._terrain.changeLevels("terrain" + this._state);
+            //_gui.statsText = "Level " + _state; // todo:gui
 
             // reset the player position
             this.thePlayer.level = 0; // it will transition to 1
@@ -404,6 +661,27 @@ module shooter
             this.thePlayer.invulnerabilityTimeLeft = this.thePlayer.transitionSeconds + this.thePlayer.invulnerabilitySecsWhenHit;
 
 
+        }
+
+
+        private resize(gl) {
+            var canvas = gl.canvas;
+
+            // Lookup the size the browser is displaying the canvas.
+            var displayWidth  = canvas.clientWidth;
+            var displayHeight = canvas.clientHeight;
+
+            // Check if the canvas is not the same size.
+            if (canvas.width  != displayWidth ||
+                canvas.height != displayHeight) {
+
+                // Make the canvas the same size
+                canvas.width  = displayWidth;
+                canvas.height = displayHeight;
+
+                // Set the viewport to match
+                gl.viewport(0, 0, canvas.width, canvas.height);
+            }
         }
 
         // v5 triggered if the player loses all lives
@@ -423,6 +701,13 @@ module shooter
             this._state = 0;
 
             this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+
+
+            if (this.enableAutofire)
+            {
+                this._controls.autofire = false; // v6
+                this._controls.pressing.fire = false;
+            }
 
         }
 
@@ -445,16 +730,21 @@ module shooter
         {
             // main menu or gameover credits?
             if (this._state < 1) return;
+            // in the middle of a boss battle? // v6
+            if (this._state > 1000) return;
+
+
             // already transitioning?
             if (this.thePlayer.level != this._state) return;
 
             // allow some extra spaces for the level to scroll past
             // the player and then call the level complete.
-            if (this._terrain.levelPrevCol > this._terrain.level.levelLength + 16)
+            if (this._terrain.levelPrevCol > this._terrain.level.levelLength)
             {
                 console.log("LEVEL " + this._state  + " COMPLETED!");
 
-                this._state++;
+                this.bossBattle();
+                this._state+= 1000;
 
                 this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
 
@@ -476,15 +766,17 @@ module shooter
 
         private onEnterFrame = () =>
         {
+            this.resize(stageJS.Context3D.GL);
+
             //console.log(this._controls.textDescription());
             //console.log(this._entities.numReused , this._entities.numCreated);
-            try
-            {
+            //try
+            //{
                 this.stats.begin();
 
                 // grab timestamp of current frame
                 this.currentTime = this.getTimer();
-                this.currentFrameMs = this.currentTime - this.previousFrameTime;
+                this.currentFrameMs = (this.currentTime - this.previousFrameTime) * this.timeDilation;
                 this.previousFrameTime = this.currentTime;
 
 
@@ -527,14 +819,14 @@ module shooter
                 this.checkMapState();
 
                 this.stats.end();
-            }
-            catch (e)
-            {
-                console.log("computer goes to sleep ?" ,e.toString());
-                // this can happen if the computer goes to sleep and
-                // then re-awakens, requiring reinitialization of stage3D
-                // (the onContext3DCreate will fire again)
-            }
+            //}
+            //catch (e)
+            //{
+            //    console.log("computer goes to sleep ?" ,e.toString());
+            //    // this can happen if the computer goes to sleep and
+            //    // then re-awakens, requiring reinitialization of stage3D
+            //    // (the onContext3DCreate will fire again)
+            //}
 
 
             requestAnimationFrame(this.onEnterFrame);

@@ -15,9 +15,12 @@ module shooter
         // the sprite sheet image
         public bgSpritesPerRow:number = 1;
         public bgSpritesPerCol:number = 1;
+
         // since the image is larger than the screen we have some extra pixels to play with
-        public yParallaxAmount:number = (512 - 400);
-        private yOffset:number;
+        public yParallaxAmount:number = 128; // v6
+        public yOffset:number = 0;
+
+        public bgSourceImage:string = "assets/stars.gif";
 
         constructor(view:GPUSprite.Rectangle)
         {
@@ -27,7 +30,7 @@ module shooter
 
         public createBatch(context3D:stageJS.Context3D) : GPUSprite.SpriteRenderLayer
         {
-            var bgsourceBitmap:HTMLImageElement = lib.ImageLoader.getInstance().get("assets/stars.gif");
+            var bgsourceBitmap:HTMLImageElement = lib.ImageLoader.getInstance().get(this.bgSourceImage);
 
             // create a spritesheet with single giant sprite
             this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(bgsourceBitmap), this.bgSpritesPerRow, this.bgSpritesPerCol);
@@ -41,11 +44,12 @@ module shooter
         public setPosition(view:GPUSprite.Rectangle):void
         {
             // allow moving fully offscreen before looping around
-            this.maxX = 256+512+512;
+            this.maxX = 256+512+512+512+512;
             this.minX = -256;
             this.maxY = view.height;
             this.minY = view.y;
-
+            this.yParallaxAmount = 128; // v6
+            this.yOffset = (this.maxY / 2) + (-1 * this.yParallaxAmount * 0.5); // v6
 
         }
 
@@ -53,7 +57,6 @@ module shooter
         // from right to left with random speeds and scales
         public initBackground():void
         {
-            console.log("Init background...");
             // we need three 512x512 sprites
             var anEntity1:Entity = this.respawn(0);
             anEntity1.sprite.position.x = 256;
@@ -70,8 +73,62 @@ module shooter
             anEntity3.sprite.position.y = this.maxY / 2;
             anEntity3.speedX = this.bgSpeed;
 
-            this.yParallaxAmount = (512 - this.maxY) / 2;
-            this.yOffset = this.maxY / 2;
+            var anEntity4:Entity = this.respawn(0)
+            anEntity4.sprite.position.x = 256+512+512+512;
+            anEntity4.sprite.position.y = this.maxY / 2;
+            anEntity4.speedX = this.bgSpeed;
+
+            var anEntity5:Entity = this.respawn(0)
+            anEntity5.sprite.position.x = 256+512+512+512+512;
+            anEntity5.sprite.position.y = this.maxY / 2;
+            anEntity5.speedX = this.bgSpeed;
+
+            // upper row
+            var anEntity1a:Entity = this.respawn(0)
+            anEntity1a.sprite.position.x = 256;
+            anEntity1a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity1a.speedX = this.bgSpeed;
+            var anEntity2a:Entity = this.respawn(0)
+            anEntity2a.sprite.position.x = 256+512;
+            anEntity2a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity2a.speedX = this.bgSpeed;
+            var anEntity3a:Entity = this.respawn(0)
+            anEntity3a.sprite.position.x = 256+512+512;
+            anEntity3a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity3a.speedX = this.bgSpeed;
+            var anEntity4a:Entity = this.respawn(0)
+            anEntity4a.sprite.position.x = 256+512+512+512;
+            anEntity4a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity4a.speedX = this.bgSpeed;
+            var anEntity5a:Entity = this.respawn(0)
+            anEntity5a.sprite.position.x = 256+512+512+512+512;
+            anEntity5a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity5a.speedX = this.bgSpeed;
+
+            // lower row
+            var anEntity1b:Entity = this.respawn(0)
+            anEntity1b.sprite.position.x = 256;
+            anEntity1b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity1b.speedX = this.bgSpeed;
+            var anEntity2b:Entity = this.respawn(0)
+            anEntity2b.sprite.position.x = 256+512;
+            anEntity2b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity2b.speedX = this.bgSpeed;
+            var anEntity3b:Entity = this.respawn(0)
+            anEntity3b.sprite.position.x = 256+512+512;
+            anEntity3b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity3b.speedX = this.bgSpeed;
+            var anEntity4b:Entity = this.respawn(0)
+            anEntity4b.sprite.position.x = 256+512+512+512;
+            anEntity4b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity4b.speedX = this.bgSpeed;
+            var anEntity5b:Entity = this.respawn(0)
+            anEntity5b.sprite.position.x = 256+512+512+512+512;
+            anEntity5b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity5b.speedX = this.bgSpeed;
+
+            //this.yParallaxAmount = (512 - this.maxY) / 2;
+            //this.yOffset = this.maxY / 2;
         }
 
         // scroll slightly up or down to give more parallax
@@ -94,6 +151,12 @@ module shooter
                 {
                     anEntity.sprite.position.x += anEntity.speedX;
                     anEntity.sprite.position.y = this.yOffset;
+
+                    // upper row // v6
+                    if (i > 9) anEntity.sprite.position.y += 512;
+                    // lower row // v6
+                    else if (i > 4) anEntity.sprite.position.y -= 512;
+
                     if (anEntity.sprite.position.x >= this.maxX)
                     {
                         anEntity.sprite.position.x = this.minX;

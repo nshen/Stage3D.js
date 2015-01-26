@@ -93,6 +93,16 @@ module shooter
 
 		public collidepoints:number = 25; // score earned if destroyed
 
+		//v6
+		// v6 if this is a boss, when it dies the game state (level) increases
+		public isBoss:boolean = false;
+		// used by the boss battles for "burst, delay, burst" firing
+		public burstTimerStart:number = 0;
+		public burstTimerEnd:number = 0;
+		public burstPauseTime:number = 2;
+		public burstLength:number = 2;
+		public burstShootInterval:number = 0.2;
+
 		constructor(gs:GPUSprite.Sprite ,myManager:shooter.EntityManager)
 		{
 			this._sprite = gs;
@@ -330,6 +340,46 @@ module shooter
 			this.aiPathOffsetY = newPos.x;
 
 		}
+
+		// v6 // boss battle: stay on the screen
+		public bossAI(seconds:number):void
+		{
+			this.age += seconds;
+
+			// spammy with breaks in between
+			if (this.age > this.burstTimerStart)
+			{
+				if (this.age > this.burstTimerEnd)
+				{
+					// one final "circle burst"
+					for (var deg:number = 0; deg < 20; deg++)
+					{
+						this.gfx.shootBullet(1, this, deg * 18 * this.gfx.DEGREES_TO_RADIANS);
+						//this.gfx.sfx.playBoss(); // todo:sound
+					}
+					this.burstTimerStart = this.age + this.burstPauseTime;
+					this.burstTimerEnd = this.burstTimerStart + this.burstLength;
+				}
+				else
+				{
+					this.maybeShoot(2, this.burstShootInterval, this.burstShootInterval);
+				}
+			}
+
+			if (this.gfx.thePlayer)
+			{
+				// point at player
+				this.sprite.rotation = this.gfx.pointAtRad(
+					this.gfx.thePlayer.sprite.position.x - this.sprite.position.x,
+					this.gfx.thePlayer.sprite.position.y - this.sprite.position.y)
+				- (90 * this.gfx.DEGREES_TO_RADIANS);
+
+				// slowly move to a good spot: 256 pixels to the right of the player
+				this.speedX = (this.gfx.thePlayer.sprite.position.x + 256 - this.sprite.position.x);
+				this.aiPathOffsetY = (Math.sin(this.age) / Math.PI) * 256;
+			}
+		}
+
 
 	} // end class
 } // enDate package

@@ -9,6 +9,9 @@ module shooter
 {
     export class GameControls
     {
+        // v6 - autofire during gameplay
+        public autofire:boolean = false;
+
         // the current state of the keyboard controls
         public pressing:any = { up:false, down:false, left:false, right:false, fire:false, hasfocus:false };
 
@@ -45,7 +48,7 @@ module shooter
             this.pressing.down = false;
             this.pressing.left = false;
             this.pressing.right = false;
-            this.pressing.fire = false;
+            this.pressing.fire = this.autofire;
             this.pressing.hasfocus = false;
         }
 
@@ -119,6 +122,9 @@ module shooter
                     break;
 
             }
+
+            // override the actual event response
+            if (this.autofire) this.pressing.fire = true; // v6
         }
 
     } // end class

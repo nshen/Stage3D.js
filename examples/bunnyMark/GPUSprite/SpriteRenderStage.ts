@@ -14,6 +14,7 @@ module GPUSprite
         private _modelViewMatrix:stageJS.geom.Matrix3D;
 
 
+
         public get position():{x:number;y:number;width:number;height:number;}
         {
             return this._rect;
@@ -48,9 +49,10 @@ module GPUSprite
             this.position = rect;
         }
 
-        public addLayer(layer:SpriteRenderLayer):void
+        public addLayer(layer:SpriteRenderLayer ,name:string = ""):void
         {
             layer.parent = this;
+            layer.name = name;
             this._layers.push(layer);
         }
 

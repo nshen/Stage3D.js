@@ -143,8 +143,10 @@ var GPUSprite;
             configurable: true
         });
 
-        SpriteRenderStage.prototype.addLayer = function (layer) {
+        SpriteRenderStage.prototype.addLayer = function (layer, name) {
+            if (typeof name === "undefined") { name = ""; }
             layer.parent = this;
+            layer.name = name;
             this._layers.push(layer);
         };
 
@@ -182,6 +184,7 @@ var GPUSprite;
 (function (GPUSprite) {
     var SpriteRenderLayer = (function () {
         function SpriteRenderLayer(context3D, spriteSheet) {
+            this.name = "";
             this._context3D = context3D;
             this._spriteSheet = spriteSheet;
 
@@ -650,6 +653,7 @@ var shooter;
     var GameControls = (function () {
         function GameControls(theStage) {
             var _this = this;
+            this.autofire = false;
             this.pressing = { up: false, down: false, left: false, right: false, fire: false, hasfocus: false };
             this.keyPressed = function (event) {
                 _this.keyHandler(event, true);
@@ -663,7 +667,7 @@ var shooter;
                 _this.pressing.down = false;
                 _this.pressing.left = false;
                 _this.pressing.right = false;
-                _this.pressing.fire = false;
+                _this.pressing.fire = _this.autofire;
                 _this.pressing.hasfocus = false;
             };
             this.gainFocus = function (event) {
@@ -718,6 +722,9 @@ var shooter;
                     this.pressing.fire = isDown;
                     break;
             }
+
+            if (this.autofire)
+                this.pressing.fire = true;
         };
         return GameControls;
     })();
@@ -1107,6 +1114,12 @@ var shooter;
             this.transitionSeconds = 5;
             this.damage = 49;
             this.collidepoints = 25;
+            this.isBoss = false;
+            this.burstTimerStart = 0;
+            this.burstTimerEnd = 0;
+            this.burstPauseTime = 2;
+            this.burstLength = 2;
+            this.burstShootInterval = 0.2;
             this._sprite = gs;
             this.gfx = myManager;
             this._speedX = 0.0;
@@ -1272,6 +1285,29 @@ var shooter;
             this.aiPathOffsetX = newPos.x;
             this.aiPathOffsetY = newPos.x;
         };
+
+        Entity.prototype.bossAI = function (seconds) {
+            this.age += seconds;
+
+            if (this.age > this.burstTimerStart) {
+                if (this.age > this.burstTimerEnd) {
+                    for (var deg = 0; deg < 20; deg++) {
+                        this.gfx.shootBullet(1, this, deg * 18 * this.gfx.DEGREES_TO_RADIANS);
+                    }
+                    this.burstTimerStart = this.age + this.burstPauseTime;
+                    this.burstTimerEnd = this.burstTimerStart + this.burstLength;
+                } else {
+                    this.maybeShoot(2, this.burstShootInterval, this.burstShootInterval);
+                }
+            }
+
+            if (this.gfx.thePlayer) {
+                this.sprite.rotation = this.gfx.pointAtRad(this.gfx.thePlayer.sprite.position.x - this.sprite.position.x, this.gfx.thePlayer.sprite.position.y - this.sprite.position.y) - (90 * this.gfx.DEGREES_TO_RADIANS);
+
+                this.speedX = (this.gfx.thePlayer.sprite.position.x + 256 - this.sprite.position.x);
+                this.aiPathOffsetY = (Math.sin(this.age) / Math.PI) * 256;
+            }
+        };
         return Entity;
     })();
     shooter.Entity = Entity;
@@ -1367,6 +1403,7 @@ var shooter;
 (function (_shooter) {
     var EntityManager = (function () {
         function EntityManager(view) {
+            this.bossDestroyedCallback = null;
             this.levelNum = 0;
             this.levelCurrentScrollX = 0;
             this.levelPrevCol = -1;
@@ -1374,8 +1411,11 @@ var shooter;
             this.cullingDistance = 200;
             this._SpritesPerRow = 8;
             this._SpritesPerCol = 8;
-            this.defaultScale = 1;
-            this.defaultSpeed = 128;
+            this.defaultScale = 1.5;
+            this.defaultSpeed = 160;
+            this.playerBulletSpeed = 300;
+            this.enemyBulletSpeed = 200;
+            this.bulletScale = 1;
             this.bulletSpeed = 250;
             this.currentFrameSeconds = 0;
             this.spritenumFireball = 63;
@@ -1393,6 +1433,7 @@ var shooter;
             this.numCreated = 0;
             this.numReused = 0;
             this.sourceImage = "assets/sprites.png";
+            this.levelTopOffset = 0;
             this._entityPool = [];
             this.allBullets = [];
             this.allEnemies = [];
@@ -1432,6 +1473,11 @@ var shooter;
                     anEntity.active = true;
                     anEntity.sprite.visible = true;
                     anEntity.recycled = true;
+                    anEntity.age = 0;
+                    anEntity.burstTimerStart = 0;
+                    anEntity.burstTimerEnd = 0;
+                    anEntity.fireTime = 0;
+
                     this.numReused++;
                     return anEntity;
                 }
@@ -1440,6 +1486,10 @@ var shooter;
             var sprite;
             sprite = this._batch.createChild(sprID);
             anEntity = new _shooter.Entity(sprite, this);
+            anEntity.age = 0;
+            anEntity.burstTimerStart = 0;
+            anEntity.burstTimerEnd = 0;
+            anEntity.fireTime = 0;
             this._entityPool.push(anEntity);
             this.numCreated++;
             return anEntity;
@@ -1475,9 +1525,10 @@ var shooter;
             return this.thePlayer;
         };
 
-        EntityManager.prototype.shootBullet = function (powa, shooter) {
+        EntityManager.prototype.shootBullet = function (powa, shooter, angle) {
             if (typeof powa === "undefined") { powa = 1; }
             if (typeof shooter === "undefined") { shooter = null; }
+            if (typeof angle === "undefined") { angle = NaN; }
             if (this.thePlayer == null)
                 return null;
 
@@ -1496,16 +1547,19 @@ var shooter;
             theBullet.sprite.position.x = shooter.sprite.position.x + 8;
             theBullet.sprite.position.y = shooter.sprite.position.y + 2;
 
-            theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
-            theBullet.sprite.scaleX = theBullet.sprite.scaleY = 1;
+            theBullet.sprite.scaleX = theBullet.sprite.scaleY = this.bulletScale;
             if (shooter == this.thePlayer) {
-                theBullet.speedX = this.bulletSpeed;
+                theBullet.speedX = this.playerBulletSpeed;
                 theBullet.speedY = 0;
             } else {
-                theBullet.sprite.rotation = this.pointAtRad(theBullet.sprite.position.x - this.thePlayer.sprite.position.x, theBullet.sprite.position.y - this.thePlayer.sprite.position.y) - (90 * this.DEGREES_TO_RADIANS);
+                if (isNaN(angle)) {
+                    theBullet.sprite.rotation = this.pointAtRad(theBullet.sprite.position.x - this.thePlayer.sprite.position.x, theBullet.sprite.position.y - this.thePlayer.sprite.position.y) - (90 * this.DEGREES_TO_RADIANS);
+                } else {
+                    theBullet.sprite.rotation = angle;
+                }
 
-                theBullet.speedX = this.defaultSpeed * 1.5 * Math.cos(theBullet.sprite.rotation);
-                theBullet.speedY = this.defaultSpeed * 1.5 * Math.sin(theBullet.sprite.rotation);
+                theBullet.speedX = this.enemyBulletSpeed * Math.cos(theBullet.sprite.rotation);
+                theBullet.speedY = this.enemyBulletSpeed * Math.sin(theBullet.sprite.rotation);
             }
 
             theBullet.owner = shooter;
@@ -1608,7 +1662,30 @@ var shooter;
 
                 if (collided) {
                     this.particles.addExplosion(checkMe.sprite.position);
-                    if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
+
+                    if (anEntity == this.theBoss) {
+                        this.theBoss.health -= 2;
+                        console.log("Boss hit. HP = " + this.theBoss.health);
+
+                        this.theBoss.sprite.position.x += 8;
+                        if (this.theBoss.health < 1) {
+                            console.log("Boss has been destroyed!");
+
+                            this.particles.addParticle(this.spritenumShockwave, this.theBoss.sprite.position.x, this.theBoss.sprite.position.y, 0.01, 0, 0, 1, NaN, NaN, -1, 30);
+
+                            var bossexpPos = { x: 0, y: 0 };
+                            for (var bossnumExps = 0; bossnumExps < 6; bossnumExps++) {
+                                bossexpPos.x = this.theBoss.sprite.position.x + Math.random() * 128 - 64;
+                                bossexpPos.y = this.theBoss.sprite.position.y + Math.random() * 128 - 64;
+                                this.particles.addExplosion(bossexpPos);
+                            }
+
+                            this.theBoss.die();
+                            this.theBoss = null;
+                            if (this.bossDestroyedCallback != null)
+                                this.bossDestroyedCallback();
+                        }
+                    } else if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
                         checkMe.die();
                     if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
                         anEntity.die();
@@ -1704,8 +1781,6 @@ var shooter;
             if (typeof theseAreEnemies === "undefined") { theseAreEnemies = false; }
             var anEntity;
             var sprID;
-            if (!this.levelCurrentScrollX)
-                this.levelCurrentScrollX = 0;
 
             this.levelCurrentScrollX += this.defaultSpeed * this.currentFrameSeconds;
 
@@ -1728,7 +1803,7 @@ var shooter;
                             if (sprID > -1) {
                                 anEntity = this.respawn(sprID);
                                 anEntity.sprite.position.x = currentLevelXCoord;
-                                anEntity.sprite.position.y = (row * this.levelTilesize) + (this.levelTilesize / 2);
+                                anEntity.sprite.position.y = (row * this.levelTilesize) + (this.levelTilesize / 2) + this.levelTopOffset;
 
                                 anEntity.speedX = -this.defaultSpeed;
                                 anEntity.speedY = 0;
@@ -1822,10 +1897,12 @@ var shooter;
             this.bgSpeed = -1;
             this.bgSpritesPerRow = 1;
             this.bgSpritesPerCol = 1;
-            this.yParallaxAmount = (512 - 400);
+            this.yParallaxAmount = 128;
+            this.yOffset = 0;
+            this.bgSourceImage = "assets/stars.gif";
         }
         GameBackground.prototype.createBatch = function (context3D) {
-            var bgsourceBitmap = lib.ImageLoader.getInstance().get("assets/stars.gif");
+            var bgsourceBitmap = lib.ImageLoader.getInstance().get(this.bgSourceImage);
 
             this._spriteSheet = new GPUSprite.SpriteSheet(stageJS.BitmapData.fromImageElement(bgsourceBitmap), this.bgSpritesPerRow, this.bgSpritesPerCol);
 
@@ -1835,15 +1912,15 @@ var shooter;
         };
 
         GameBackground.prototype.setPosition = function (view) {
-            this.maxX = 256 + 512 + 512;
+            this.maxX = 256 + 512 + 512 + 512 + 512;
             this.minX = -256;
             this.maxY = view.height;
             this.minY = view.y;
+            this.yParallaxAmount = 128;
+            this.yOffset = (this.maxY / 2) + (-1 * this.yParallaxAmount * 0.5);
         };
 
         GameBackground.prototype.initBackground = function () {
-            console.log("Init background...");
-
             var anEntity1 = this.respawn(0);
             anEntity1.sprite.position.x = 256;
             anEntity1.sprite.position.y = this.maxY / 2;
@@ -1859,8 +1936,57 @@ var shooter;
             anEntity3.sprite.position.y = this.maxY / 2;
             anEntity3.speedX = this.bgSpeed;
 
-            this.yParallaxAmount = (512 - this.maxY) / 2;
-            this.yOffset = this.maxY / 2;
+            var anEntity4 = this.respawn(0);
+            anEntity4.sprite.position.x = 256 + 512 + 512 + 512;
+            anEntity4.sprite.position.y = this.maxY / 2;
+            anEntity4.speedX = this.bgSpeed;
+
+            var anEntity5 = this.respawn(0);
+            anEntity5.sprite.position.x = 256 + 512 + 512 + 512 + 512;
+            anEntity5.sprite.position.y = this.maxY / 2;
+            anEntity5.speedX = this.bgSpeed;
+
+            var anEntity1a = this.respawn(0);
+            anEntity1a.sprite.position.x = 256;
+            anEntity1a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity1a.speedX = this.bgSpeed;
+            var anEntity2a = this.respawn(0);
+            anEntity2a.sprite.position.x = 256 + 512;
+            anEntity2a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity2a.speedX = this.bgSpeed;
+            var anEntity3a = this.respawn(0);
+            anEntity3a.sprite.position.x = 256 + 512 + 512;
+            anEntity3a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity3a.speedX = this.bgSpeed;
+            var anEntity4a = this.respawn(0);
+            anEntity4a.sprite.position.x = 256 + 512 + 512 + 512;
+            anEntity4a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity4a.speedX = this.bgSpeed;
+            var anEntity5a = this.respawn(0);
+            anEntity5a.sprite.position.x = 256 + 512 + 512 + 512 + 512;
+            anEntity5a.sprite.position.y = this.maxY / 2 + 512;
+            anEntity5a.speedX = this.bgSpeed;
+
+            var anEntity1b = this.respawn(0);
+            anEntity1b.sprite.position.x = 256;
+            anEntity1b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity1b.speedX = this.bgSpeed;
+            var anEntity2b = this.respawn(0);
+            anEntity2b.sprite.position.x = 256 + 512;
+            anEntity2b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity2b.speedX = this.bgSpeed;
+            var anEntity3b = this.respawn(0);
+            anEntity3b.sprite.position.x = 256 + 512 + 512;
+            anEntity3b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity3b.speedX = this.bgSpeed;
+            var anEntity4b = this.respawn(0);
+            anEntity4b.sprite.position.x = 256 + 512 + 512 + 512;
+            anEntity4b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity4b.speedX = this.bgSpeed;
+            var anEntity5b = this.respawn(0);
+            anEntity5b.sprite.position.x = 256 + 512 + 512 + 512 + 512;
+            anEntity5b.sprite.position.y = this.maxY / 2 - 512;
+            anEntity5b.speedX = this.bgSpeed;
         };
 
         GameBackground.prototype.yParallax = function (OffsetPercent) {
@@ -1876,6 +2002,12 @@ var shooter;
                 if (anEntity.active) {
                     anEntity.sprite.position.x += anEntity.speedX;
                     anEntity.sprite.position.y = this.yOffset;
+
+                    if (i > 9)
+                        anEntity.sprite.position.y += 512;
+                    else if (i > 4)
+                        anEntity.sprite.position.y -= 512;
+
                     if (anEntity.sprite.position.x >= this.maxX) {
                         anEntity.sprite.position.x = this.minX;
                     } else if (anEntity.sprite.position.x <= this.minX) {
@@ -1893,11 +2025,14 @@ var shooter;
     var ShooterMain = (function () {
         function ShooterMain(canvas) {
             var _this = this;
+            this.enableFullscreen = true;
+            this.enableAutofire = true;
+            this.timeDilation = 1;
             this.nothingPressedLastFrame = false;
             this.currentTime = 0;
             this.currentFrameMs = 0;
             this.previousFrameTime = 0;
-            this.playerSpeed = 128;
+            this.playerSpeed = 180;
             this.nextFireTime = 0;
             this.fireDelay = 200;
             this._state = 0;
@@ -1905,6 +2040,7 @@ var shooter;
                 _this.context3D = _this.stage3d.context3D;
                 _this.initSpriteEngine();
             };
+            this.bossSpriteID = 0;
             this.currentTransitionSeconds = 0;
             this.playerLogic = function (seconds) {
                 var me = _this.thePlayer;
@@ -1957,43 +2093,41 @@ var shooter;
                 }
             };
             this.onEnterFrame = function () {
-                try  {
-                    _this.stats.begin();
+                _this.resize(stageJS.Context3D.GL);
 
-                    _this.currentTime = _this.getTimer();
-                    _this.currentFrameMs = _this.currentTime - _this.previousFrameTime;
-                    _this.previousFrameTime = _this.currentTime;
+                _this.stats.begin();
 
-                    _this.context3D.clear(0, 0, 0, 1);
+                _this.currentTime = _this.getTimer();
+                _this.currentFrameMs = (_this.currentTime - _this.previousFrameTime) * _this.timeDilation;
+                _this.previousFrameTime = _this.currentTime;
 
-                    _this.processInput();
+                _this.context3D.clear(0, 0, 0, 1);
 
-                    if (_this._entities.thePlayer)
-                        _this._bg.yParallax(_this._entities.thePlayer.sprite.position.y / _this.stage3d.stageHeight);
+                _this.processInput();
 
-                    _this._bg.update(_this.currentTime);
+                if (_this._entities.thePlayer)
+                    _this._bg.yParallax(_this._entities.thePlayer.sprite.position.y / _this.stage3d.stageHeight);
 
-                    if (_this._state == 0)
-                        _this._mainmenu.update(_this.currentTime);
+                _this._bg.update(_this.currentTime);
 
-                    _this._terrain.update(_this.currentFrameMs);
-                    _this._entities.update(_this.currentFrameMs);
+                if (_this._state == 0)
+                    _this._mainmenu.update(_this.currentTime);
 
-                    _this._terrain.streamLevelEntities(false);
-                    _this._entities.streamLevelEntities(true);
+                _this._terrain.update(_this.currentFrameMs);
+                _this._entities.update(_this.currentFrameMs);
 
-                    _this._spriteStage.drawDeferred();
+                _this._terrain.streamLevelEntities(false);
+                _this._entities.streamLevelEntities(true);
 
-                    _this.context3D.present();
+                _this._spriteStage.drawDeferred();
 
-                    _this.checkPlayerState();
+                _this.context3D.present();
 
-                    _this.checkMapState();
+                _this.checkPlayerState();
 
-                    _this.stats.end();
-                } catch (e) {
-                    console.log("computer goes to sleep ?", e.toString());
-                }
+                _this.checkMapState();
+
+                _this.stats.end();
 
                 requestAnimationFrame(_this.onEnterFrame);
             };
@@ -2001,13 +2135,36 @@ var shooter;
             this.stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, this.onContext3DCreate);
             this.stage3d.requestContext3D();
         }
+        ShooterMain.prototype.onResizeEvent = function (event) {
+            return;
+            console.log("resize event...");
+
+            console.log(this.stage3d.stageWidth, this.stage3d.stageHeight);
+
+            var canvas = ShooterMain.canvas;
+
+            var displayWidth = canvas.clientWidth;
+            var displayHeight = canvas.clientHeight;
+
+            if (canvas.width != displayWidth || canvas.height != displayHeight) {
+                canvas.width = displayWidth;
+                canvas.height = displayHeight;
+
+                this._spriteStage.configureBackBuffer(canvas.width, canvas.height);
+            }
+
+            var view = { x: 0, y: 0, width: this.stage3d.stageWidth, height: this.stage3d.stageHeight };
+        };
+
         ShooterMain.prototype.initSpriteEngine = function () {
             var _this = this;
             this._start = new Date().valueOf();
+
             this.initStats();
 
             this._controls = new shooter.GameControls(window);
 
+            this.resize(stageJS.Context3D.GL);
             var _width = this.stage3d.stageWidth;
             var _height = this.stage3d.stageHeight;
 
@@ -2018,7 +2175,7 @@ var shooter;
             this._bg = new shooter.GameBackground(stageRect);
             var batch = this._bg.createBatch(this.context3D);
             this._bg.initBackground();
-            this._spriteStage.addLayer(batch);
+            this._spriteStage.addLayer(batch, "bg");
 
             this._terrain = new shooter.EntityManager(stageRect);
             this._terrain.sourceImage = "assets/terrain.png";
@@ -2026,16 +2183,16 @@ var shooter;
             this._terrain.defaultScale = 1.5;
             this._terrain.levelTilesize = 48;
             batch = this._terrain.createBatch(this.context3D, 16, 16, 0.0015);
-            this._spriteStage.addLayer(batch);
+            this._spriteStage.addLayer(batch, "terrain");
             this._terrain.changeLevels("terrain" + this._state);
 
             this._entities = new shooter.EntityManager(stageRect);
             this._entities.sourceImage = "assets/sprites.png";
             this._entities.defaultScale = 1.5;
             this._entities.levelTilesize = 48;
-            batch = this._entities.createBatch(this.context3D);
+            batch = this._entities.createBatch(this.context3D, 8, 8, 0.0005);
 
-            this._spriteStage.addLayer(batch);
+            this._spriteStage.addLayer(batch, "entities");
             this._entities.changeLevels("level" + this._state);
 
             this._mainmenu = new shooter.GameMenu(stageRect);
@@ -2063,7 +2220,45 @@ var shooter;
                 }
             };
 
+            this.onResizeEvent(null);
+
             this.onEnterFrame();
+        };
+
+        ShooterMain.prototype.bossBattle = function () {
+            console.log("Boss battle begins!");
+
+            if (!this.bossSpriteID)
+                this.bossSpriteID = this._entities._spriteSheet.defineSprite(160, 128, 96, 96);
+
+            var anEntity;
+            anEntity = this._entities.respawn(this.bossSpriteID);
+            anEntity.sprite.position.x = this.stage3d.stageWidth + 64;
+            anEntity.sprite.position.y = this.stage3d.stageHeight / 2;
+            anEntity.sprite.scaleX = anEntity.sprite.scaleY = 2;
+            anEntity.aiFunction = anEntity.bossAI;
+            anEntity.isBoss = true;
+            anEntity.collideradius = 96;
+            anEntity.collidemode = 1;
+
+            anEntity.health = 100;
+
+            if (!anEntity.recycled)
+                this._entities.allEnemies.push(anEntity);
+            this._entities.theBoss = anEntity;
+            this._entities.bossDestroyedCallback = this.bossComplete;
+        };
+
+        ShooterMain.prototype.bossComplete = function () {
+            console.log("bossComplete!");
+
+            this.thePlayer.score += 1000;
+
+            this._entities.theBoss = null;
+
+            this._state -= 999;
+
+            this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
         };
 
         ShooterMain.prototype.handleTransitions = function (seconds) {
@@ -2073,8 +2268,26 @@ var shooter;
                 this.thePlayer.transitionTimeLeft -= seconds;
 
                 if (this.thePlayer.transitionTimeLeft > 0) {
-                    if (this.thePlayer.level != this._state) {
+                    if (this.thePlayer.level != this._state && this._state < 1000) {
+                        if (this._state == -1) {
+                            console.log("thanks for playing");
+
+                            this.timeDilation = 0.5;
+                        } else if (this._state == 0) {
+                            console.log("GAME OVER\nYou got to level" + this.thePlayer.level);
+                            this.timeDilation = 0.5;
+                        } else if (this._state > 1) {
+                            console.log("level " + (this._state - 1) + " complete!");
+                        } else {
+                            console.log("level " + this._state);
+                        }
                     } else {
+                        if ((this._state > 1000) && (this.thePlayer.health > 0)) {
+                            console.log("incoming boss battle");
+                        } else {
+                            this.timeDilation = 0.5;
+                            console.log("your ship was destroyed!");
+                        }
                     }
                     if (this.thePlayer.lives < 0 || this.thePlayer.health <= 0) {
                         if (Math.random() < 0.2) {
@@ -2085,6 +2298,7 @@ var shooter;
                         }
                     }
                 } else {
+                    this.timeDilation = 1;
                     this.currentTransitionSeconds = 0;
 
                     this.thePlayer.transitionTimeLeft = 0;
@@ -2098,10 +2312,15 @@ var shooter;
                         this.thePlayer.sprite.position.x = 64;
                         this.thePlayer.health = 100;
 
+                        if (this._state > 1000) {
+                            console.log('Filed to kill boss. Resetting.');
+                            this._state -= 1000;
+                        }
+
                         this._entities.changeLevels('level' + this._state);
                         this._terrain.changeLevels('terrain' + this._state);
                     }
-                    if (this.thePlayer.level != this._state) {
+                    if (this.thePlayer.level != this._state && (this._state < 1000)) {
                         console.log('Level transition over. Starting level ' + this._state);
                         this.thePlayer.level = this._state;
                         if (this._state > 1) {
@@ -2109,13 +2328,18 @@ var shooter;
                             this._terrain.changeLevels('terrain' + this._state);
                         }
                         if (this._state == 0) {
+                            console.log('Game Over transition over: starting main menu');
                             this.thePlayer.health = 100;
                             this.thePlayer.lives = 3;
                             this.thePlayer.sprite.visible = false;
                             this._entities.theOrb.sprite.visible = false;
-                            this._spriteStage.addLayer(this._mainmenu.batch);
                             this._entities.changeLevels('level' + this._state);
                             this._terrain.changeLevels('terrain' + this._state);
+                            this._spriteStage.addLayer(this._mainmenu.batch);
+
+                            if (this.enableFullscreen) {
+                                console.log('Leaving fullscreen...');
+                            }
                         }
                     }
                 }
@@ -2149,6 +2373,38 @@ var shooter;
             this._state = 1;
             this._spriteStage.removeLayer(this._mainmenu.batch);
 
+            if (this.enableAutofire) {
+                this._controls.autofire = true;
+            }
+
+            if (this.enableFullscreen) {
+                try  {
+                    console.log('Going fullscreen...');
+
+                    var i = document.getElementById("my-canvas");
+
+                    if (i.requestFullscreen) {
+                        i.requestFullscreen();
+                    } else if (i.webkitRequestFullscreen) {
+                        i.webkitRequestFullscreen();
+                    } else if (i.mozRequestFullScreen) {
+                        i.mozRequestFullScreen();
+                    } else if (i.msRequestFullscreen) {
+                        i.msRequestFullscreen();
+                    }
+
+                    var FShandler = function () {
+                    };
+
+                    document.addEventListener("fullscreenchange", FShandler);
+                    document.addEventListener("webkitfullscreenchange", FShandler);
+                    document.addEventListener("mozfullscreenchange", FShandler);
+                    document.addEventListener("MSFullscreenChange", FShandler);
+                } catch (err) {
+                    console.log("Error going fullscreen.");
+                }
+            }
+
             if (!this.thePlayer)
                 this.thePlayer = this._entities.addPlayer(this.playerLogic);
             else
@@ -2171,6 +2427,20 @@ var shooter;
             this.thePlayer.invulnerabilityTimeLeft = this.thePlayer.transitionSeconds + this.thePlayer.invulnerabilitySecsWhenHit;
         };
 
+        ShooterMain.prototype.resize = function (gl) {
+            var canvas = gl.canvas;
+
+            var displayWidth = canvas.clientWidth;
+            var displayHeight = canvas.clientHeight;
+
+            if (canvas.width != displayWidth || canvas.height != displayHeight) {
+                canvas.width = displayWidth;
+                canvas.height = displayHeight;
+
+                gl.viewport(0, 0, canvas.width, canvas.height);
+            }
+        };
+
         ShooterMain.prototype.gameOver = function () {
             console.log("================ GAME OVER ================");
 
@@ -2183,6 +2453,11 @@ var shooter;
             this._state = 0;
 
             this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
+
+            if (this.enableAutofire) {
+                this._controls.autofire = false;
+                this._controls.pressing.fire = false;
+            }
         };
 
         ShooterMain.prototype.checkPlayerState = function () {
@@ -2199,13 +2474,17 @@ var shooter;
             if (this._state < 1)
                 return;
 
+            if (this._state > 1000)
+                return;
+
             if (this.thePlayer.level != this._state)
                 return;
 
-            if (this._terrain.levelPrevCol > this._terrain.level.levelLength + 16) {
+            if (this._terrain.levelPrevCol > this._terrain.level.levelLength) {
                 console.log("LEVEL " + this._state + " COMPLETED!");
 
-                this._state++;
+                this.bossBattle();
+                this._state += 1000;
 
                 this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds;
 

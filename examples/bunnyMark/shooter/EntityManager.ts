@@ -15,6 +15,8 @@ module shooter
 
 	export class EntityManager
 	{
+		public theBoss:Entity;
+		public bossDestroyedCallback:Function = null;
 
 		// the level data parser
 		public level:GameLevels;
@@ -45,8 +47,17 @@ module shooter
 		private _SpritesPerCol:number = 8;
 
 		// the general size of the player and enemies
-		public defaultScale:number = 1;//1.5;
-		public defaultSpeed:number = 128;
+		public defaultScale:number = 1.5;
+		// v6 how fast the default scroll (enemy flying) speed is
+		public defaultSpeed:number = 160;
+		// v6 how fast player bullets go per second
+		public playerBulletSpeed:number = 300;
+		// v6 how fast enemy bullets go per second
+		public enemyBulletSpeed:number = 200;
+		// v6 how big the bullet sprites are
+		public bulletScale:number = 1;
+
+
 		// how fast player bullets go per second
 		public bulletSpeed:number = 250;
 
@@ -96,6 +107,8 @@ module shooter
 		public midpoint:number;
 
 		public sourceImage:string = "assets/sprites.png"; // must in lib.ImageLoader
+
+		public levelTopOffset:number = 0;
 
 		constructor(view:GPUSprite.Rectangle)
 		{
@@ -159,6 +172,11 @@ module shooter
 					anEntity.active = true;
 					anEntity.sprite.visible = true;
 					anEntity.recycled = true;
+					anEntity.age = 0;
+					anEntity.burstTimerStart = 0;
+					anEntity.burstTimerEnd = 0;
+					anEntity.fireTime = 0;
+
 					this.numReused++;
 					return anEntity;
 				}
@@ -168,6 +186,10 @@ module shooter
 			var sprite:GPUSprite.Sprite; //LiteSprite
 			sprite = this._batch.createChild(sprID);
 			anEntity = new Entity(sprite,this);
+			anEntity.age = 0; // v6
+			anEntity.burstTimerStart = 0; // v6
+			anEntity.burstTimerEnd = 0; // v6
+			anEntity.fireTime = 0; // v6
 			this._entityPool.push(anEntity); //todo:这里应该死掉再放在pool里效率才会高嘛?
 			this.numCreated++;
 			return anEntity;
@@ -203,17 +225,18 @@ module shooter
 			this.theOrb.owner = this.thePlayer;
 			this.theOrb.orbiting = this.thePlayer;
 			this.theOrb.orbitingDistance = 180;
-			this.theOrb.name = "theOrb"
+			this.theOrb.name = "theOrb";
 
 			return this.thePlayer;
 		}
 
 		// shoot a bullet
-		public shootBullet(powa:number = 1 , shooter:Entity = null):Entity
+		public shootBullet(powa:number = 1 , shooter:Entity = null , angle:number = NaN):Entity
 		{
 			// just in case the AI is running during the main menu
 			// and we've not yet created the player entity
 			if (this.thePlayer == null) return null;
+
 			// assume the player shot it
 			// otherwise maybe an enemy did
 			if (shooter == null)
@@ -227,25 +250,34 @@ module shooter
 			else
 				theBullet = this.respawn(this.spritenumBullet3);
 
-			theBullet.name = "bullet"
+			theBullet.name = "bullet";
 			theBullet.sprite.position.x = shooter.sprite.position.x + 8;
 			theBullet.sprite.position.y = shooter.sprite.position.y + 2;
 
-			theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
-			theBullet.sprite.scaleX = theBullet.sprite.scaleY = 1;
+			//theBullet.sprite.rotation = 180 * this.DEGREES_TO_RADIANS;
+			theBullet.sprite.scaleX = theBullet.sprite.scaleY = this.bulletScale;
 			if (shooter == this.thePlayer)
 			{
-				theBullet.speedX = this.bulletSpeed;
+				theBullet.speedX = this.playerBulletSpeed;
 				theBullet.speedY = 0;
-			} else // enemy bullets move slower and towards the player
+			} else // enemy bullets move slower and towards the player // v6 UNLESS SPECIFIED
 			{
-				theBullet.sprite.rotation =
-					this.pointAtRad(theBullet.sprite.position.x - this.thePlayer.sprite.position.x,
-									theBullet.sprite.position.y - this.thePlayer.sprite.position.y) - (90 * this.DEGREES_TO_RADIANS);
+				if(isNaN(angle))
+				{
 
-				// move in the direction we're facing
-				theBullet.speedX = this.defaultSpeed * 1.5 * Math.cos(theBullet.sprite.rotation);
-				theBullet.speedY = this.defaultSpeed * 1.5 * Math.sin(theBullet.sprite.rotation);
+					theBullet.sprite.rotation =
+						this.pointAtRad(theBullet.sprite.position.x - this.thePlayer.sprite.position.x,
+							theBullet.sprite.position.y - this.thePlayer.sprite.position.y) - (90 * this.DEGREES_TO_RADIANS);
+
+				}else
+				{
+					theBullet.sprite.rotation = angle;
+				}
+
+
+				// move in the direction we're facing // v6
+				theBullet.speedX = this.enemyBulletSpeed*Math.cos(theBullet.sprite.rotation);
+				theBullet.speedY = this.enemyBulletSpeed*Math.sin(theBullet.sprite.rotation);
 
 				// optionally, we could just fire straight ahead in the direction we're heading:
 				// theBullet.speedX = shooter.speedX * 1.5;
@@ -392,7 +424,36 @@ module shooter
 				{
 					//if (this.sfx) sfx.playExplosion(number(Math.random() * 2 + 1.5)); // todo：声音
 					this.particles.addExplosion(checkMe.sprite.position);
-					if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
+
+					if(anEntity == this.theBoss)
+					{
+						this.theBoss.health -= 2; // 50 hits to destroy
+						console.log("Boss hit. HP = " + this.theBoss.health);
+						// knockback for more vidual feedback
+						this.theBoss.sprite.position.x += 8;
+						if (this.theBoss.health < 1)
+						{
+							console.log("Boss has been destroyed!");
+
+							// huge shockwave
+							this.particles.addParticle(this.spritenumShockwave, this.theBoss.sprite.position.x,
+								this.theBoss.sprite.position.y, 0.01, 0, 0, 1, NaN, NaN, -1, 30);
+							// extra explosions for a bigger boom
+							var bossexpPos:{x:number;y:number} = {x:0,y:0};
+							for (var bossnumExps:number = 0; bossnumExps < 6; bossnumExps++)
+							{
+								bossexpPos.x = this.theBoss.sprite.position.x + Math.random() * 128 - 64;
+								bossexpPos.y = this.theBoss.sprite.position.y + Math.random() * 128 - 64;
+								this.particles.addExplosion(bossexpPos);
+							}
+
+							this.theBoss.die();
+							this.theBoss = null;
+							if (this.bossDestroyedCallback != null)
+								this.bossDestroyedCallback();
+						}
+					}
+					else if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
 						checkMe.die(); // the bullet
 					if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
 						anEntity.die(); // the victim
@@ -531,12 +592,9 @@ module shooter
 		{
 			var anEntity:Entity;
 			var sprID:number;
-			if(!this.levelCurrentScrollX)
-				this.levelCurrentScrollX = 0;
+
 			// time-based with overflow remembering (increment and floor)
 			this.levelCurrentScrollX += this.defaultSpeed * this.currentFrameSeconds;
-
-			//console.log("##",this.levelCurrentScrollX,this.defaultSpeed,this.currentFrameSeconds);
 
 			// is it time to spawn the next col from our level data?
 			if (this.levelCurrentScrollX >= this.levelTilesize)
@@ -567,7 +625,7 @@ module shooter
 							{
 								anEntity = this.respawn(sprID);
 								anEntity.sprite.position.x = currentLevelXCoord;
-								anEntity.sprite.position.y = (row * this.levelTilesize) + (this.levelTilesize/2);
+								anEntity.sprite.position.y = (row * this.levelTilesize) + (this.levelTilesize/2)+ this.levelTopOffset; // v6
 								//console.log('Spawning a level sprite ID ' + sprID + ' at ' + anEntity.sprite.position.x + ',' + anEntity.sprite.position.y);
 								anEntity.speedX = -this.defaultSpeed;
 								anEntity.speedY = 0;

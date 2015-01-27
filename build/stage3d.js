@@ -14,6 +14,12 @@ var stageJS;
             if (!transparent)
                 this.fillRect(this._rect, fillColor);
         }
+        BitmapData.fromImageElement = function (img) {
+            var bmd = new BitmapData(img.width, img.height, true);
+            bmd._context.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
+            return bmd;
+        };
+
         Object.defineProperty(BitmapData.prototype, "width", {
             get: function () {
                 return this._canvas.width;
@@ -1465,9 +1471,9 @@ var stageJS;
 
             Texture._bindingTexture = this._glTexture;
 
-            stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MAG_FILTER, stageJS.Context3D.GL.NEAREST);
+            stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MAG_FILTER, stageJS.Context3D.GL.LINEAR);
             if (this._streamingLevels == 0) {
-                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.NEAREST);
+                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR);
             } else {
                 stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR_MIPMAP_LINEAR);
                 stageJS.Context3D.GL.generateMipmap(stageJS.Context3D.GL.TEXTURE_2D);
@@ -1574,7 +1580,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageWidth", {
             get: function () {
-                return this._canvas.clientWidth;
+                return this._canvas.width;
             },
             enumerable: true,
             configurable: true
@@ -1582,7 +1588,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageHeight", {
             get: function () {
-                return this._canvas.clientHeight;
+                return this._canvas.height;
             },
             enumerable: true,
             configurable: true
@@ -1645,17 +1651,19 @@ var stageJS;
 (function (stageJS) {
     var Context3D = (function () {
         function Context3D() {
+            this._bendDisabled = true;
+            this._depthDisabled = true;
             this._linkedProgram = null;
             this._vaCache = {};
             this._vcCache = {};
             this._vcMCache = {};
             this._texCache = {};
-            Context3D.GL.enable(Context3D.GL.BLEND);
             stageJS.Context3DBlendFactor.init();
         }
         Context3D.prototype.configureBackBuffer = function (width, height, antiAlias, enableDepthAndStencil) {
             if (typeof enableDepthAndStencil === "undefined") { enableDepthAndStencil = true; }
             Context3D.GL.viewport(0, 0, width, height);
+            this._depthDisabled = enableDepthAndStencil;
 
             if (enableDepthAndStencil) {
                 this._clearBit = Context3D.GL.COLOR_BUFFER_BIT | Context3D.GL.DEPTH_BUFFER_BIT | Context3D.GL.STENCIL_BUFFER_BIT;
@@ -1844,6 +1852,11 @@ var stageJS;
         };
 
         Context3D.prototype.setDepthTest = function (depthMask, passCompareMode) {
+            if (this._depthDisabled) {
+                Context3D.GL.enable(Context3D.GL.DEPTH_TEST);
+                this._bendDisabled = false;
+            }
+
             Context3D.GL.depthMask(depthMask);
 
             switch (passCompareMode) {
@@ -1875,6 +1888,10 @@ var stageJS;
         };
 
         Context3D.prototype.setBlendFactors = function (sourceFactor, destinationFactor) {
+            if (this._bendDisabled) {
+                Context3D.GL.enable(Context3D.GL.BLEND);
+                this._bendDisabled = false;
+            }
             Context3D.GL.blendFunc(sourceFactor, destinationFactor);
         };
 

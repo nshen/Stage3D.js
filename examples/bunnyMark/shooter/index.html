@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+
+    <style>
+
+        /* make the body fill the window */
+        html, body {
+            margin: 0px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        @font-face {
+            font-family: 'gui_font';
+            src: url('assets/gui_font.ttf');
+        }
+
+        #my-canvas{
+            font-family: gui_font;
+            /*border: dashed;*/
+
+            /* make any canvas fill its container */
+            width: 100%;
+            height: 100%;
+        }
+
+
+
+    </style>
+
+    <script type="text/javascript" src="../../lib/stats.min.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="../../stage3d.js"></script>
+    <script type="text/javascript" src="./Shooter.js"></script>
+    <script type="text/javascript" src="./assets/screenfull.min.js"></script>
+
+    <script>
+
+
+        function initFullScreen(){
+
+            document.getElementById('my-canvas').addEventListener('click', function () {
+                if (screenfull.enabled) {
+                    screenfull.request();
+                } else {
+                    // Ignore or do something else
+                }
+            });
+
+            document.addEventListener(screenfull.raw.fullscreenchange, function () {
+                var elem = document.getElementById('my-canvas');
+                if(screenfull.isFullscreen)
+                {
+                    elem.style.width = "100%";
+                    elem.style.height = "100%";
+                }else
+                {
+//                    elem.style.width = "600px";
+//                    elem.style.height = "400px";
+                }
+            });
+        }
+
+
+    </script>
+
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+	        attribute vec3 va0;
+            attribute vec2 va1;
+            uniform mat4 vc0;
+
+	        varying vec3 v0;
+
+	        void main(void) {
+		        gl_Position = vec4(va0, 1.0) * vc0;
+                v0.x = va1.x;
+                v0.y = va1.y;
+                v0.z = va0.z;
+	        }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+            varying highp vec3 v0;
+            uniform sampler2D fs0;
+
+	        void main(void) {
+		        gl_FragColor = texture2D( fs0, vec2(v0.x, v0.y) );
+		        gl_FragColor *= v0.z;
+	        }
+    </script>
+
+
+</head>
+
+<!--
+
+
+onmouseDown
+
+function handleClick() {
+	// Handle Click!
+	// FYI - event.button = 0 left click, = 1 Middle Click, = 2 Right Click
+
+	// Prevent the default action
+	return false;
+}
+
+-->
+
+<body onload="initFullScreen();shooter.ShooterMain.main()" onselectstart="return false;" onmousedown="return false;" oncontextmenu="return false;" style="-moz-user-select:none;margin: 0px;padding: 0px;">
+    <canvas id='my-canvas'>
+        Your browser does not support the HTML5 canvas element.
+    </canvas>
+    <p id="counter" style="position: absolute;left: 350px;font-size: 18px"></p>
+
+</body>
+
+</html>

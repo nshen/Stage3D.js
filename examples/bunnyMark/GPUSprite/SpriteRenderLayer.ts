@@ -1,4 +1,7 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="Rectangle.ts"/>
+///<reference path="Sprite.ts"/>
+///<reference path="SpriteRenderStage.ts"/>
+///<reference path="SpriteSheet.ts"/>
 module GPUSprite
 {
     export class SpriteRenderLayer
@@ -18,6 +21,8 @@ module GPUSprite
         private _uvBuffer:stageJS.VertexBuffer3D;
         private _shaderProgram:stageJS.Program3D;
         private _updateVBOs:boolean;
+
+        public name:string = "";
 
         public constructor(context3D:stageJS.Context3D , spriteSheet:SpriteSheet)
         {
@@ -119,7 +124,7 @@ module GPUSprite
             }
 
             this._context3D.setProgram(this._shaderProgram);
-            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.ONE, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.SOURCE_ALPHA, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);  // todo: stage3d use 1 1-alpha
             this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false); //todo: vc0
             this._context3D.setTextureAt("fs0", this._spriteSheet._texture);//todo: 0 ->"fs0"
 
@@ -143,26 +148,7 @@ module GPUSprite
 
         private setupShaders() : void
         {
-//            var vertexShaderAssembler:AGALMiniAssembler = new AGALMiniAssembler();
-//            vertexShaderAssembler.assemble( Context3DProgramType.VERTEX,
-//                    "dp4 op.x, va0, vc0 \n"+ // transform from stream 0 to output clipspace
-//                    "dp4 op.y, va0, vc1 \n"+
-//                    //"dp4 op.z, va0, vc2 \n"+
-//                    "mov op.z, vc2.z    \n"+
-//                    "mov op.w, vc3.w    \n"+
-//                    "mov v0, va1.xy     \n"+ // copy texcoord from stream 1 to fragment program
-//                    "mov v0.z, va0.z \n"     // copy alpha from stream 0 to fragment program
-//            );
-//
-//            var fragmentShaderAssembler:AGALMiniAssembler = new AGALMiniAssembler();
-//            fragmentShaderAssembler.assemble( Context3DProgramType.FRAGMENT,
-//                    "tex ft0, v0, fs0 <2d,clamp,linear,mipnearest> \n"+
-//                    "mul ft0, ft0, v0.zzzz\n" +
-//                    "mov oc, ft0 \n"
-//            );
-
             this._shaderProgram = this._context3D.createProgram();
-//            this._shaderProgram.upload( vertexShaderAssembler.agalcode, fragmentShaderAssembler.agalcode );
             this._shaderProgram.upload("shader-vs", "shader-fs");
         }
 

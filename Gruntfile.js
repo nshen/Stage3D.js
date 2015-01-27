@@ -24,7 +24,17 @@
             },
 
 
-            //compile bunnyMark examples
+            //compile shooter example
+			shooter: 
+            {
+                src: ["examples/bunnyMark/shooter/reference.ts"],  
+                out: './examples/bunnyMark/shooter/Shooter.js', 
+                options: {
+                     declaration: false, 
+                },
+            },
+
+            //compile bunnyMark example
 			bunny: 
             {
                 src: ["examples/bunnyMark/_definitions.ts"],  
@@ -60,4 +70,5 @@
     // grunt.registerTask("copy2examples",["copy:builds"]);
     grunt.registerTask("default", ["ts:build" , "uglify:min" , "copy:builds"]);
 	grunt.registerTask("bunny",["ts:bunny"]);
+	grunt.registerTask("shooter",["ts:shooter"]);
 };

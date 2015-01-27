@@ -85,6 +85,344 @@ var BunnyMark;
 })(BunnyMark || (BunnyMark = {}));
 var GPUSprite;
 (function (GPUSprite) {
+    var Rectangle = (function () {
+        function Rectangle(x, y, w, h) {
+            if (typeof x === "undefined") { x = 0; }
+            if (typeof y === "undefined") { y = 0; }
+            if (typeof w === "undefined") { w = 0; }
+            if (typeof h === "undefined") { h = 0; }
+            this.x = x;
+            this.y = y;
+            this.width = w;
+            this.height = h;
+        }
+        return Rectangle;
+    })();
+    GPUSprite.Rectangle = Rectangle;
+})(GPUSprite || (GPUSprite = {}));
+var GPUSprite;
+(function (GPUSprite) {
+    var SpriteSheet = (function () {
+        function SpriteSheet(spriteSheetBitmapData, numSpritesW, numSpritesH) {
+            if (typeof numSpritesW === "undefined") { numSpritesW = 8; }
+            if (typeof numSpritesH === "undefined") { numSpritesH = 8; }
+            this._spriteSheet = spriteSheetBitmapData;
+            this._uvCoords = [];
+            this._rects = [];
+            this.createUVs(numSpritesW, numSpritesH);
+        }
+        SpriteSheet.prototype.createUVs = function (numSpritesW, numSpritesH) {
+            var destRect;
+
+            for (var y = 0; y < numSpritesH; y++) {
+                for (var x = 0; x < numSpritesW; x++) {
+                    this._uvCoords.push(x / numSpritesW, (y + 1) / numSpritesH, x / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, (y + 1) / numSpritesH);
+
+                    destRect = new GPUSprite.Rectangle();
+                    destRect.x = 0;
+                    destRect.y = 0;
+                    destRect.width = this._spriteSheet.width / numSpritesW;
+                    destRect.height = this._spriteSheet.height / numSpritesH;
+                    this._rects.push(destRect);
+                }
+            }
+        };
+
+        SpriteSheet.prototype.defineSprite = function (x, y, w, h) {
+            var destRect = new GPUSprite.Rectangle();
+            destRect.x = x;
+            destRect.y = y;
+            destRect.width = w;
+            destRect.height = h;
+            this._rects.push(destRect);
+
+            this._uvCoords.push(destRect.x / this._spriteSheet.width, destRect.y / this._spriteSheet.height + destRect.height / this._spriteSheet.height, destRect.x / this._spriteSheet.width, destRect.y / this._spriteSheet.height, destRect.x / this._spriteSheet.width + destRect.width / this._spriteSheet.width, destRect.y / this._spriteSheet.height, destRect.x / this._spriteSheet.width + destRect.width / this._spriteSheet.width, destRect.y / this._spriteSheet.height + destRect.height / this._spriteSheet.height);
+
+            return this._rects.length - 1;
+        };
+
+        SpriteSheet.prototype.addSprite = function (srcBits, srcRect, destPt) {
+            this._spriteSheet.copyPixels(srcBits, srcRect, destPt);
+
+            this._rects.push({
+                x: destPt.x,
+                y: destPt.y,
+                width: srcRect.width,
+                height: srcRect.height });
+
+            this._uvCoords.push(destPt.x / this._spriteSheet.width, destPt.y / this._spriteSheet.height + srcRect.height / this._spriteSheet.height, destPt.x / this._spriteSheet.width, destPt.y / this._spriteSheet.height, destPt.x / this._spriteSheet.width + srcRect.width / this._spriteSheet.width, destPt.y / this._spriteSheet.height, destPt.x / this._spriteSheet.width + srcRect.width / this._spriteSheet.width, destPt.y / this._spriteSheet.height + srcRect.height / this._spriteSheet.height);
+
+            return this._rects.length - 1;
+        };
+
+        SpriteSheet.prototype.removeSprite = function (spriteId) {
+            if (spriteId < this._uvCoords.length) {
+                this._uvCoords = this._uvCoords.splice(spriteId * 8, 8);
+                this._rects.splice(spriteId, 1);
+            }
+        };
+
+        Object.defineProperty(SpriteSheet.prototype, "numSprites", {
+            get: function () {
+                return this._rects.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        SpriteSheet.prototype.getUVCoords = function (spriteId) {
+            var startIdx = spriteId * 8;
+            return this._uvCoords.slice(startIdx, startIdx + 8);
+        };
+
+        SpriteSheet.prototype.getRect = function (spriteId) {
+            return this._rects[spriteId];
+        };
+
+        SpriteSheet.prototype.uploadTexture = function (context3D) {
+            if (this._texture == null) {
+                this._texture = context3D.createTexture(this._spriteSheet.width, this._spriteSheet.height, stageJS.Context3DTextureFormat.BGRA, false);
+            }
+
+            this._texture.uploadFromBitmapData(this._spriteSheet, 0);
+        };
+        return SpriteSheet;
+    })();
+    GPUSprite.SpriteSheet = SpriteSheet;
+})(GPUSprite || (GPUSprite = {}));
+var GPUSprite;
+(function (GPUSprite) {
+    var SpriteRenderStage = (function () {
+        function SpriteRenderStage(stage3D, context3D, rect) {
+            this._stage3D = stage3D;
+            this._context3D = context3D;
+            this._layers = [];
+            this.position = rect;
+        }
+        Object.defineProperty(SpriteRenderStage.prototype, "position", {
+            get: function () {
+                return this._rect;
+            },
+            set: function (rect) {
+                this._rect = rect;
+
+                this.configureBackBuffer(rect.width, rect.height);
+
+                this._modelViewMatrix = new stageJS.geom.Matrix3D();
+                this._modelViewMatrix.appendTranslation(-rect.width / 2, -rect.height / 2, 0);
+                this._modelViewMatrix.appendScale(2.0 / rect.width, -2.0 / rect.height, 1);
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(SpriteRenderStage.prototype, "modelViewMatrix", {
+            get: function () {
+                return this._modelViewMatrix;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        SpriteRenderStage.prototype.addLayer = function (layer) {
+            layer.parent = this;
+            this._layers.push(layer);
+        };
+
+        SpriteRenderStage.prototype.removeLayer = function (layer) {
+            for (var i = 0; i < this._layers.length; i++) {
+                if (this._layers[i] == layer) {
+                    layer.parent = null;
+                    this._layers.splice(i, 1);
+                }
+            }
+        };
+
+        SpriteRenderStage.prototype.draw = function () {
+            this._context3D.clear(1.0, 1.0, 1.0);
+            for (var i = 0; i < this._layers.length; i++) {
+                this._layers[i].draw();
+            }
+            this._context3D.present();
+        };
+
+        SpriteRenderStage.prototype.drawDeferred = function () {
+            for (var i = 0; i < this._layers.length; i++) {
+                this._layers[i].draw();
+            }
+        };
+
+        SpriteRenderStage.prototype.configureBackBuffer = function (width, height) {
+            this._context3D.configureBackBuffer(width, height, 0, false);
+        };
+        return SpriteRenderStage;
+    })();
+    GPUSprite.SpriteRenderStage = SpriteRenderStage;
+})(GPUSprite || (GPUSprite = {}));
+var GPUSprite;
+(function (GPUSprite) {
+    var SpriteRenderLayer = (function () {
+        function SpriteRenderLayer(context3D, spriteSheet) {
+            this._context3D = context3D;
+            this._spriteSheet = spriteSheet;
+
+            this._vertexData = [];
+            this._indexData = [];
+            this._uvData = [];
+
+            this._children = [];
+            this._updateVBOs = true;
+
+            this.setupShaders();
+            this.updateTexture();
+        }
+        Object.defineProperty(SpriteRenderLayer.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            set: function (parentStage) {
+                this._parent = parentStage;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(SpriteRenderLayer.prototype, "numChildren", {
+            get: function () {
+                return this._children.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        SpriteRenderLayer.prototype.createChild = function (spriteId) {
+            var sprite = new GPUSprite.Sprite();
+            this.addChild(sprite, spriteId);
+            return sprite;
+        };
+
+        SpriteRenderLayer.prototype.addChild = function (sprite, spriteId) {
+            sprite._parent = this;
+            sprite._spriteId = spriteId;
+
+            sprite._childId = this._children.length;
+            this._children.push(sprite);
+
+            var childVertexFirstIndex = (sprite._childId * 12) / 3;
+            this._vertexData.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
+            this._indexData.push(childVertexFirstIndex, childVertexFirstIndex + 1, childVertexFirstIndex + 2, childVertexFirstIndex, childVertexFirstIndex + 2, childVertexFirstIndex + 3);
+
+            var childUVCoords = this._spriteSheet.getUVCoords(spriteId);
+            this._uvData.push(childUVCoords[0], childUVCoords[1], childUVCoords[2], childUVCoords[3], childUVCoords[4], childUVCoords[5], childUVCoords[6], childUVCoords[7]);
+
+            this._updateVBOs = true;
+        };
+
+        SpriteRenderLayer.prototype.removeChild = function (child) {
+            var childId = child._childId;
+            if ((child._parent == this) && childId < this._children.length) {
+                child._parent = null;
+                this._children.splice(childId, 1);
+
+                var idx;
+                for (idx = childId; idx < this._children.length; idx++) {
+                    this._children[idx]._childId = idx;
+                }
+
+                var vertexIdx = childId * 12;
+                var indexIdx = childId * 6;
+                this._vertexData.splice(vertexIdx, 12);
+                this._indexData.splice(indexIdx, 6);
+                this._uvData.splice(vertexIdx, 8);
+
+                this._updateVBOs = true;
+            }
+        };
+
+        SpriteRenderLayer.prototype.draw = function () {
+            var nChildren = this._children.length;
+            if (nChildren == 0)
+                return;
+
+            for (var i = 0; i < nChildren; i++) {
+                this.updateChildVertexData(this._children[i]);
+            }
+
+            this._context3D.setProgram(this._shaderProgram);
+            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.ONE, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+            this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false);
+            this._context3D.setTextureAt("fs0", this._spriteSheet._texture);
+
+            if (this._updateVBOs) {
+                this._vertexBuffer = this._context3D.createVertexBuffer(this._vertexData.length / 3, 3);
+                this._indexBuffer = this._context3D.createIndexBuffer(this._indexData.length);
+                this._uvBuffer = this._context3D.createVertexBuffer(this._uvData.length / 2, 2);
+                this._indexBuffer.uploadFromVector(this._indexData, 0, this._indexData.length);
+                this._uvBuffer.uploadFromVector(this._uvData, 0, this._uvData.length / 2);
+                this._updateVBOs = false;
+            }
+
+            this._vertexBuffer.uploadFromVector(this._vertexData, 0, this._vertexData.length / 3);
+            this._context3D.setVertexBufferAt("va0", this._vertexBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_3);
+            this._context3D.setVertexBufferAt("va1", this._uvBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_2);
+
+            this._context3D.drawTriangles(this._indexBuffer);
+        };
+
+        SpriteRenderLayer.prototype.setupShaders = function () {
+            this._shaderProgram = this._context3D.createProgram();
+            this._shaderProgram.upload("shader-vs", "shader-fs");
+        };
+
+        SpriteRenderLayer.prototype.updateTexture = function () {
+            this._spriteSheet.uploadTexture(this._context3D);
+        };
+
+        SpriteRenderLayer.prototype.updateChildVertexData = function (sprite) {
+            var childVertexIdx = sprite._childId * 12;
+
+            if (sprite.visible) {
+                var x = sprite.position.x;
+                var y = sprite.position.y;
+                var rect = sprite.rect;
+                var sinT = Math.sin(sprite.rotation);
+                var cosT = Math.cos(sprite.rotation);
+                var alpha = sprite.alpha;
+
+                var scaledWidth = rect.width * sprite.scaleX;
+                var scaledHeight = rect.height * sprite.scaleY;
+                var centerX = scaledWidth * 0.5;
+                var centerY = scaledHeight * 0.5;
+
+                this._vertexData[childVertexIdx] = x - (cosT * centerX) - (sinT * (scaledHeight - centerY));
+                this._vertexData[childVertexIdx + 1] = y - (sinT * centerX) + (cosT * (scaledHeight - centerY));
+                this._vertexData[childVertexIdx + 2] = alpha;
+
+                this._vertexData[childVertexIdx + 3] = x - (cosT * centerX) + (sinT * centerY);
+                this._vertexData[childVertexIdx + 4] = y - (sinT * centerX) - (cosT * centerY);
+                this._vertexData[childVertexIdx + 5] = alpha;
+
+                this._vertexData[childVertexIdx + 6] = x + (cosT * (scaledWidth - centerX)) + (sinT * centerY);
+                this._vertexData[childVertexIdx + 7] = y + (sinT * (scaledWidth - centerX)) - (cosT * centerY);
+                this._vertexData[childVertexIdx + 8] = alpha;
+
+                this._vertexData[childVertexIdx + 9] = x + (cosT * (scaledWidth - centerX)) - (sinT * (scaledHeight - centerY));
+                this._vertexData[childVertexIdx + 10] = y + (sinT * (scaledWidth - centerX)) + (cosT * (scaledHeight - centerY));
+                this._vertexData[childVertexIdx + 11] = alpha;
+            } else {
+                for (var i = 0; i < 12; i++) {
+                    this._vertexData[childVertexIdx + i] = 0;
+                }
+            }
+        };
+        return SpriteRenderLayer;
+    })();
+    GPUSprite.SpriteRenderLayer = SpriteRenderLayer;
+})(GPUSprite || (GPUSprite = {}));
+var GPUSprite;
+(function (GPUSprite) {
     var Sprite = (function () {
         function Sprite() {
             this._parent = null;
@@ -204,295 +542,6 @@ var GPUSprite;
     })();
     GPUSprite.Sprite = Sprite;
 })(GPUSprite || (GPUSprite = {}));
-var GPUSprite;
-(function (GPUSprite) {
-    var SpriteRenderLayer = (function () {
-        function SpriteRenderLayer(context3D, spriteSheet) {
-            this._context3D = context3D;
-            this._spriteSheet = spriteSheet;
-
-            this._vertexData = [];
-            this._indexData = [];
-            this._uvData = [];
-
-            this._children = [];
-            this._updateVBOs = true;
-
-            this.setupShaders();
-            this.updateTexture();
-        }
-        Object.defineProperty(SpriteRenderLayer.prototype, "parent", {
-            get: function () {
-                return this._parent;
-            },
-            set: function (parentStage) {
-                this._parent = parentStage;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-
-        Object.defineProperty(SpriteRenderLayer.prototype, "numChildren", {
-            get: function () {
-                return this._children.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        SpriteRenderLayer.prototype.createChild = function (spriteId) {
-            var sprite = new GPUSprite.Sprite();
-            this.addChild(sprite, spriteId);
-            return sprite;
-        };
-
-        SpriteRenderLayer.prototype.addChild = function (sprite, spriteId) {
-            sprite._parent = this;
-            sprite._spriteId = spriteId;
-
-            sprite._childId = this._children.length;
-            this._children.push(sprite);
-
-            var childVertexFirstIndex = (sprite._childId * 12) / 3;
-            this._vertexData.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
-            this._indexData.push(childVertexFirstIndex, childVertexFirstIndex + 1, childVertexFirstIndex + 2, childVertexFirstIndex, childVertexFirstIndex + 2, childVertexFirstIndex + 3);
-
-            var childUVCoords = this._spriteSheet.getUVCoords(spriteId);
-            this._uvData.push(childUVCoords[0], childUVCoords[1], childUVCoords[2], childUVCoords[3], childUVCoords[4], childUVCoords[5], childUVCoords[6], childUVCoords[7]);
-
-            this._updateVBOs = true;
-        };
-
-        SpriteRenderLayer.prototype.removeChild = function (child) {
-            var childId = child._childId;
-            if ((child._parent == this) && childId < this._children.length) {
-                child._parent = null;
-                this._children.splice(childId, 1);
-
-                var idx;
-                for (idx = childId; idx < this._children.length; idx++) {
-                    this._children[idx]._childId = idx;
-                }
-
-                var vertexIdx = childId * 12;
-                var indexIdx = childId * 6;
-                this._vertexData.splice(vertexIdx, 12);
-                this._indexData.splice(indexIdx, 6);
-                this._uvData.splice(vertexIdx, 8);
-
-                this._updateVBOs = true;
-            }
-        };
-
-        SpriteRenderLayer.prototype.draw = function () {
-            var nChildren = this._children.length;
-            if (nChildren == 0)
-                return;
-
-            for (var i = 0; i < nChildren; i++) {
-                this.updateChildVertexData(this._children[i]);
-            }
-
-            this._context3D.setProgram(this._shaderProgram);
-            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.ONE, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
-            this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false);
-            this._context3D.setTextureAt("fs0", this._spriteSheet._texture);
-
-            if (this._updateVBOs) {
-                this._vertexBuffer = this._context3D.createVertexBuffer(this._vertexData.length / 3, 3);
-                this._indexBuffer = this._context3D.createIndexBuffer(this._indexData.length);
-                this._uvBuffer = this._context3D.createVertexBuffer(this._uvData.length / 2, 2);
-                this._indexBuffer.uploadFromVector(this._indexData, 0, this._indexData.length);
-                this._uvBuffer.uploadFromVector(this._uvData, 0, this._uvData.length / 2);
-                this._updateVBOs = false;
-            }
-
-            this._vertexBuffer.uploadFromVector(this._vertexData, 0, this._vertexData.length / 3);
-            this._context3D.setVertexBufferAt("va0", this._vertexBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_3);
-            this._context3D.setVertexBufferAt("va1", this._uvBuffer, 0, stageJS.Context3DVertexBufferFormat.FLOAT_2);
-
-            this._context3D.drawTriangles(this._indexBuffer);
-        };
-
-        SpriteRenderLayer.prototype.setupShaders = function () {
-            this._shaderProgram = this._context3D.createProgram();
-
-            this._shaderProgram.upload("shader-vs", "shader-fs");
-        };
-
-        SpriteRenderLayer.prototype.updateTexture = function () {
-            this._spriteSheet.uploadTexture(this._context3D);
-        };
-
-        SpriteRenderLayer.prototype.updateChildVertexData = function (sprite) {
-            var childVertexIdx = sprite._childId * 12;
-
-            if (sprite.visible) {
-                var x = sprite.position.x;
-                var y = sprite.position.y;
-                var rect = sprite.rect;
-                var sinT = Math.sin(sprite.rotation);
-                var cosT = Math.cos(sprite.rotation);
-                var alpha = sprite.alpha;
-
-                var scaledWidth = rect.width * sprite.scaleX;
-                var scaledHeight = rect.height * sprite.scaleY;
-                var centerX = scaledWidth * 0.5;
-                var centerY = scaledHeight * 0.5;
-
-                this._vertexData[childVertexIdx] = x - (cosT * centerX) - (sinT * (scaledHeight - centerY));
-                this._vertexData[childVertexIdx + 1] = y - (sinT * centerX) + (cosT * (scaledHeight - centerY));
-                this._vertexData[childVertexIdx + 2] = alpha;
-
-                this._vertexData[childVertexIdx + 3] = x - (cosT * centerX) + (sinT * centerY);
-                this._vertexData[childVertexIdx + 4] = y - (sinT * centerX) - (cosT * centerY);
-                this._vertexData[childVertexIdx + 5] = alpha;
-
-                this._vertexData[childVertexIdx + 6] = x + (cosT * (scaledWidth - centerX)) + (sinT * centerY);
-                this._vertexData[childVertexIdx + 7] = y + (sinT * (scaledWidth - centerX)) - (cosT * centerY);
-                this._vertexData[childVertexIdx + 8] = alpha;
-
-                this._vertexData[childVertexIdx + 9] = x + (cosT * (scaledWidth - centerX)) - (sinT * (scaledHeight - centerY));
-                this._vertexData[childVertexIdx + 10] = y + (sinT * (scaledWidth - centerX)) + (cosT * (scaledHeight - centerY));
-                this._vertexData[childVertexIdx + 11] = alpha;
-            } else {
-                for (var i = 0; i < 12; i++) {
-                    this._vertexData[childVertexIdx + i] = 0;
-                }
-            }
-        };
-        return SpriteRenderLayer;
-    })();
-    GPUSprite.SpriteRenderLayer = SpriteRenderLayer;
-})(GPUSprite || (GPUSprite = {}));
-var GPUSprite;
-(function (GPUSprite) {
-    var SpriteRenderStage = (function () {
-        function SpriteRenderStage(stage3D, context3D, rect) {
-            this._stage3D = stage3D;
-            this._context3D = context3D;
-            this._layers = [];
-            this.position = rect;
-        }
-        Object.defineProperty(SpriteRenderStage.prototype, "position", {
-            get: function () {
-                return this._rect;
-            },
-            set: function (rect) {
-                this._rect = rect;
-
-                this.configureBackBuffer(rect.width, rect.height);
-
-                this._modelViewMatrix = new stageJS.geom.Matrix3D();
-                this._modelViewMatrix.appendTranslation(-rect.width / 2, -rect.height / 2, 0);
-                this._modelViewMatrix.appendScale(2.0 / rect.width, -2.0 / rect.height, 1);
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-
-        Object.defineProperty(SpriteRenderStage.prototype, "modelViewMatrix", {
-            get: function () {
-                return this._modelViewMatrix;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        SpriteRenderStage.prototype.addLayer = function (layer) {
-            layer.parent = this;
-            this._layers.push(layer);
-        };
-
-        SpriteRenderStage.prototype.removeLayer = function (layer) {
-            for (var i = 0; i < this._layers.length; i++) {
-                if (this._layers[i] == layer) {
-                    layer.parent = null;
-                    this._layers.splice(i, 1);
-                }
-            }
-        };
-
-        SpriteRenderStage.prototype.draw = function () {
-            this._context3D.clear(1.0, 1.0, 1.0);
-            for (var i = 0; i < this._layers.length; i++) {
-                this._layers[i].draw();
-            }
-            this._context3D.present();
-        };
-
-        SpriteRenderStage.prototype.drawDeferred = function () {
-            for (var i = 0; i < this._layers.length; i++) {
-                this._layers[i].draw();
-            }
-        };
-
-        SpriteRenderStage.prototype.configureBackBuffer = function (width, height) {
-            this._context3D.configureBackBuffer(width, height, 0, false);
-        };
-        return SpriteRenderStage;
-    })();
-    GPUSprite.SpriteRenderStage = SpriteRenderStage;
-})(GPUSprite || (GPUSprite = {}));
-var GPUSprite;
-(function (GPUSprite) {
-    var SpriteSheet = (function () {
-        function SpriteSheet(width, height) {
-            this._spriteSheet = new stageJS.BitmapData(width, height, true);
-            this._uvCoords = [];
-            this._rects = [];
-        }
-        SpriteSheet.prototype.addSprite = function (srcBits, srcRect, destPt) {
-            this._spriteSheet.copyPixels(srcBits, srcRect, destPt);
-
-            this._rects.push({
-                x: destPt.x,
-                y: destPt.y,
-                width: srcRect.width,
-                height: srcRect.height });
-
-            this._uvCoords.push(destPt.x / this._spriteSheet.width, destPt.y / this._spriteSheet.height + srcRect.height / this._spriteSheet.height, destPt.x / this._spriteSheet.width, destPt.y / this._spriteSheet.height, destPt.x / this._spriteSheet.width + srcRect.width / this._spriteSheet.width, destPt.y / this._spriteSheet.height, destPt.x / this._spriteSheet.width + srcRect.width / this._spriteSheet.width, destPt.y / this._spriteSheet.height + srcRect.height / this._spriteSheet.height);
-
-            return this._rects.length - 1;
-        };
-
-        SpriteSheet.prototype.removeSprite = function (spriteId) {
-            if (spriteId < this._uvCoords.length) {
-                this._uvCoords = this._uvCoords.splice(spriteId * 8, 8);
-                this._rects.splice(spriteId, 1);
-            }
-        };
-
-        Object.defineProperty(SpriteSheet.prototype, "numSprites", {
-            get: function () {
-                return this._rects.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        SpriteSheet.prototype.getUVCoords = function (spriteId) {
-            var startIdx = spriteId * 8;
-            return this._uvCoords.slice(startIdx, startIdx + 8);
-        };
-
-        SpriteSheet.prototype.getRect = function (spriteId) {
-            return this._rects[spriteId];
-        };
-
-        SpriteSheet.prototype.uploadTexture = function (context3D) {
-            if (this._texture == null) {
-                this._texture = context3D.createTexture(this._spriteSheet.width, this._spriteSheet.height, stageJS.Context3DTextureFormat.BGRA, false);
-            }
-
-            this._texture.uploadFromBitmapData(this._spriteSheet, 0);
-        };
-        return SpriteSheet;
-    })();
-    GPUSprite.SpriteSheet = SpriteSheet;
-})(GPUSprite || (GPUSprite = {}));
 var BunnyMark;
 (function (BunnyMark) {
     var BunnySprite = (function () {
@@ -559,12 +608,15 @@ var BunnyMark;
         };
 
         BunnyLayer.prototype.createRenderLayer = function (context3D) {
-            this._spriteSheet = new GPUSprite.SpriteSheet(64, 64);
+            var bmd = new stageJS.BitmapData(64, 64, true);
 
-            var bunnyBitmap = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
-            var bunnyRect = { x: 0, y: 0, width: bunnyBitmap.width, height: bunnyBitmap.height };
+            var bunnyImg = BunnyMark.ImageLoader.getInstance().get("assets/wabbit_alpha.png");
+            var bunnyRect = { x: 0, y: 0, width: bunnyImg.width, height: bunnyImg.height };
 
-            this._bunnySpriteID = this._spriteSheet.addSprite(bunnyBitmap, bunnyRect, { x: 0, y: 0 });
+            bmd.copyPixels(bunnyImg, bunnyRect, { x: 0, y: 0 });
+
+            this._spriteSheet = new GPUSprite.SpriteSheet(bmd, 1, 1);
+            this._bunnySpriteID = 0;
 
             this._renderLayer = new GPUSprite.SpriteRenderLayer(context3D, this._spriteSheet);
             return this._renderLayer;

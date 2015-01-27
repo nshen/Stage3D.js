@@ -53,6 +53,8 @@ module shooter
 		public logoY:number = 0;
 		public menuX:number = 0;
 		public menuY:number = 0;
+
+		private menuCreated:boolean = false;
 		
 		constructor(view:GPUSprite.Rectangle)
 		{
@@ -69,6 +71,39 @@ module shooter
 			this.menuY1 = this.menuY - (this.menuItemHeight / 2);
 			this.menuY2 = this.menuY - (this.menuItemHeight / 2) + this.menuItemHeight;
 			this.menuY3 = this.menuY - (this.menuItemHeight / 2) + (this.menuItemHeight * 2);
+
+			if(this.menuCreated)
+				this.updatePos();
+		}
+
+		private updatePos():void
+		{
+			this.logoSprite.position.x = this.logoX;
+			this.logoSprite.position.y = this.logoY;
+
+			this.menuPlaySprite.position.x = this.menuX;
+			this.menuPlaySprite.position.y = this.menuY;
+
+			this.amenuPlaySprite.position.x = this.menuX;
+			this.amenuPlaySprite.position.y = this.menuY;
+
+			this.menuControlsSprite.position.x = this.menuX;
+			this.menuControlsSprite.position.y = this.menuY + this.menuItemHeight;
+
+			this.amenuControlsSprite.position.x = this.menuX;
+			this.amenuControlsSprite.position.y = this.menuY + this.menuItemHeight;
+
+			this.menuAboutSprite.position.x = this.menuX;
+			this.menuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
+
+			this.amenuAboutSprite.position.x = this.menuX;
+			this.amenuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
+
+			this.aboutSprite.position.x = this.menuX;
+			this.aboutSprite.position.y = this.menuY + 64;
+
+			this.controlsSprite.position.x = this.menuX;
+			this.controlsSprite.position.y = this.menuY + 64;
 		}
 		
 		public createBatch(context3D:stageJS.Context3D) : GPUSprite.SpriteRenderLayer//LiteSpriteBatch
@@ -84,53 +119,42 @@ module shooter
 			// set up all required sprites right now
 			var logoID:number = this.spriteSheet.defineSprite(0, 0, 512, 256);
 			this.logoSprite = this.batch.createChild(logoID);
-			this.logoSprite.position.x = this.logoX;
-			this.logoSprite.position.y = this.logoY;
+
 
 			var menuPlaySpriteID:number = this.spriteSheet.defineSprite(0, 256, this.menuWidth, 48);
 			this.menuPlaySprite = this.batch.createChild(menuPlaySpriteID);
-			this.menuPlaySprite.position.x = this.menuX;
-			this.menuPlaySprite.position.y = this.menuY;
+
 
 			var amenuPlaySpriteID:number = this.spriteSheet.defineSprite(0, 256+128, this.menuWidth, 48);
 			this.amenuPlaySprite = this.batch.createChild(amenuPlaySpriteID);
-			this.amenuPlaySprite.position.x = this.menuX;
-			this.amenuPlaySprite.position.y = this.menuY;
 			this.amenuPlaySprite.alpha = 0;
 
 			var menuControlsSpriteID:number = this.spriteSheet.defineSprite(0, 304, this.menuWidth, 32);
 			this.menuControlsSprite = this.batch.createChild(menuControlsSpriteID);
-			this.menuControlsSprite.position.x = this.menuX;
-			this.menuControlsSprite.position.y = this.menuY + this.menuItemHeight;
+
 
 			var amenuControlsSpriteID:number = this.spriteSheet.defineSprite(0, 304+128, this.menuWidth, 32);
 			this.amenuControlsSprite = this.batch.createChild(amenuControlsSpriteID);
-			this.amenuControlsSprite.position.x = this.menuX;
-			this.amenuControlsSprite.position.y = this.menuY + this.menuItemHeight;
 			this.amenuControlsSprite.alpha = 0;
 
 			var menuAboutSpriteID:number = this.spriteSheet.defineSprite(0, 336, this.menuWidth, 48);
 			this.menuAboutSprite = this.batch.createChild(menuAboutSpriteID);
-			this.menuAboutSprite.position.x = this.menuX;
-			this.menuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
+
 
 			var amenuAboutSpriteID:number = this.spriteSheet.defineSprite(0, 336+128, this.menuWidth, 48);
 			this.amenuAboutSprite = this.batch.createChild(amenuAboutSpriteID);
-			this.amenuAboutSprite.position.x = this.menuX;
-			this.amenuAboutSprite.position.y = this.menuY + this.menuItemHeight + this.menuItemHeight;
 			this.amenuAboutSprite.alpha = 0;
 
 			var aboutSpriteID:number = this.spriteSheet.defineSprite(128, 256, 384, 128);
 			this.aboutSprite = this.batch.createChild(aboutSpriteID);
-			this.aboutSprite.position.x = this.menuX;
-			this.aboutSprite.position.y = this.menuY + 64;
 			this.aboutSprite.alpha = 0;
 
 			var controlsSpriteID:number = this.spriteSheet.defineSprite(128, 384, 384, 128);
 			this.controlsSprite = this.batch.createChild(controlsSpriteID);
-			this.controlsSprite.position.x = this.menuX;
-			this.controlsSprite.position.y = this.menuY + 64;
 			this.controlsSprite.alpha = 0;
+
+			this.menuCreated = true;
+			this.updatePos();
 
 			return this.batch;
 		}

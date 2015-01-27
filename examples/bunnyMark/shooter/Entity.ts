@@ -126,6 +126,8 @@ module shooter
 			this.owner = null;
 			this.age = 0 ;
 			this.collidemode = 0;
+			this.isBoss = false;
+
 		}
 		
 		public get speedX() : number 
@@ -296,7 +298,7 @@ module shooter
 		public sentryAI(seconds:number):void
 		{
 			this.age += seconds;
-			this.maybeShoot(3,3,6);
+			this.maybeShoot(2);
 			if (this.gfx.thePlayer)
 				this.sprite.rotation = this.gfx.pointAtRad(
 					this.gfx.thePlayer.sprite.position.x - this.sprite.position.x,

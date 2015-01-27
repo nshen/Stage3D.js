@@ -53,7 +53,7 @@ module shooter
         private _entities:shooter.EntityManager;
         private _spriteStage:GPUSprite.SpriteRenderStage; // LiteSpriteStage
 
-        private _gui:GameGUI;
+        //private _gui:GameGUI; //todo:gui
 
         public stage3d:stageJS.Stage3D;
         public context3D:stageJS.Context3D;
@@ -74,7 +74,7 @@ module shooter
             this.initSpriteEngine();
         };
 
-        private onResizeEvent(event:Event) : void // v6
+        private onResizeEvent111(event:Event) : void // v6
         {
             return;
             console.log("resize event...");
@@ -127,6 +127,51 @@ module shooter
             //    this._gui.setPosition(view);
         }
 
+        private checkResize():void
+        {
+            var canvas = ShooterMain.canvas;
+
+            // Lookup the size the browser is displaying the canvas.
+            var displayWidth  = canvas.clientWidth;
+            var displayHeight = canvas.clientHeight;
+
+            // Check if the canvas is not the same size.
+            if (canvas.width  != displayWidth ||
+                canvas.height != displayHeight) {
+
+                // Make the canvas the same size
+                canvas.width  = displayWidth;
+                canvas.height = displayHeight;
+
+                // Set the viewport to match
+
+                //this._spriteStage.configureBackBuffer(canvas.width,canvas.height);
+                this.onResize();
+            }
+        }
+
+        private onResize():void
+        {
+            console.log("onResize:",ShooterMain.canvas.width,ShooterMain.canvas.height);
+            var view:{x:number;y:number;width:number;height:number} =
+            {x:0,y:0,width:ShooterMain.canvas.width,height:ShooterMain.canvas.height};
+            if(this._spriteStage != null)
+                this._spriteStage.position = view;
+            if(this._terrain != null)
+                this._terrain.setPosition(view);
+
+            if (this._entities != null) {
+                this._entities.setPosition(view);
+            }
+            if (this._mainmenu != null) {
+                this._mainmenu.setPosition(view);
+            }
+            if (this._bg != null) {
+                this._bg.setPosition(view);
+            }
+            //if (_gui != null) todo:gui
+            //    _gui.setPosition(view);
+        }
 
         private initSpriteEngine():void
         {
@@ -139,7 +184,7 @@ module shooter
 
             this._controls = new shooter.GameControls(window);
 
-            this.resize(stageJS.Context3D.GL);
+
             var _width:number = this.stage3d.stageWidth;
             var _height:number = this.stage3d.stageHeight;
 
@@ -161,7 +206,7 @@ module shooter
             this._terrain.defaultSpeed = 90;
             this._terrain.defaultScale = 1.5;
             this._terrain.levelTilesize = 48;
-            batch = this._terrain.createBatch(this.context3D,16,16,0.0015);
+            batch = this._terrain.createBatch(this.context3D,16,16,0.002);
             this._spriteStage.addLayer(batch,"terrain");
             this._terrain.changeLevels("terrain" + this._state);
 
@@ -171,11 +216,11 @@ module shooter
             this._entities.sourceImage = "assets/sprites.png";
             this._entities.defaultScale = 1.5;
             this._entities.levelTilesize = 48;
-            batch = this._entities.createBatch(this.context3D,8,8,0.0005);
+            batch = this._entities.createBatch(this.context3D,8,8,0.0015);
             //this._entities.sfx = this._sfx; todo:sound
             this._spriteStage.addLayer(batch,"entities"); // addBatch
             this._entities.changeLevels("level" + this._state);
-            //this._entities.streamLevelEntities(true); // spawn first row of the level immediately
+            this._entities.streamLevelEntities(true); // spawn first row of the level immediately
 
             // create the logo/titlescreen main menu
             this._mainmenu = new shooter.GameMenu(stageRect);
@@ -183,12 +228,12 @@ module shooter
             this._spriteStage.addLayer(batch);
 
 
-            this._gui = new shooter.GameGUI();
-            batch = this._gui.createBatch(this.context3D);
-            this._spriteStage.addLayer(batch);
+            //this._gui = new shooter.GameGUI(); // todo:gui
+            //batch = this._gui.createBatch(this.context3D);
+            //this._spriteStage.addLayer(batch);
             // tell the gui where to grab statistics from
 
-            //_gui.statsTarget = _entities; // todo:gui
+            //_gui.statsTarget = _entities;
 
             this.saved = new shooter.GameSaves();
             //this._gui.highScore = this.saved.score; // todo:gui
@@ -221,7 +266,7 @@ module shooter
             }
 
             // this forces the game to fill the screen
-            this.onResizeEvent(null); // v6
+            this.checkResize();
             // start the render loop
             this.onEnterFrame();//stage.addEventListener(Event.ENTER_FRAME,onEnterFrame);
 
@@ -253,7 +298,7 @@ module shooter
         }
 
         // the entity manager calls this when a boss is destroyed
-        public bossComplete():void
+        public bossComplete = ()=>
         {
             console.log("bossComplete!");
 
@@ -281,7 +326,6 @@ module shooter
             if (this.thePlayer.transitionTimeLeft > 0)
             {
                 this.currentTransitionSeconds += seconds;
-
                 this.thePlayer.transitionTimeLeft -= seconds;
 
                 if (this.thePlayer.transitionTimeLeft > 0)
@@ -403,12 +447,13 @@ module shooter
                             // remove the boss health bar
                             //if (_gui.contains(_gui.bosshealthTf))
                             //    _gui.removeChild(_gui.bosshealthTf);
+
                             //// remove the boss itself
-                            //if (_entities.theBoss)
-                            //{
-                            //    _entities.theBoss.die();
-                            //    _entities.theBoss = null;
-                            //}
+                            if (this._entities.theBoss)
+                            {
+                                this._entities.theBoss.die();
+                                this._entities.theBoss = null;
+                            }
                         }
 
                         // start the level again
@@ -584,45 +629,45 @@ module shooter
             // normal keyboards (therefore we implemented autofire)
             if (this.enableFullscreen)
             {
-                try
-                {
-                    console.log('Going fullscreen...');
-                    // remember to add this to your HTML:
-                    // <param name="allowFullScreen" value="true" />
-                    //todo:fullscreen stage.displayState = StageDisplayState.FULL_SCREEN;
-                    var i:any = document.getElementById("my-canvas");
-
-                    // go full-screen
-                    if (i.requestFullscreen) {
-                        i.requestFullscreen();
-                    } else if (i.webkitRequestFullscreen) {
-                        i.webkitRequestFullscreen();
-                    } else if (i.mozRequestFullScreen) {
-                        i.mozRequestFullScreen();
-                    } else if (i.msRequestFullscreen) {
-                        i.msRequestFullscreen();
-                    }
-
-                   var FShandler = () =>
-                    {
-                        //ShooterMain.canvas.width = window.innerWidth;
-                        //ShooterMain.canvas.height = window.innerHeight;
-                        ////this.onResizeEvent(null);
-                        //console.log(ShooterMain.canvas.clientWidth,"###");
-                        //this._spriteStage.configureBackBuffer(ShooterMain.canvas.width, ShooterMain.canvas.height);
-
-                    }
-
-                    document.addEventListener("fullscreenchange", FShandler);
-                    document.addEventListener("webkitfullscreenchange", FShandler);
-                    document.addEventListener("mozfullscreenchange", FShandler);
-                    document.addEventListener("MSFullscreenChange", FShandler);
-
-                }
-                catch (err)
-                {
-                    console.log("Error going fullscreen.");
-                }
+                //try
+                //{
+                //    console.log('Going fullscreen...');
+                //    // remember to add this to your HTML:
+                //    // <param name="allowFullScreen" value="true" />
+                //    //todo:fullscreen stage.displayState = StageDisplayState.FULL_SCREEN;
+                //    var i:any = document.getElementById("my-canvas");
+                //
+                //    // go full-screen
+                //    if (i.requestFullscreen) {
+                //        i.requestFullscreen();
+                //    } else if (i.webkitRequestFullscreen) {
+                //        i.webkitRequestFullscreen();
+                //    } else if (i.mozRequestFullScreen) {
+                //        i.mozRequestFullScreen();
+                //    } else if (i.msRequestFullscreen) {
+                //        i.msRequestFullscreen();
+                //    }
+                //
+                //    var FShandler = () =>
+                //    {
+                //        //ShooterMain.canvas.width = window.innerWidth;
+                //        //ShooterMain.canvas.height = window.innerHeight;
+                //        ////this.onResizeEvent(null);
+                //        //console.log(ShooterMain.canvas.clientWidth,"###");
+                //        //this._spriteStage.configureBackBuffer(ShooterMain.canvas.width, ShooterMain.canvas.height);
+                //
+                //    }
+                //
+                //    document.addEventListener("fullscreenchange", FShandler);
+                //    document.addEventListener("webkitfullscreenchange", FShandler);
+                //    document.addEventListener("mozfullscreenchange", FShandler);
+                //    document.addEventListener("MSFullscreenChange", FShandler);
+                //
+                //}
+                //catch (err)
+                //{
+                //    console.log("Error going fullscreen.");
+                //}
                 // in Flash 11.3 (summer 2012) you can use the following
                 // for full keyboard access but it asks the user for permission first
                 // stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
@@ -664,25 +709,7 @@ module shooter
         }
 
 
-        private resize(gl) {
-            var canvas = gl.canvas;
 
-            // Lookup the size the browser is displaying the canvas.
-            var displayWidth  = canvas.clientWidth;
-            var displayHeight = canvas.clientHeight;
-
-            // Check if the canvas is not the same size.
-            if (canvas.width  != displayWidth ||
-                canvas.height != displayHeight) {
-
-                // Make the canvas the same size
-                canvas.width  = displayWidth;
-                canvas.height = displayHeight;
-
-                // Set the viewport to match
-                gl.viewport(0, 0, canvas.width, canvas.height);
-            }
-        }
 
         // v5 triggered if the player loses all lives
         private gameOver():void
@@ -764,9 +791,11 @@ module shooter
             this.thePlayer.transitionTimeLeft = this.thePlayer.transitionSeconds * 3;
         }
 
+
+
         private onEnterFrame = () =>
         {
-            this.resize(stageJS.Context3D.GL);
+            this.checkResize();
 
             //console.log(this._controls.textDescription());
             //console.log(this._entities.numReused , this._entities.numCreated);

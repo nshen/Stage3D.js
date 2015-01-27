@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <OgmoVersion>2.0.0.38</OgmoVersion>
+  <OgmoVersion>2.1.0.6</OgmoVersion>
   <Name>Kaizen ENEMIES</Name>
   <BackgroundColor A="255" R="125" G="160" B="255" />
   <GridColor A="255" R="255" G="240" B="90" />
@@ -16,7 +16,7 @@
     <Width>640000</Width>
     <Height>480000</Height>
   </LevelMaximumSize>
-  <Filename>C:\2012\Tutorials\Shoot-em-up\part6v2\source-project\assets\all-levels.oep</Filename>
+  <Filename>F:\project\Stage3D.js\examples\bunnyMark\shooter\assets\all-levels.oep</Filename>
   <AngleMode>Radians</AngleMode>
   <CameraEnabled>false</CameraEnabled>
   <CameraSize>

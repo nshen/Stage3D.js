@@ -120,7 +120,7 @@ module shooter
 			this.level = new shooter.GameLevels();
 		}
 		
-		public setPosition(view:GPUSprite.Rectangle):void
+		public setPosition(view:{x:number;y:number;width:number;height:number}):void
 		{
 			// allow moving fully offscreen before looping around
 			this.maxX = view.width + this.cullingDistance;
@@ -129,6 +129,7 @@ module shooter
 			this.minY = view.y - this.cullingDistance;
 
 			this.midpoint = view.height / 2;
+			this.levelTopOffset = this.midpoint - 200;
 		}
 
 		//todo: not work in js
@@ -352,7 +353,6 @@ module shooter
 			var anEntity:Entity;
 			var collided:boolean = false;
 
-
 			if(checkMe.owner != this.thePlayer)
 			{ // quick check ONLY to see if we have hit the player
 				anEntity = this.thePlayer;
@@ -423,6 +423,7 @@ module shooter
 				if (collided) // still
 				{
 					//if (this.sfx) sfx.playExplosion(number(Math.random() * 2 + 1.5)); // todo：声音
+
 					this.particles.addExplosion(checkMe.sprite.position);
 
 					if(anEntity == this.theBoss)
@@ -453,10 +454,12 @@ module shooter
 								this.bossDestroyedCallback();
 						}
 					}
-					else if ((checkMe != this.theOrb) && (checkMe != this.thePlayer))
-						checkMe.die(); // the bullet
-					if ((anEntity != this.theOrb) && ((anEntity != this.thePlayer)))
+					else if ((anEntity != this.theOrb) && (anEntity != this.thePlayer))
 						anEntity.die(); // the victim
+
+					if ((checkMe != this.theOrb) && ((checkMe != this.thePlayer)))
+						checkMe.die(); // the bullet
+
 					return anEntity;
 				}
 			}

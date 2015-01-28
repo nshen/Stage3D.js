@@ -48,7 +48,7 @@ module lib
             {
 
                 var xhr = new XMLHttpRequest();
-                xhr.responseType = this._resType;
+
                 xhr.onreadystatechange = (e) =>
                 {
                     //console.log("ready",xhr.readyState);
@@ -86,6 +86,7 @@ module lib
                 }
                 xhr.open('GET', this._queue[i], true); //+"?randnum=" + Math.random()
                 xhr.send();
+                xhr.responseType = this._resType;
                 this._cache[this._queue[i]] = xhr;
             }
         }

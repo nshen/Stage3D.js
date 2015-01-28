@@ -548,7 +548,7 @@ var lib;
 
             for (var i = 0; i < this._queue.length; i++) {
                 var xhr = new XMLHttpRequest();
-                xhr.responseType = this._resType;
+
                 xhr.onreadystatechange = function (e) {
                 };
                 xhr.onload = function (e) {
@@ -575,6 +575,7 @@ var lib;
                 };
                 xhr.open('GET', this._queue[i], true);
                 xhr.send();
+                xhr.responseType = this._resType;
                 this._cache[this._queue[i]] = xhr;
             }
         };

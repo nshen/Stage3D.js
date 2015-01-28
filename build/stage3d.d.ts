@@ -305,6 +305,8 @@ declare module stageJS {
     class Context3D {
         static GL: WebGLRenderingContext;
         private _clearBit;
+        private _bendDisabled;
+        private _depthDisabled;
         constructor();
         public configureBackBuffer(width: number, height: number, antiAlias: number, enableDepthAndStencil?: boolean): void;
         public createVertexBuffer(numVertices: number, data32PerVertex: number): VertexBuffer3D;

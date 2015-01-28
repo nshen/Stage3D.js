@@ -51,6 +51,14 @@ module stageJS
             Context3D.GL.attachShader(this._glProgram, this._vShader);
             Context3D.GL.attachShader(this._glProgram, this._fShader);
 
+            Context3D.GL.linkProgram(this._glProgram);
+
+            if (!Context3D.GL.getProgramParameter(this._glProgram, Context3D.GL.LINK_STATUS))
+            {
+                throw new Error(Context3D.GL.getProgramInfoLog(this._glProgram));
+                this.dispose();
+            }
+
         }
 
         /*

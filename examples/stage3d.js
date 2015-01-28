@@ -1539,6 +1539,13 @@ var stageJS;
 
             stageJS.Context3D.GL.attachShader(this._glProgram, this._vShader);
             stageJS.Context3D.GL.attachShader(this._glProgram, this._fShader);
+
+            stageJS.Context3D.GL.linkProgram(this._glProgram);
+
+            if (!stageJS.Context3D.GL.getProgramParameter(this._glProgram, stageJS.Context3D.GL.LINK_STATUS)) {
+                throw new Error(stageJS.Context3D.GL.getProgramInfoLog(this._glProgram));
+                this.dispose();
+            }
         };
 
         Program3D.prototype.loadShader = function (elementId, type) {
@@ -1793,12 +1800,6 @@ var stageJS;
 
             this._linkedProgram = program;
 
-            Context3D.GL.linkProgram(program.glProgram);
-
-            if (!Context3D.GL.getProgramParameter(program.glProgram, Context3D.GL.LINK_STATUS)) {
-                throw new Error(Context3D.GL.getProgramInfoLog(program.glProgram));
-                program.dispose();
-            }
             Context3D.GL.useProgram(program.glProgram);
 
             var k;

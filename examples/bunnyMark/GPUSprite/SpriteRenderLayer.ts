@@ -123,7 +123,8 @@ module GPUSprite
                 this.updateChildVertexData(this._children[i]);
             }
 
-            this._context3D.setProgram(this._shaderProgram);
+
+
             this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.SOURCE_ALPHA, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);  // todo: stage3d use 1 1-alpha
             this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false); //todo: vc0
             this._context3D.setTextureAt("fs0", this._spriteSheet._texture);//todo: 0 ->"fs0"
@@ -150,6 +151,7 @@ module GPUSprite
         {
             this._shaderProgram = this._context3D.createProgram();
             this._shaderProgram.upload("shader-vs", "shader-fs");
+            this._context3D.setProgram(this._shaderProgram);
         }
 
         private updateTexture() : void

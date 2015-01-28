@@ -103,12 +103,15 @@ var GPUSprite;
 var GPUSprite;
 (function (GPUSprite) {
     var SpriteSheet = (function () {
-        function SpriteSheet(spriteSheetBitmapData, numSpritesW, numSpritesH) {
+        function SpriteSheet(spriteSheetBitmapData, numSpritesW, numSpritesH, uvPad) {
             if (typeof numSpritesW === "undefined") { numSpritesW = 8; }
             if (typeof numSpritesH === "undefined") { numSpritesH = 8; }
+            if (typeof uvPad === "undefined") { uvPad = 0; }
+            this.uvPadding = 0;
             this._spriteSheet = spriteSheetBitmapData;
             this._uvCoords = [];
             this._rects = [];
+            this.uvPadding = uvPad;
             this.createUVs(numSpritesW, numSpritesH);
         }
         SpriteSheet.prototype.createUVs = function (numSpritesW, numSpritesH) {
@@ -116,7 +119,7 @@ var GPUSprite;
 
             for (var y = 0; y < numSpritesH; y++) {
                 for (var x = 0; x < numSpritesW; x++) {
-                    this._uvCoords.push(x / numSpritesW, (y + 1) / numSpritesH, x / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, y / numSpritesH, (x + 1) / numSpritesW, (y + 1) / numSpritesH);
+                    this._uvCoords.push((x / numSpritesW) + this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding, (x / numSpritesW) + this.uvPadding, (y / numSpritesH) + this.uvPadding, ((x + 1) / numSpritesW) - this.uvPadding, (y / numSpritesH) + this.uvPadding, ((x + 1) / numSpritesW) - this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding);
 
                     destRect = new GPUSprite.Rectangle();
                     destRect.x = 0;
@@ -225,8 +228,10 @@ var GPUSprite;
             configurable: true
         });
 
-        SpriteRenderStage.prototype.addLayer = function (layer) {
+        SpriteRenderStage.prototype.addLayer = function (layer, name) {
+            if (typeof name === "undefined") { name = ""; }
             layer.parent = this;
+            layer.name = name;
             this._layers.push(layer);
         };
 
@@ -264,6 +269,7 @@ var GPUSprite;
 (function (GPUSprite) {
     var SpriteRenderLayer = (function () {
         function SpriteRenderLayer(context3D, spriteSheet) {
+            this.name = "";
             this._context3D = context3D;
             this._spriteSheet = spriteSheet;
 
@@ -350,7 +356,6 @@ var GPUSprite;
                 this.updateChildVertexData(this._children[i]);
             }
 
-            this._context3D.setProgram(this._shaderProgram);
             this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.ONE, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
             this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false);
             this._context3D.setTextureAt("fs0", this._spriteSheet._texture);
@@ -374,6 +379,7 @@ var GPUSprite;
         SpriteRenderLayer.prototype.setupShaders = function () {
             this._shaderProgram = this._context3D.createProgram();
             this._shaderProgram.upload("shader-vs", "shader-fs");
+            this._context3D.setProgram(this._shaderProgram);
         };
 
         SpriteRenderLayer.prototype.updateTexture = function () {

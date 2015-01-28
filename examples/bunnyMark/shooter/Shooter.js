@@ -271,7 +271,6 @@ var GPUSprite;
                 this.updateChildVertexData(this._children[i]);
             }
 
-            this._context3D.setProgram(this._shaderProgram);
             this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.SOURCE_ALPHA, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
             this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false);
             this._context3D.setTextureAt("fs0", this._spriteSheet._texture);
@@ -295,6 +294,7 @@ var GPUSprite;
         SpriteRenderLayer.prototype.setupShaders = function () {
             this._shaderProgram = this._context3D.createProgram();
             this._shaderProgram.upload("shader-vs", "shader-fs");
+            this._context3D.setProgram(this._shaderProgram);
         };
 
         SpriteRenderLayer.prototype.updateTexture = function () {

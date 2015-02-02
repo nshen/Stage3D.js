@@ -6,30 +6,124 @@
 
     <style>
 
+        @font-face {
+            font-family: 'gui_font';
+            src: url('assets/gui_font.ttf');
+        }
         /* make the body fill the window */
         html, body {
+            padding: 0px;
             margin: 0px;
             width: 100%;
             height: 100%;
             overflow: hidden;
         }
 
-        @font-face {
-            font-family: 'gui_font';
-            src: url('assets/gui_font.ttf');
-        }
-
         #my-canvas{
-            font-family: gui_font;
+
             /*border: dashed;*/
 
             /* make any canvas fill its container */
             width: 100%;
             height: 100%;
+
+            /*position: fixed;*/
+            /*z-index: -1;*/
+            /*top:0;*/
+            /*background-color: #900;*/
         }
 
+        p{
+            font-family: gui_font;
+            padding: 0px;
+            margin: 0px;
+            position: absolute;
+            -moz-user-select: none;
+            -khtml-user-select: none;
+            user-select: none;
+            position: absolute;
+            font-family: gui_font;
+            font-size: 18px;
+            color: #ffffff;
+        }
 
+        #hud-bg{
+            position: absolute;
+            padding: 0px;
+            margin: 0px;
 
+            top: 0px;
+            left: 400px;
+            width: 600px;
+            height: 40px;
+
+            background-image: url("assets/hud_overlay.png");
+            /*可选值 ： repeat  repeat-x repeat-y no-repeat*/
+            background-repeat: no-repeat;
+            /*filter:alpha(opacity=50); *//**//* IE *//**//* -moz-opacity:0.5; *//**//* Moz + FF *//**//* opacity: 0.5;*/
+            /*z-index: 10;*/
+        }
+
+        #npcOverlay{
+            position: absolute;
+            padding: 0px;
+            margin: 0px;
+
+            top: 0px;
+            width: 600px;
+            height: 64px;
+            background-image: url("assets/npc_overlay.png");
+            background-repeat: no-repeat;
+        }
+
+        #scoreTf{
+            font-size: 16px;
+            text-align: right;
+            left: 442px;
+        }
+
+        #highScoreTf{
+            font-size: 16px;
+            left: 208px;
+            width: 320px;
+        }
+
+        #healthTf{
+            font-size: 16px;
+            width: 320px;
+            left: 208px;
+            top: 15px;
+        }
+
+        #transitionTf{
+            width: 600px;
+            height: 2000px;
+            font-size: 32px;
+            text-align: center;
+            top: 162px;
+            text-shadow: 0px 0px 2px #ff0000,
+                         -3px -3px 8px #ff0000,
+                         3px 3px 8px #ff0000;
+        }
+
+        #bosshealthTf{
+
+            font-size: 32px;
+            text-align: center;
+            left: 0px;
+            top: 48px;
+            text-shadow: 0px 0px 2px #ff0000,
+            -3px -3px 8px #ff0000,
+            3px 3px 8px #ff0000;
+            width: 600px;
+        }
+
+        #npcTf{
+            font-size: 16px;
+            left: 18px;
+            top: 336px;
+            width:600px;
+        }
     </style>
 
     <script type="text/javascript" src="../../lib/stats.min.js"></script>
@@ -45,7 +139,7 @@
 
             document.getElementById('my-canvas').addEventListener('click', function () {
                 if (screenfull.enabled) {
-                    screenfull.request();
+//                    screenfull.request();
                 } else {
                     // Ignore or do something else
                 }
@@ -113,10 +207,25 @@ function handleClick() {
 -->
 
 <body onload="initFullScreen();shooter.ShooterMain.main()" onselectstart="return false;" onmousedown="return false;" oncontextmenu="return false;" style="-moz-user-select:none;margin: 0px;padding: 0px;">
+
+
+
+
+    <div id="hud-bg" ></div>
+    <div id="npcOverlay"></div>
+    <!--<p id="debugStatsTf">aaaaaaaaaa</p>-->
+    <p id="scoreTf">SCORE: 000000<br>3 LIVES LEFT</p>
+    <p id="highScoreTf">HIGH SCORE: 000000</p>
+    <p id="healthTf">HP: |||||||||||||</p>
+    <p id="transitionTf"></p>
+    <p id="bosshealthTf">BOSS: |||||||||||||</p>
+    <p id="npcTf">fdssdfsfsadfsfsd</p>
+
+
     <canvas id='my-canvas'>
         Your browser does not support the HTML5 canvas element.
     </canvas>
-    <p id="counter" style="position: absolute;left: 350px;font-size: 18px"></p>
+    <!--<p id="counter" style="position: absolute;left: 350px;font-size: 18px"></p>-->
 
 </body>
 

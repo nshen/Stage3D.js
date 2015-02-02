@@ -53,7 +53,7 @@ module shooter
         private _entities:shooter.EntityManager;
         private _spriteStage:GPUSprite.SpriteRenderStage; // LiteSpriteStage
 
-        //private _gui:GameGUI; //todo:gui
+        private _gui:GameGUI;
 
         public stage3d:stageJS.Stage3D;
         public context3D:stageJS.Context3D;
@@ -74,58 +74,6 @@ module shooter
             this.initSpriteEngine();
         };
 
-        private onResizeEvent111(event:Event) : void // v6
-        {
-            return;
-            console.log("resize event...");
-
-            console.log(this.stage3d.stageWidth ,this.stage3d.stageHeight);
-
-
-            // Get the canvas from the WebGL context
-            var canvas = ShooterMain.canvas;
-
-            // Lookup the size the browser is displaying the canvas.
-            var displayWidth  = canvas.clientWidth;
-            var displayHeight = canvas.clientHeight;
-
-            // Check if the canvas is not the same size.
-            if (canvas.width  != displayWidth ||
-                canvas.height != displayHeight) {
-
-                // Make the canvas the same size
-                canvas.width  = displayWidth;
-                canvas.height = displayHeight;
-
-                // Set the viewport to match
-                this._spriteStage.configureBackBuffer(canvas.width, canvas.height);
-            }
-
-
-            // Set correct dimensions if we resize
-            //_width = stage.stageWidth;
-            //_height = stage.stageHeight;
-
-            // Resize Stage3D to continue to fit screen
-            var view:{x:number;y:number;width:number;height:number} = {x:0,y:0,width:this.stage3d.stageWidth,height:this.stage3d.stageHeight};
-            //if ( this._spriteStage != null ) {
-            //    this._spriteStage.position = view;
-            //}
-            //if (this._terrain != null) {
-            //    this._terrain.setPosition(view);
-            //}
-            //if (this._entities != null) {
-            //    this._entities.setPosition(view);
-            //}
-            //if (this._mainmenu != null) {
-            //    this._mainmenu.setPosition(view);
-            //}
-            //if (this._bg != null) {
-            //    this._bg.setPosition(view);
-            //}
-            //if (this._gui != null)
-            //    this._gui.setPosition(view);
-        }
 
         private checkResize():void
         {
@@ -155,22 +103,25 @@ module shooter
             console.log("onResize:",ShooterMain.canvas.width,ShooterMain.canvas.height);
             var view:{x:number;y:number;width:number;height:number} =
             {x:0,y:0,width:ShooterMain.canvas.width,height:ShooterMain.canvas.height};
+
             if(this._spriteStage != null)
                 this._spriteStage.position = view;
+
             if(this._terrain != null)
                 this._terrain.setPosition(view);
 
-            if (this._entities != null) {
+            if (this._entities != null)
                 this._entities.setPosition(view);
-            }
-            if (this._mainmenu != null) {
+
+            if (this._mainmenu != null)
                 this._mainmenu.setPosition(view);
-            }
-            if (this._bg != null) {
+
+            if (this._bg != null)
                 this._bg.setPosition(view);
-            }
-            //if (_gui != null) todo:gui
-            //    _gui.setPosition(view);
+
+            if (this._gui != null)
+                this._gui.setPosition(view);
+
         }
 
         private initSpriteEngine():void
@@ -180,7 +131,7 @@ module shooter
 
             this.initStats();
 
-            //this._sfx = new //todo sound gui
+            //this._sfx = new //todo sound
 
             this._controls = new shooter.GameControls(window);
 
@@ -228,16 +179,13 @@ module shooter
             this._spriteStage.addLayer(batch);
 
 
-            //this._gui = new shooter.GameGUI(); // todo:gui
-            //batch = this._gui.createBatch(this.context3D);
-            //this._spriteStage.addLayer(batch);
+            this._gui = new shooter.GameGUI();
             // tell the gui where to grab statistics from
-
-            //_gui.statsTarget = _entities;
+            this._gui.statsTarget = this._entities;
 
             this.saved = new shooter.GameSaves();
-            //this._gui.highScore = this.saved.score; // todo:gui
-            //this._gui.level = this.saved.level;
+            this._gui.highScore = this.saved.score;
+            this._gui.level = this.saved.level;
 
             // only used for the menu
             ShooterMain.canvas.onmousedown = (ev:MouseEvent)=>
@@ -265,6 +213,7 @@ module shooter
                 }
             }
 
+
             // this forces the game to fill the screen
             this.checkResize();
             // start the render loop
@@ -288,7 +237,7 @@ module shooter
             anEntity.isBoss = true;
             anEntity.collideradius = 96;
             anEntity.collidemode = 1;
-            //_gui.addChild(_gui.bosshealthTf); todo:gui
+            this._gui.addChild(this._gui.bosshealthTf);
             anEntity.health = 100;
             // ensure that our bullets can hit it
             if (!anEntity.recycled)
@@ -300,13 +249,12 @@ module shooter
         // the entity manager calls this when a boss is destroyed
         public bossComplete = ()=>
         {
-            console.log("bossComplete!");
 
             this.thePlayer.score += 1000;
 
             // remove the boss health bar
-            //if (_gui.contains(_gui.bosshealthTf)) todo:gui
-            //    _gui.removeChild(_gui.bosshealthTf);
+            if (this._gui.contains(this._gui.bosshealthTf))
+                this._gui.removeChild(this._gui.bosshealthTf);
 
             // so next time we get a fresh one
             this._entities.theBoss = null;
@@ -332,53 +280,48 @@ module shooter
                 {	//was it a level change?
                     if (this.thePlayer.level != this._state && this._state < 1000)
                     {
-                        // todo:gui
                          if (this._state == -1)
                          {
-                             //_gui.transitionText = "\n\n\n\n\n\nCONGRATULATIONS\n\n" +
-                             //"You fought bravely and defended\n" +
-                             //"the universe from certain doom.\n\nYou got to level " +
-                             //thePlayer.level + "\nwith " + thePlayer.score + " points." +
-                             //"\n\nCREDITS:\n\nProgramming: McFunkypants\n(mcfunkypants.com)\n\n" +
-                             //"Art: Daniel Cook\n(lostgarden.com)\n\n" +
-                             //"Music: MaF\n(maf464.com)\n\n" +
-                             //"Thanks for playing!";
+                             this._gui.transitionText = "<br><br><br><br><br><br>CONGRATULATIONS<br><br>" +
+                             "You fought bravely and defended<br>" +
+                             "the universe from certain doom.<br><br>You got to level " +
+                             this.thePlayer.level + "<br>with " + this.thePlayer.score + " points." +
+                             "<br><br>CREDITS:<br><br>Programming: McFunkypants<br>(mcfunkypants.com)<br><br>" +
+                             "Art: Daniel Cook<br>(lostgarden.com)<br><br>" +
+                             "Music: MaF<br>(maf464.com)<br><br>" +
+                             "Thanks for playing!";
                              //_gui.transitionTf.scrollRect = new Rectangle(0, currentTransitionSeconds * 40, 600, 160);
                              console.log("thanks for playing");
 
                             this.timeDilation = 0.5; // slow mo
 
-                         // v6
-                         //if (_gui.npcText == "") _sfx.playNPCthanks();
-                         //_gui.npcText = "You saved us!\nThank you!\nMy hero!";
+                            //if (_gui.npcText == "") _sfx.playNPCthanks(); todo:sound
+                            this._gui.npcText = "You saved us!<br>Thank you!<br>My hero!";
                          }
                          else if (this._state == 0)
                          {
-                             //_gui.transitionText = "GAME OVER\nYou got to level " + thePlayer.level
-                             //+ "\nwith " + thePlayer.score + " points.";
-                             //
-                             //if (_gui.npcText == "") _sfx.playNPCgameover();
-                             //_gui.npcText = "You were incredible.\nThere were simply too many of them.\nYou'll win next time. I know it.";
-                             //
+                             this._gui.transitionText = "GAME OVER<br>You got to level " + this.thePlayer.level
+                             + "<br>with " + this.thePlayer.score + " points.";
 
-                             console.log("GAME OVER\nYou got to level"+ this.thePlayer.level);
+                             //if (_gui.npcText == "") _sfx.playNPCgameover(); //todo:sound
+                             this._gui.npcText = "You were incredible.<br>There were simply too many of them.<br>You'll win next time. I know it.";
+
+
                              this.timeDilation = 0.5; // slow mo
                          }
                          else if (this._state > 1)
                          {
-                             //_gui.transitionText = "\nLEVEL " + (_state-1) + " COMPLETE!";
+                             this._gui.transitionText = "<br>LEVEL " + (this._state-1) + " COMPLETE!";
                              //
-                             //if (_gui.npcText == "") _sfx.playNPCnextlevel();
-                             //_gui.npcText = "That was amazing!\nYou destroyed it!\nYour skill is legendary.";
-                             console.log("level "+(this._state -1)+" complete!");
+                             //if (_gui.npcText == "") _sfx.playNPCnextlevel(); todo:sound
+                             this._gui.npcText = "That was amazing!<br>You destroyed it!<br>Your skill is legendary.";
                          }
                          else
                          {
-                             console.log("level "+this._state);
-                             //_gui.transitionText = "\nLEVEL " + _state;
+                             this._gui.transitionText = "<br>LEVEL " + this._state;
                              //
-                             //if (_gui.npcText == "") _sfx.playNPCwelcome();
-                             //_gui.npcText = "We're under attack! Please help us!\nYou're our only hope for survival.\nUse the arrow keys to move.";
+                             //if (_gui.npcText == "") _sfx.playNPCwelcome(); todo:sound
+                             this._gui.npcText = "We're under attack! Please help us!<br>You're our only hope for survival.<br>Use the arrow keys to move.";
                          }
                     }
                     else  // must be a death or boss battle
@@ -386,23 +329,21 @@ module shooter
 
                         if ((this._state > 1000) && (this.thePlayer.health > 0)) // v6
                         {
-                            console.log("incoming boss battle");
-                            //_gui.transitionText = "\nINCOMING BOSS BATTLE!";todo:gui
-                            //
-                            //if (_gui.npcText == "") _sfx.playNPCboss();
-                            //_gui.npcText = "Be careful! That ship is HUGE!\nKeep moving and watch out for\nany burst attacks. Good luck!";
+                            this._gui.transitionText = "<br>INCOMING BOSS BATTLE!";
+                            //if (_gui.npcText == "") _sfx.playNPCboss(); //todo:sound
+                            this._gui.npcText = "Be careful! That ship is HUGE!<br>Keep moving and watch out for<br>any burst attacks. Good luck!";
                         }
                         else
                         {
-                            //_gui.transitionText = "Your ship was destroyed.\n\nYou have "
-                            //+ thePlayer.lives + (thePlayer.lives != 1 ? " lives" : " life") + " left.";
+                            this._gui.transitionText = "Your ship was destroyed.<br><br>You have "
+                            + this.thePlayer.lives + (this.thePlayer.lives != 1 ? " lives" : " life") + " left.";
                             //
                             //if (_gui.npcText == "") _sfx.playNPCdeath();
-                            //_gui.npcText = "Nooooo!\nDon't give up! I believe in you!\nYou can do it.";
+                            this._gui.npcText = "Nooooo!<br>Don't give up! I believe in you!<br>You can do it.";
 
 
                             this.timeDilation = 0.5; // slow mo
-                            console.log("your ship was destroyed!");
+                            //console.log("your ship was destroyed!");
                         }
 
                     }
@@ -420,7 +361,7 @@ module shooter
                 }
                 else // transition time has elapsed
                 {
-                    //_gui.npcText = ""; // todo:gui
+                    this._gui.npcText = "";
                     this.timeDilation = 1; // turn off slow-mo
                     this.currentTransitionSeconds = 0;
 
@@ -428,12 +369,12 @@ module shooter
 
                     if (this._state == -1) this._state = 0;
 
-                    //this._gui.transitionTf.scrollRect = new Rectangle(0,0,600,160);
-                    //this._gui.transitionText = "";
-                    //todo:gui
+                    //this._gui.transitionTf.scrollRect = new Rectangle(0,0,600,160);//todo:gui
+                    this._gui.transitionText = "";
+
                     if ((this.thePlayer.health <= 0) && (this._state != 0)) // we died
                     {
-                        console.log("Death transition over. Respawning player.");
+                        //console.log("Death transition over. Respawning player.");
                         this.thePlayer.sprite.position.y = this._entities.midpoint;
                         this.thePlayer.sprite.position.x = 64;
                         this.thePlayer.health = 100;
@@ -443,10 +384,10 @@ module shooter
                         {
                             console.log('Filed to kill boss. Resetting.');
                             this._state -= 1000;
-                            //_gui.bosshealth = -999; todo:gui
+                            this._gui.bosshealth = -999;
                             // remove the boss health bar
-                            //if (_gui.contains(_gui.bosshealthTf))
-                            //    _gui.removeChild(_gui.bosshealthTf);
+                            if (this._gui.contains(this._gui.bosshealthTf))
+                                this._gui.removeChild(this._gui.bosshealthTf);
 
                             //// remove the boss itself
                             if (this._entities.theBoss)
@@ -468,7 +409,7 @@ module shooter
                         {
                             this._entities.changeLevels('level' + this._state);
                             this._terrain.changeLevels('terrain' + this._state);
-                            //_gui.statsText = "Level " + _state; // todo:gui
+                            this._gui.statsText = "Level " + this._state;
                         }
                         if (this._state == 0) // game over
                         {
@@ -480,11 +421,11 @@ module shooter
                             this._entities.changeLevels('level' + this._state);
                             this._terrain.changeLevels('terrain' + this._state);
                             this._spriteStage.addLayer(this._mainmenu.batch);
-                            //_gui.statsText = "GAME OVER"; // v6
-                            //_gui.bosshealth = 0;
+                            this._gui.statsText = "GAME OVER"; // v6
+                            this._gui.bosshealth = 0;
                             // remove the boss health bar if any
-                            //if (_gui.contains(_gui.bosshealthTf))
-                            //    _gui.removeChild(_gui.bosshealthTf);
+                            if (this._gui.contains(this._gui.bosshealthTf))
+                                this._gui.removeChild(this._gui.bosshealthTf);
                             // go back to normal size
                             if (this.enableFullscreen)
                             {
@@ -690,7 +631,7 @@ module shooter
 
             this._entities.changeLevels("level" + this._state);
             this._terrain.changeLevels("terrain" + this._state);
-            //_gui.statsText = "Level " + _state; // todo:gui
+            this._gui.statsText = "Level " + this._state;
 
             // reset the player position
             this.thePlayer.level = 0; // it will transition to 1
@@ -722,7 +663,7 @@ module shooter
             if (this.saved.score < this.thePlayer.score)
             {
                 this.saved.score = this.thePlayer.score;
-                //this._gui.highScore = this.thePlayer.score; todo:gui
+                this._gui.highScore = this.thePlayer.score;
             }
 
             this._state = 0;
@@ -846,6 +787,10 @@ module shooter
 
                 //check for the end of the level
                 this.checkMapState();
+
+
+                if(this._gui)
+                    this._gui.onEnterFrame();
 
                 this.stats.end();
             //}

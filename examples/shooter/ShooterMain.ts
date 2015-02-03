@@ -216,7 +216,6 @@ module shooter
 
             // this forces the game to fill the screen
             this.checkResize();
-            document.body.style.visibility = "visible";
             // start the render loop
             this.onEnterFrame();//stage.addEventListener(Event.ENTER_FRAME,onEnterFrame);
 
@@ -773,7 +772,7 @@ module shooter
         public static canvas:HTMLCanvasElement;
         public static main():void
         {
-            ShooterMain.canvas = <HTMLCanvasElement>document.getElementById("my-canvas")
+            ShooterMain.canvas = <HTMLCanvasElement>document.getElementById("my-canvas");
 
             lib.ImageLoader.getInstance().add("assets/sprites.png");
             lib.ImageLoader.getInstance().add("assets/titlescreen.png");

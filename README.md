@@ -41,14 +41,20 @@ Here is a drawTriangle example using TypeScript [(result)](http://www.nshen.net/
 	}
 
 
-examples
+Some examples
 ---
 
-* [Bunnymark](http://www.nshen.net/Stage3D.js/examples/bunnyMark/BunnyMark.html)
-* [blend](http://www.nshen.net/Stage3D.js/examples/blend.html)
-* [gouraudShading](http://www.nshen.net/Stage3D.js/examples/gouraudShading.html)
-* [loadObjFile](http://www.nshen.net/Stage3D.js/examples/loadObj.html)
-* [drawSquare](http://www.nshen.net/Stage3D.js/examples/drawSquare.html)
+<ul>
+<li><a href="./examples/bunnyMark/BunnyMark.html">bunnymark</a></li>
+<li><a href="./examples/shooter/index.html">a shooter game</a></li>
+<li><a href="./examples/blend.html">blend test</a></li>
+<li><a href="./examples/drawSquare.html">drawSquare</a></li>
+<li><a href="./examples/drawTriangle.html">drawTriangle</a></li>
+<li><a href="./examples/gouraudShading.html">gouraudShading</a></li>
+<li><a href="./examples/loadObj.html">load Obj model</a></li>
+<li><a href="./examples/textureTriangle.html">textureTriangle</a></li>
+<li><a href="./examples/renderingModes.html">renderingModes</a></li>
+</ul>
 
 
 ##License

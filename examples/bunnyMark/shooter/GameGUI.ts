@@ -76,6 +76,7 @@ module shooter
             document.body.removeChild(this.bosshealthTf);
             document.body.removeChild(this.transitionTf);
             document.body.removeChild(this.npcOverlay);
+            document.body.removeChild(document.getElementById("loading"));
 
         }
         public setPosition(view:{x:number;y:number;width:number;height:number}):void // v6
@@ -165,10 +166,6 @@ module shooter
                 }
             }
 
-
-
-
-            console.log(this.transitionText,this.transitionTf.textContent,this.transitionTf.innerText,this.transitionTf.innerHTML)
             if (this.transitionText != this.transitionTf.innerText)
             {
                 this.transitionTf.innerHTML = this.transitionText;

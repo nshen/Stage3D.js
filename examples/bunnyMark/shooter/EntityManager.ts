@@ -238,10 +238,20 @@ module shooter
 			// and we've not yet created the player entity
 			if (this.thePlayer == null) return null;
 
-			// assume the player shot it
-			// otherwise maybe an enemy did
+
 			if (shooter == null)
-				shooter = this.thePlayer;
+			{
+				// assume the player shot it
+				// otherwise maybe an enemy did
+				if(powa == 3)
+					shooter = this.thePlayer;
+				else
+				{
+					console.warn("what's wrong?");
+					return null;
+
+				}
+			}
 
 			var theBullet:Entity;
 			if (powa == 1)
@@ -429,12 +439,12 @@ module shooter
 					if(anEntity == this.theBoss)
 					{
 						this.theBoss.health -= 2; // 50 hits to destroy
-						console.log("Boss hit. HP = " + this.theBoss.health);
+						//console.log("Boss hit. HP = " + this.theBoss.health);
 						// knockback for more vidual feedback
 						this.theBoss.sprite.position.x += 8;
 						if (this.theBoss.health < 1)
 						{
-							console.log("Boss has been destroyed!");
+							//console.log("Boss has been destroyed!");
 
 							// huge shockwave
 							this.particles.addParticle(this.spritenumShockwave, this.theBoss.sprite.position.x,

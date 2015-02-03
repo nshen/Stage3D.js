@@ -216,6 +216,7 @@ module shooter
 
             // this forces the game to fill the screen
             this.checkResize();
+            document.body.style.visibility = "visible";
             // start the render loop
             this.onEnterFrame();//stage.addEventListener(Event.ENTER_FRAME,onEnterFrame);
 
@@ -305,7 +306,6 @@ module shooter
 
                              //if (_gui.npcText == "") _sfx.playNPCgameover(); //todo:sound
                              this._gui.npcText = "You were incredible.<br>There were simply too many of them.<br>You'll win next time. I know it.";
-
 
                              this.timeDilation = 0.5; // slow mo
                          }
@@ -468,7 +468,7 @@ module shooter
                     //console.log("Fire!");
                     this.nextFireTime = this.currentTime + this.fireDelay;
                     //_sfx.playGun(1); todo:sound
-                    this._entities.shootBullet(3);
+                    this._entities.shootBullet(3,me);
                 }
             }
 
@@ -562,60 +562,6 @@ module shooter
             {
                 this._controls.autofire = true;
             }
-
-            // v6 fullscreen mode!
-            // Note: security blocks keyboard except
-            // arrows and space, so WASD keys don't work...
-            // also pressing left+up+space doesn't work on
-            // normal keyboards (therefore we implemented autofire)
-            if (this.enableFullscreen)
-            {
-                //try
-                //{
-                //    console.log('Going fullscreen...');
-                //    // remember to add this to your HTML:
-                //    // <param name="allowFullScreen" value="true" />
-                //    //todo:fullscreen stage.displayState = StageDisplayState.FULL_SCREEN;
-                //    var i:any = document.getElementById("my-canvas");
-                //
-                //    // go full-screen
-                //    if (i.requestFullscreen) {
-                //        i.requestFullscreen();
-                //    } else if (i.webkitRequestFullscreen) {
-                //        i.webkitRequestFullscreen();
-                //    } else if (i.mozRequestFullScreen) {
-                //        i.mozRequestFullScreen();
-                //    } else if (i.msRequestFullscreen) {
-                //        i.msRequestFullscreen();
-                //    }
-                //
-                //    var FShandler = () =>
-                //    {
-                //        //ShooterMain.canvas.width = window.innerWidth;
-                //        //ShooterMain.canvas.height = window.innerHeight;
-                //        ////this.onResizeEvent(null);
-                //        //console.log(ShooterMain.canvas.clientWidth,"###");
-                //        //this._spriteStage.configureBackBuffer(ShooterMain.canvas.width, ShooterMain.canvas.height);
-                //
-                //    }
-                //
-                //    document.addEventListener("fullscreenchange", FShandler);
-                //    document.addEventListener("webkitfullscreenchange", FShandler);
-                //    document.addEventListener("mozfullscreenchange", FShandler);
-                //    document.addEventListener("MSFullscreenChange", FShandler);
-                //
-                //}
-                //catch (err)
-                //{
-                //    console.log("Error going fullscreen.");
-                //}
-                // in Flash 11.3 (summer 2012) you can use the following
-                // for full keyboard access but it asks the user for permission first
-                // stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
-                // you also need to add this to your html
-                // <param name="allowFullScreenInteractive" value="true" />
-            }
-
 
 
             // add the player entity to the game!

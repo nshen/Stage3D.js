@@ -613,7 +613,7 @@ var shooter;
                     return 0;
 
                 console.log("Loaded level is " + this._saves["level"]);
-                return this._saves["level"];
+                return parseInt(this._saves["level"]);
             },
             set: function (num) {
                 if (!this._saves)
@@ -632,7 +632,7 @@ var shooter;
                 if (this._saves["score"] == null)
                     return 0;
                 console.log("Loaded score is " + this._saves["score"]);
-                return this._saves["score"];
+                return parseInt(this._saves["score"]);
             },
             set: function (num) {
                 if (!this._saves)
@@ -1014,6 +1014,7 @@ var shooter;
             document.body.removeChild(this.bosshealthTf);
             document.body.removeChild(this.transitionTf);
             document.body.removeChild(this.npcOverlay);
+            document.body.removeChild(document.getElementById("loading"));
         }
         GameGUI.prototype.setPosition = function (view) {
             console.log('Moving GUI');
@@ -1108,7 +1109,6 @@ var shooter;
                 }
             }
 
-            console.log(this.transitionText, this.transitionTf.textContent, this.transitionTf.innerText, this.transitionTf.innerHTML);
             if (this.transitionText != this.transitionTf.innerText) {
                 this.transitionTf.innerHTML = this.transitionText;
                 if (this.transitionTf.innerHTML != "") {
@@ -1700,8 +1700,14 @@ var shooter;
             if (this.thePlayer == null)
                 return null;
 
-            if (shooter == null)
-                shooter = this.thePlayer;
+            if (shooter == null) {
+                if (powa == 3)
+                    shooter = this.thePlayer;
+                else {
+                    console.warn("what's wrong?");
+                    return null;
+                }
+            }
 
             var theBullet;
             if (powa == 1)
@@ -1833,12 +1839,9 @@ var shooter;
 
                     if (anEntity == this.theBoss) {
                         this.theBoss.health -= 2;
-                        console.log("Boss hit. HP = " + this.theBoss.health);
 
                         this.theBoss.sprite.position.x += 8;
                         if (this.theBoss.health < 1) {
-                            console.log("Boss has been destroyed!");
-
                             this.particles.addParticle(this.spritenumShockwave, this.theBoss.sprite.position.x, this.theBoss.sprite.position.y, 0.01, 0, 0, 1, NaN, NaN, -1, 30);
 
                             var bossexpPos = { x: 0, y: 0 };
@@ -2246,7 +2249,7 @@ var shooter;
                     if (_this.currentTime >= _this.nextFireTime) {
                         _this.nextFireTime = _this.currentTime + _this.fireDelay;
 
-                        _this._entities.shootBullet(3);
+                        _this._entities.shootBullet(3, me);
                     }
                 }
 
@@ -2424,6 +2427,7 @@ var shooter;
             };
 
             this.checkResize();
+            document.body.style.visibility = "visible";
 
             this.onEnterFrame();
         };
@@ -2598,9 +2602,6 @@ var shooter;
 
             if (this.enableAutofire) {
                 this._controls.autofire = true;
-            }
-
-            if (this.enableFullscreen) {
             }
 
             if (!this.thePlayer)

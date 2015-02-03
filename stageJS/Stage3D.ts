@@ -1,24 +1,19 @@
 ///<reference path="reference.ts"/>
 module stageJS
 {
-    export var VERSION: string = "0.2.0";
+    export var VERSION: string = "0.3.0";
 
     export class Stage3D extends stageJS.events.EventDispatcher
     {
 
         private _context3D: Context3D = null;
         private _canvas: HTMLCanvasElement;
-        private _stageWidth: number = 0;
-        private _stageHeight: number = 0;
+
  
         constructor(canvas:HTMLCanvasElement)
         {
-
             super();
-
             this._canvas = canvas;
-            this._stageWidth = canvas.width;
-            this._stageHeight = canvas.height;
         }
 
         /**
@@ -31,12 +26,12 @@ module stageJS
 
         public get stageWidth(): number
         {
-            return this._stageWidth;
+            return this._canvas.width;
         }
 
         public get stageHeight(): number
         {
-            return this._stageHeight;
+            return this._canvas.height;
         }
 
         public requestContext3D():void

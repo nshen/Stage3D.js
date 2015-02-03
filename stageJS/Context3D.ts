@@ -8,18 +8,17 @@ module stageJS
         //todo:enableErrorChecking https://www.khronos.org/webgl/wiki/Debugging
 
         private _clearBit: number;
-
+        private _bendDisabled:boolean = true;
+        private _depthDisabled:boolean = true;
         constructor()
         {
-            Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend?
             Context3DBlendFactor.init();
         }
 
         public configureBackBuffer(width: number/* int */, height: number/* int */, antiAlias: number/* int */, enableDepthAndStencil:boolean = true): void
         {
             Context3D.GL.viewport(0, 0, width, height);
-
-          
+            this._depthDisabled = enableDepthAndStencil;
             //TODO: antiAlias , Stencil
             if (enableDepthAndStencil)
             {
@@ -177,13 +176,6 @@ module stageJS
 
             this._linkedProgram = program;
 
-            Context3D.GL.linkProgram(program.glProgram);
-
-            if (!Context3D.GL.getProgramParameter(program.glProgram, Context3D.GL.LINK_STATUS))
-            {
-                throw new Error(Context3D.GL.getProgramInfoLog(program.glProgram));
-                program.dispose();
-            }
             Context3D.GL.useProgram(program.glProgram);
 
             var k:string;
@@ -235,7 +227,12 @@ module stageJS
 
         public setDepthTest(depthMask: boolean, passCompareMode: string): void
         {
-            // Context3D.GL.enable(Context3D.GL.DEPTH_TEST); need this ?
+            if(this._depthDisabled)
+            {
+                Context3D.GL.enable(Context3D.GL.DEPTH_TEST);
+                this._bendDisabled = false;
+            }
+
             Context3D.GL.depthMask(depthMask);
 
             switch (passCompareMode) {
@@ -268,6 +265,11 @@ module stageJS
 
         public setBlendFactors(sourceFactor: number, destinationFactor: number): void
         {
+            if(this._bendDisabled)
+            {
+                Context3D.GL.enable(Context3D.GL.BLEND); //stage3d cant disable blend?
+                this._bendDisabled = false;
+            }
             Context3D.GL.blendFunc(sourceFactor, destinationFactor);
         }
 

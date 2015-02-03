@@ -21,6 +21,28 @@
                 // reference: 'stage3d/reference.ts',  //create reference.ts
                 out: './build/stage3d.js', 
                 // watch: 'stage3d',  
+            },
+
+
+            //compile shooter example
+			shooter: 
+            {
+                src: ["examples/shooter/reference.ts"],  
+                out: './examples/shooter/Shooter.js', 
+                options: {
+                     declaration: false, 
+                     sourcemap: false,
+                },
+            },
+
+            //compile bunnyMark example
+			bunny: 
+            {
+                src: ["examples/bunnyMark/_definitions.ts"],  
+                out: './examples/bunnyMark/BunnyMark.js', 
+                options: {
+                     declaration: false, 
+                },
             }
         },
 
@@ -48,4 +70,6 @@
     // grunt.registerTask("min",["uglify:min"]);
     // grunt.registerTask("copy2examples",["copy:builds"]);
     grunt.registerTask("default", ["ts:build" , "uglify:min" , "copy:builds"]);
+	grunt.registerTask("bunny",["ts:bunny"]);
+	grunt.registerTask("shooter",["ts:shooter"]);
 };

@@ -3,15 +3,13 @@ Stage3D.js
 
 Stage3D API on top of WebGL
 
-
-Here is a drawTriangle example using TypeScript :
+Here is a drawTriangle example using TypeScript [(result)](http://www.nshen.net/Stage3D.js/examples/drawTriangle.html) :
 
 	var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
 
     stage3d = new stageJS.Stage3D(canvas);
     stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, onCreated);
     stage3d.requestContext3D();
-  
   
 	function onCreated(e: stagl.events.Event): void
 	{
@@ -32,8 +30,7 @@ Here is a drawTriangle example using TypeScript :
 	
 	  context3d.setVertexBufferAt("va0", vertexBuffer, 0, stagl.Context3DVertexBufferFormat.FLOAT_3); // pos
 	  context3d.setVertexBufferAt("va1", vertexBuffer, 3, stagl.Context3DVertexBufferFormat.FLOAT_4); // color
-	
-	
+		
 	  var indexBuffer: stagl.IndexBuffer3D = context3d.createIndexBuffer(3);
 	  indexBuffer.uploadFromVector([0, 1, 2], 0, 3);
 	
@@ -43,7 +40,26 @@ Here is a drawTriangle example using TypeScript :
 	
 	}
 
-##The MIT License (MIT)
+
+Some examples
+---
+
+<ul>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/bunnyMark/BunnyMark.html">bunnymark</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/shooter/index.html">a shooter game</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/blend.html">blend test</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/drawSquare.html">drawSquare</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/drawTriangle.html">drawTriangle</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/gouraudShading.html">gouraudShading</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/loadObj.html">load Obj model</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/textureTriangle.html">textureTriangle</a></li>
+<li><a href="http://www.nshen.net/Stage3D.js/examples/renderingModes.html">renderingModes</a></li>
+</ul>
+
+
+##License
+
+The MIT License (MIT)
 
 Copyright (c) Nshen.net (nshen121@gmail.com)
 

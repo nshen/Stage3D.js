@@ -11,8 +11,15 @@ var stageJS;
             this._context = this._canvas.getContext("2d");
             this._rect = { x: 0, y: 0, width: width, height: height };
 
-            this.fillRect(this._rect, fillColor);
+            if (!transparent)
+                this.fillRect(this._rect, fillColor);
         }
+        BitmapData.fromImageElement = function (img) {
+            var bmd = new BitmapData(img.width, img.height, true);
+            bmd._context.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
+            return bmd;
+        };
+
         Object.defineProperty(BitmapData.prototype, "width", {
             get: function () {
                 return this._canvas.width;
@@ -1464,9 +1471,9 @@ var stageJS;
 
             Texture._bindingTexture = this._glTexture;
 
-            stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MAG_FILTER, stageJS.Context3D.GL.NEAREST);
+            stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MAG_FILTER, stageJS.Context3D.GL.LINEAR);
             if (this._streamingLevels == 0) {
-                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.NEAREST);
+                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR);
             } else {
                 stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR_MIPMAP_LINEAR);
                 stageJS.Context3D.GL.generateMipmap(stageJS.Context3D.GL.TEXTURE_2D);
@@ -1532,6 +1539,13 @@ var stageJS;
 
             stageJS.Context3D.GL.attachShader(this._glProgram, this._vShader);
             stageJS.Context3D.GL.attachShader(this._glProgram, this._fShader);
+
+            stageJS.Context3D.GL.linkProgram(this._glProgram);
+
+            if (!stageJS.Context3D.GL.getProgramParameter(this._glProgram, stageJS.Context3D.GL.LINK_STATUS)) {
+                throw new Error(stageJS.Context3D.GL.getProgramInfoLog(this._glProgram));
+                this.dispose();
+            }
         };
 
         Program3D.prototype.loadShader = function (elementId, type) {
@@ -1554,19 +1568,14 @@ var stageJS;
 })(stageJS || (stageJS = {}));
 var stageJS;
 (function (stageJS) {
-    stageJS.VERSION = "0.2.0";
+    stageJS.VERSION = "0.3.0";
 
     var Stage3D = (function (_super) {
         __extends(Stage3D, _super);
         function Stage3D(canvas) {
             _super.call(this);
             this._context3D = null;
-            this._stageWidth = 0;
-            this._stageHeight = 0;
-
             this._canvas = canvas;
-            this._stageWidth = canvas.width;
-            this._stageHeight = canvas.height;
         }
         Object.defineProperty(Stage3D.prototype, "context3D", {
             get: function () {
@@ -1578,7 +1587,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageWidth", {
             get: function () {
-                return this._stageWidth;
+                return this._canvas.width;
             },
             enumerable: true,
             configurable: true
@@ -1586,7 +1595,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageHeight", {
             get: function () {
-                return this._stageHeight;
+                return this._canvas.height;
             },
             enumerable: true,
             configurable: true
@@ -1649,17 +1658,19 @@ var stageJS;
 (function (stageJS) {
     var Context3D = (function () {
         function Context3D() {
+            this._bendDisabled = true;
+            this._depthDisabled = true;
             this._linkedProgram = null;
             this._vaCache = {};
             this._vcCache = {};
             this._vcMCache = {};
             this._texCache = {};
-            Context3D.GL.enable(Context3D.GL.BLEND);
             stageJS.Context3DBlendFactor.init();
         }
         Context3D.prototype.configureBackBuffer = function (width, height, antiAlias, enableDepthAndStencil) {
             if (typeof enableDepthAndStencil === "undefined") { enableDepthAndStencil = true; }
             Context3D.GL.viewport(0, 0, width, height);
+            this._depthDisabled = enableDepthAndStencil;
 
             if (enableDepthAndStencil) {
                 this._clearBit = Context3D.GL.COLOR_BUFFER_BIT | Context3D.GL.DEPTH_BUFFER_BIT | Context3D.GL.STENCIL_BUFFER_BIT;
@@ -1789,12 +1800,6 @@ var stageJS;
 
             this._linkedProgram = program;
 
-            Context3D.GL.linkProgram(program.glProgram);
-
-            if (!Context3D.GL.getProgramParameter(program.glProgram, Context3D.GL.LINK_STATUS)) {
-                throw new Error(Context3D.GL.getProgramInfoLog(program.glProgram));
-                program.dispose();
-            }
             Context3D.GL.useProgram(program.glProgram);
 
             var k;
@@ -1848,6 +1853,11 @@ var stageJS;
         };
 
         Context3D.prototype.setDepthTest = function (depthMask, passCompareMode) {
+            if (this._depthDisabled) {
+                Context3D.GL.enable(Context3D.GL.DEPTH_TEST);
+                this._bendDisabled = false;
+            }
+
             Context3D.GL.depthMask(depthMask);
 
             switch (passCompareMode) {
@@ -1879,6 +1889,10 @@ var stageJS;
         };
 
         Context3D.prototype.setBlendFactors = function (sourceFactor, destinationFactor) {
+            if (this._bendDisabled) {
+                Context3D.GL.enable(Context3D.GL.BLEND);
+                this._bendDisabled = false;
+            }
             Context3D.GL.blendFunc(sourceFactor, destinationFactor);
         };
 

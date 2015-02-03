@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <style>
+        body{
+            font: 62.5% "Trebuchet MS", sans-serif;
+            margin: 50px;
+        }
+
+        #canvas
+        {
+            float: left;
+            margin-right: 30px;
+        }
+        #ui
+        {
+            float: left;
+          
+        }
+    </style>
+    <title></title>
+
+    <script type="text/javascript" src="stage3d.js"></script>
+    <script type="text/javascript" src="lib/Stage3dObjParser.js"></script>
+    <script type="text/javascript" src="lib/ImageLoader.js"></script>
+    <script type="text/javascript" src="lib/FileLoader.js"></script>
+    <script type="text/javascript" src="blend.js"></script>
+
+
+
+
+
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 va0;
+        attribute vec2 va1;
+        attribute vec4 va2;
+        uniform mat4 vc0;
+
+        varying highp vec3 v0;
+        varying highp vec2 v1;
+        varying highp vec4 v2;
+
+        void main(void) {
+            gl_Position =  vec4(va0, 1.0)  * vc0;
+            v0 = va0;  // tell fragment shader about XYZ
+            v1 = va1;  // tell fragment shader about UV
+            v2 = va2;  // tell fragment shader about RGBA
+        }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+        varying highp vec2 v1;
+        uniform sampler2D fs0;
+
+        void main(void) {
+        gl_FragColor = texture2D( fs0, vec2(v1.x, v1.y) );
+        }
+    </script>
+
+    <!--<script type="text/javascript" src="lib/jquery-1.11.1.js"></script>-->
+    <!--<script type="text/javascript" src="lib/jquery-ui.min.js"></script>-->
+
+</head>
+<body>
+
+    <div id="canvas">
+        <canvas id='my-canvas' width='640' height='480' style="border: dotted">
+            Your browser does not support the HTML5 canvas element.
+        </canvas>
+    </div>
+
+
+    <div id="ui">
+
+        <p >press key B to change blendFactor</p>
+        <p >press key T to change texture</p>
+        <p >press key M to change model</p>
+        <p >press key D to togggle depthTest</p>
+
+        <h2 id="p1"></h2>
+        <h2 id="p2"></h2>
+        <h2 id="p3"></h2>
+        <h2 id="p4"></h2>
+    </div>
+
+
+
+
+
+</body>
+</html>

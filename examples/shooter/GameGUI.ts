@@ -61,6 +61,7 @@ module shooter
 
         constructor(/*title:string = "", inX:number=0, inY:number=0, inCol:number = 0xFFFFFF*/)
         {
+            document.body.style.visibility = "visible";
 
             this.hudOverlay = document.getElementById("hud-bg");
             this.npcOverlay = document.getElementById("npcOverlay");

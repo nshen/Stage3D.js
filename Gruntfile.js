@@ -27,10 +27,11 @@
             //compile shooter example
 			shooter: 
             {
-                src: ["examples/bunnyMark/shooter/reference.ts"],  
-                out: './examples/bunnyMark/shooter/Shooter.js', 
+                src: ["examples/shooter/reference.ts"],  
+                out: './examples/shooter/Shooter.js', 
                 options: {
                      declaration: false, 
+                     sourcemap: false,
                 },
             },
 

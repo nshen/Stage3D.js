@@ -1568,7 +1568,7 @@ var stageJS;
 })(stageJS || (stageJS = {}));
 var stageJS;
 (function (stageJS) {
-    stageJS.VERSION = "0.2.1";
+    stageJS.VERSION = "0.3.0";
 
     var Stage3D = (function (_super) {
         __extends(Stage3D, _super);

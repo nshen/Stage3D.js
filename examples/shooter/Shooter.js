@@ -1000,6 +1000,8 @@ var shooter;
             this.frameCount = 0;
             this.lastfps = 60;
             this.transitionTf_y_location = 162;
+            document.body.style.visibility = "visible";
+
             this.hudOverlay = document.getElementById("hud-bg");
             this.npcOverlay = document.getElementById("npcOverlay");
 
@@ -2427,7 +2429,6 @@ var shooter;
             };
 
             this.checkResize();
-            document.body.style.visibility = "visible";
 
             this.onEnterFrame();
         };
@@ -2733,4 +2734,3 @@ var shooter;
     })();
     shooter.ShooterMain = ShooterMain;
 })(shooter || (shooter = {}));
-//# sourceMappingURL=Shooter.js.map

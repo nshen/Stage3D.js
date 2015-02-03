@@ -613,7 +613,7 @@ var shooter;
                     return 0;
 
                 console.log("Loaded level is " + this._saves["level"]);
-                return this._saves["level"];
+                return parseInt(this._saves["level"]);
             },
             set: function (num) {
                 if (!this._saves)
@@ -632,7 +632,7 @@ var shooter;
                 if (this._saves["score"] == null)
                     return 0;
                 console.log("Loaded score is " + this._saves["score"]);
-                return this._saves["score"];
+                return parseInt(this._saves["score"]);
             },
             set: function (num) {
                 if (!this._saves)
@@ -985,26 +985,173 @@ var shooter;
 var shooter;
 (function (shooter) {
     var GameGUI = (function () {
-        function GameGUI(title, inX, inY, inCol) {
-            if (typeof title === "undefined") { title = ""; }
-            if (typeof inX === "undefined") { inX = 0; }
-            if (typeof inY === "undefined") { inY = 0; }
-            if (typeof inCol === "undefined") { inCol = 0xFFFFFF; }
+        function GameGUI() {
+            this.score = 0;
+            this.prevHighScore = 0;
+            this.highScore = 0;
+            this.level = 0;
+            this.lives = 3;
+            this.health = 100;
+            this.transitionText = "";
+            this.bosshealth = 100;
+            this.npcText = "";
+            this.titleText = "";
+            this.statsText = "";
+            this.frameCount = 0;
+            this.lastfps = 60;
+            this.transitionTf_y_location = 162;
+            this.hudOverlay = document.getElementById("hud-bg");
+            this.npcOverlay = document.getElementById("npcOverlay");
+
+            this.scoreTf = document.getElementById("scoreTf");
+            this.highScoreTf = document.getElementById("highScoreTf");
+            this.levelTf = document.getElementById("levelTf");
+            this.healthTf = document.getElementById("healthTf");
+            this.transitionTf = document.getElementById("transitionTf");
+            this.bosshealthTf = document.getElementById("bosshealthTf");
+            this.npcTf = document.getElementById("npcTf");
+
+            document.body.removeChild(this.bosshealthTf);
+            document.body.removeChild(this.transitionTf);
+            document.body.removeChild(this.npcOverlay);
+            document.body.removeChild(document.getElementById("loading"));
         }
-        GameGUI.prototype.createBatch = function (context3D) {
-            var b = new stageJS.BitmapData(1024, 64, true);
-            b.draw(lib.ImageLoader.getInstance().get("assets/hud_overlay.png"));
+        GameGUI.prototype.setPosition = function (view) {
+            console.log('Moving GUI');
+            var mid = view.width / 2;
 
-            this.spriteSheet = new GPUSprite.SpriteSheet(b, 0, 0);
+            this.hudOverlay.style.left = (mid - 300) + "px";
 
-            this.batch = new GPUSprite.SpriteRenderLayer(context3D, this.spriteSheet);
+            this.scoreTf.style.left = (mid - 300 + 442) + "px";
+            this.highScoreTf.style.left = (mid - 300 + 208) + "px";
+            this.healthTf.style.left = (mid - 300 + 208) + "px";
+            this.bosshealthTf.style.left = (mid - 300) + "px";
+            this.bosshealthTf.style.top = (60) + "px";
+            this.transitionTf.style.top = (view.height / 2 - 80) + "px";
+            this.transitionTf.style.left = (mid - 300) + "px";
+            this.npcOverlay.style.left = (mid - 300) + "px";
+            this.npcOverlay.style.top = (view.height - 64 - 8) + "px";
+            this.npcTf.style.top = (view.height - 64) + "px";
+            this.npcTf.style.left = (mid - 220) + "px";
+        };
 
-            var bg = this.spriteSheet.defineSprite(0, 0, 600, 40);
-            this.bgSprite = this.batch.createChild(bg);
-            this.bgSprite.position.x = 300;
-            this.bgSprite.position.y = 20;
+        GameGUI.prototype.addChild = function (t) {
+            document.body.appendChild(t);
+        };
 
-            return this.batch;
+        GameGUI.prototype.removeChild = function (t) {
+            document.body.removeChild(t);
+        };
+
+        GameGUI.prototype.contains = function (t) {
+            return document.body.contains(t);
+        };
+
+        GameGUI.prototype.healthBar = function (num) {
+            if (num >= 99)
+                return "|||||||||||||";
+            else if (num >= 92)
+                return "||||||||||||";
+            else if (num >= 84)
+                return "|||||||||||";
+            else if (num >= 76)
+                return "||||||||||";
+            else if (num >= 68)
+                return "|||||||||";
+            else if (num >= 60)
+                return "||||||||";
+            else if (num >= 52)
+                return "|||||||";
+            else if (num >= 44)
+                return "||||||";
+            else if (num >= 36)
+                return "|||||";
+            else if (num >= 28)
+                return "||||";
+            else if (num >= 20)
+                return "|||";
+            else if (num >= 12)
+                return "||";
+            else if (num >= 1)
+                return "|";
+            else
+                return "";
+        };
+
+        GameGUI.prototype.pad0s = function (num) {
+            if (num < 10)
+                return '00000' + num;
+            else if (num < 100)
+                return '0000' + num;
+            else if (num < 1000)
+                return '000' + num;
+            else if (num < 10000)
+                return '00' + num;
+            else if (num < 100000)
+                return '0' + num;
+            else
+                return '' + num;
+        };
+
+        GameGUI.prototype.updateScore = function () {
+            if (this.npcText != this.npcTf.innerHTML) {
+                this.npcTf.innerHTML = this.npcText;
+                if (this.npcText != "") {
+                    if (!this.contains(this.npcOverlay))
+                        this.addChild(this.npcOverlay);
+                    if (!this.contains(this.npcTf))
+                        this.addChild(this.npcTf);
+                } else {
+                    if (this.contains(this.npcOverlay))
+                        this.removeChild(this.npcOverlay);
+                    if (this.contains(this.npcTf))
+                        this.removeChild(this.npcTf);
+                }
+            }
+
+            if (this.transitionText != this.transitionTf.innerText) {
+                this.transitionTf.innerHTML = this.transitionText;
+                if (this.transitionTf.innerHTML != "") {
+                    if (!this.contains(this.transitionTf))
+                        this.addChild(this.transitionTf);
+                } else {
+                    if (this.contains(this.transitionTf))
+                        this.removeChild(this.transitionTf);
+                }
+            }
+
+            if (this.statsTarget && this.statsTarget.thePlayer) {
+                if (this.statsTarget.theBoss) {
+                    if (this.bosshealth != this.statsTarget.theBoss.health) {
+                        this.bosshealth = this.statsTarget.theBoss.health;
+                        this.bosshealthTf.innerHTML = "BOSS: " + this.healthBar(this.bosshealth);
+                    }
+                }
+
+                if (this.health != this.statsTarget.thePlayer.health) {
+                    this.health = this.statsTarget.thePlayer.health;
+                    this.healthTf.innerHTML = "HP: " + this.healthBar(this.health);
+                }
+                if ((this.score != this.statsTarget.thePlayer.score) || (this.lives != this.statsTarget.thePlayer.lives)) {
+                    this.score = this.statsTarget.thePlayer.score;
+                    this.lives = this.statsTarget.thePlayer.lives;
+                    if (this.lives == -1)
+                        this.scoreTf.innerHTML = this.scoreTf.innerHTML = 'SCORE: ' + this.pad0s(this.score) + '<br>' + 'GAME OVER';
+                    else
+                        this.scoreTf.innerHTML = 'SCORE: ' + this.pad0s(this.score) + '<br>' + this.lives + (this.lives != 1 ? ' LIVES' : ' LIFE') + ' LEFT';
+
+                    if (this.score > this.highScore)
+                        this.highScore = this.score;
+                }
+            }
+            if (this.prevHighScore != this.highScore) {
+                this.prevHighScore = this.highScore;
+                this.highScoreTf.innerHTML = "HIGH SCORE: " + this.pad0s(this.highScore);
+            }
+        };
+
+        GameGUI.prototype.onEnterFrame = function () {
+            this.updateScore();
         };
         return GameGUI;
     })();
@@ -1553,8 +1700,14 @@ var shooter;
             if (this.thePlayer == null)
                 return null;
 
-            if (shooter == null)
-                shooter = this.thePlayer;
+            if (shooter == null) {
+                if (powa == 3)
+                    shooter = this.thePlayer;
+                else {
+                    console.warn("what's wrong?");
+                    return null;
+                }
+            }
 
             var theBullet;
             if (powa == 1)
@@ -1686,12 +1839,9 @@ var shooter;
 
                     if (anEntity == this.theBoss) {
                         this.theBoss.health -= 2;
-                        console.log("Boss hit. HP = " + this.theBoss.health);
 
                         this.theBoss.sprite.position.x += 8;
                         if (this.theBoss.health < 1) {
-                            console.log("Boss has been destroyed!");
-
                             this.particles.addParticle(this.spritenumShockwave, this.theBoss.sprite.position.x, this.theBoss.sprite.position.y, 0.01, 0, 0, 1, NaN, NaN, -1, 30);
 
                             var bossexpPos = { x: 0, y: 0 };
@@ -2065,9 +2215,10 @@ var shooter;
             };
             this.bossSpriteID = 0;
             this.bossComplete = function () {
-                console.log("bossComplete!");
-
                 _this.thePlayer.score += 1000;
+
+                if (_this._gui.contains(_this._gui.bosshealthTf))
+                    _this._gui.removeChild(_this._gui.bosshealthTf);
 
                 _this._entities.theBoss = null;
 
@@ -2098,7 +2249,7 @@ var shooter;
                     if (_this.currentTime >= _this.nextFireTime) {
                         _this.nextFireTime = _this.currentTime + _this.fireDelay;
 
-                        _this._entities.shootBullet(3);
+                        _this._entities.shootBullet(3, me);
                     }
                 }
 
@@ -2161,6 +2312,9 @@ var shooter;
 
                 _this.checkMapState();
 
+                if (_this._gui)
+                    _this._gui.onEnterFrame();
+
                 _this.stats.end();
 
                 requestAnimationFrame(_this.onEnterFrame);
@@ -2169,27 +2323,6 @@ var shooter;
             this.stage3d.addEventListener(stageJS.events.Event.CONTEXT3D_CREATE, this.onContext3DCreate);
             this.stage3d.requestContext3D();
         }
-        ShooterMain.prototype.onResizeEvent111 = function (event) {
-            return;
-            console.log("resize event...");
-
-            console.log(this.stage3d.stageWidth, this.stage3d.stageHeight);
-
-            var canvas = ShooterMain.canvas;
-
-            var displayWidth = canvas.clientWidth;
-            var displayHeight = canvas.clientHeight;
-
-            if (canvas.width != displayWidth || canvas.height != displayHeight) {
-                canvas.width = displayWidth;
-                canvas.height = displayHeight;
-
-                this._spriteStage.configureBackBuffer(canvas.width, canvas.height);
-            }
-
-            var view = { x: 0, y: 0, width: this.stage3d.stageWidth, height: this.stage3d.stageHeight };
-        };
-
         ShooterMain.prototype.checkResize = function () {
             var canvas = ShooterMain.canvas;
 
@@ -2207,20 +2340,24 @@ var shooter;
         ShooterMain.prototype.onResize = function () {
             console.log("onResize:", ShooterMain.canvas.width, ShooterMain.canvas.height);
             var view = { x: 0, y: 0, width: ShooterMain.canvas.width, height: ShooterMain.canvas.height };
+
             if (this._spriteStage != null)
                 this._spriteStage.position = view;
+
             if (this._terrain != null)
                 this._terrain.setPosition(view);
 
-            if (this._entities != null) {
+            if (this._entities != null)
                 this._entities.setPosition(view);
-            }
-            if (this._mainmenu != null) {
+
+            if (this._mainmenu != null)
                 this._mainmenu.setPosition(view);
-            }
-            if (this._bg != null) {
+
+            if (this._bg != null)
                 this._bg.setPosition(view);
-            }
+
+            if (this._gui != null)
+                this._gui.setPosition(view);
         };
 
         ShooterMain.prototype.initSpriteEngine = function () {
@@ -2266,7 +2403,13 @@ var shooter;
             batch = this._mainmenu.createBatch(this.context3D);
             this._spriteStage.addLayer(batch);
 
+            this._gui = new shooter.GameGUI();
+
+            this._gui.statsTarget = this._entities;
+
             this.saved = new shooter.GameSaves();
+            this._gui.highScore = this.saved.score;
+            this._gui.level = this.saved.level;
 
             ShooterMain.canvas.onmousedown = function (ev) {
                 if (_this._state == 0) {
@@ -2284,6 +2427,7 @@ var shooter;
             };
 
             this.checkResize();
+            document.body.style.visibility = "visible";
 
             this.onEnterFrame();
         };
@@ -2303,7 +2447,7 @@ var shooter;
             anEntity.isBoss = true;
             anEntity.collideradius = 96;
             anEntity.collidemode = 1;
-
+            this._gui.addChild(this._gui.bosshealthTf);
             anEntity.health = 100;
 
             if (!anEntity.recycled)
@@ -2320,23 +2464,39 @@ var shooter;
                 if (this.thePlayer.transitionTimeLeft > 0) {
                     if (this.thePlayer.level != this._state && this._state < 1000) {
                         if (this._state == -1) {
+                            this._gui.transitionText = "<br><br><br><br><br><br>CONGRATULATIONS<br><br>" + "You fought bravely and defended<br>" + "the universe from certain doom.<br><br>You got to level " + this.thePlayer.level + "<br>with " + this.thePlayer.score + " points." + "<br><br>CREDITS:<br><br>Programming: McFunkypants<br>(mcfunkypants.com)<br><br>" + "Art: Daniel Cook<br>(lostgarden.com)<br><br>" + "Music: MaF<br>(maf464.com)<br><br>" + "Thanks for playing!";
+
                             console.log("thanks for playing");
 
                             this.timeDilation = 0.5;
+
+                            this._gui.npcText = "You saved us!<br>Thank you!<br>My hero!";
                         } else if (this._state == 0) {
-                            console.log("GAME OVER\nYou got to level" + this.thePlayer.level);
+                            this._gui.transitionText = "GAME OVER<br>You got to level " + this.thePlayer.level + "<br>with " + this.thePlayer.score + " points.";
+
+                            this._gui.npcText = "You were incredible.<br>There were simply too many of them.<br>You'll win next time. I know it.";
+
                             this.timeDilation = 0.5;
                         } else if (this._state > 1) {
-                            console.log("level " + (this._state - 1) + " complete!");
+                            this._gui.transitionText = "<br>LEVEL " + (this._state - 1) + " COMPLETE!";
+
+                            this._gui.npcText = "That was amazing!<br>You destroyed it!<br>Your skill is legendary.";
                         } else {
-                            console.log("level " + this._state);
+                            this._gui.transitionText = "<br>LEVEL " + this._state;
+
+                            this._gui.npcText = "We're under attack! Please help us!<br>You're our only hope for survival.<br>Use the arrow keys to move.";
                         }
                     } else {
                         if ((this._state > 1000) && (this.thePlayer.health > 0)) {
-                            console.log("incoming boss battle");
+                            this._gui.transitionText = "<br>INCOMING BOSS BATTLE!";
+
+                            this._gui.npcText = "Be careful! That ship is HUGE!<br>Keep moving and watch out for<br>any burst attacks. Good luck!";
                         } else {
+                            this._gui.transitionText = "Your ship was destroyed.<br><br>You have " + this.thePlayer.lives + (this.thePlayer.lives != 1 ? " lives" : " life") + " left.";
+
+                            this._gui.npcText = "Nooooo!<br>Don't give up! I believe in you!<br>You can do it.";
+
                             this.timeDilation = 0.5;
-                            console.log("your ship was destroyed!");
                         }
                     }
                     if (this.thePlayer.lives < 0 || this.thePlayer.health <= 0) {
@@ -2348,6 +2508,7 @@ var shooter;
                         }
                     }
                 } else {
+                    this._gui.npcText = "";
                     this.timeDilation = 1;
                     this.currentTransitionSeconds = 0;
 
@@ -2356,8 +2517,9 @@ var shooter;
                     if (this._state == -1)
                         this._state = 0;
 
+                    this._gui.transitionText = "";
+
                     if ((this.thePlayer.health <= 0) && (this._state != 0)) {
-                        console.log("Death transition over. Respawning player.");
                         this.thePlayer.sprite.position.y = this._entities.midpoint;
                         this.thePlayer.sprite.position.x = 64;
                         this.thePlayer.health = 100;
@@ -2365,6 +2527,10 @@ var shooter;
                         if (this._state > 1000) {
                             console.log('Filed to kill boss. Resetting.');
                             this._state -= 1000;
+                            this._gui.bosshealth = -999;
+
+                            if (this._gui.contains(this._gui.bosshealthTf))
+                                this._gui.removeChild(this._gui.bosshealthTf);
 
                             if (this._entities.theBoss) {
                                 this._entities.theBoss.die();
@@ -2381,6 +2547,7 @@ var shooter;
                         if (this._state > 1) {
                             this._entities.changeLevels('level' + this._state);
                             this._terrain.changeLevels('terrain' + this._state);
+                            this._gui.statsText = "Level " + this._state;
                         }
                         if (this._state == 0) {
                             console.log('Game Over transition over: starting main menu');
@@ -2391,6 +2558,11 @@ var shooter;
                             this._entities.changeLevels('level' + this._state);
                             this._terrain.changeLevels('terrain' + this._state);
                             this._spriteStage.addLayer(this._mainmenu.batch);
+                            this._gui.statsText = "GAME OVER";
+                            this._gui.bosshealth = 0;
+
+                            if (this._gui.contains(this._gui.bosshealthTf))
+                                this._gui.removeChild(this._gui.bosshealthTf);
 
                             if (this.enableFullscreen) {
                                 console.log('Leaving fullscreen...');
@@ -2432,9 +2604,6 @@ var shooter;
                 this._controls.autofire = true;
             }
 
-            if (this.enableFullscreen) {
-            }
-
             if (!this.thePlayer)
                 this.thePlayer = this._entities.addPlayer(this.playerLogic);
             else
@@ -2445,6 +2614,7 @@ var shooter;
 
             this._entities.changeLevels("level" + this._state);
             this._terrain.changeLevels("terrain" + this._state);
+            this._gui.statsText = "Level " + this._state;
 
             this.thePlayer.level = 0;
             this.thePlayer.score = 0;
@@ -2464,6 +2634,7 @@ var shooter;
                 this.saved.level = this.thePlayer.level;
             if (this.saved.score < this.thePlayer.score) {
                 this.saved.score = this.thePlayer.score;
+                this._gui.highScore = this.thePlayer.score;
             }
 
             this._state = 0;

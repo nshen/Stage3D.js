@@ -176,13 +176,6 @@ module stageJS
 
             this._linkedProgram = program;
 
-            Context3D.GL.linkProgram(program.glProgram);
-
-            if (!Context3D.GL.getProgramParameter(program.glProgram, Context3D.GL.LINK_STATUS))
-            {
-                throw new Error(Context3D.GL.getProgramInfoLog(program.glProgram));
-                program.dispose();
-            }
             Context3D.GL.useProgram(program.glProgram);
 
             var k:string;

@@ -31,7 +31,7 @@ module shooter
             if (this._saves["level"] == null) return 0;
 
             console.log("Loaded level is " + this._saves["level"]);
-            return this._saves["level"];
+            return parseInt(this._saves["level"]);
         }
 
         public get score():number
@@ -39,7 +39,7 @@ module shooter
             if (!this._saves) return 0;
             if (this._saves["score"] == null) return 0;
             console.log("Loaded score is " + this._saves["score"]);
-            return this._saves["score"];
+            return parseInt(this._saves["score"]);
         }
 
         public set level(num:number)

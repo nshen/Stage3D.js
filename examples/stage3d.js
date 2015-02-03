@@ -14,6 +14,12 @@ var stageJS;
             if (!transparent)
                 this.fillRect(this._rect, fillColor);
         }
+        BitmapData.fromImageElement = function (img) {
+            var bmd = new BitmapData(img.width, img.height, true);
+            bmd._context.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
+            return bmd;
+        };
+
         Object.defineProperty(BitmapData.prototype, "width", {
             get: function () {
                 return this._canvas.width;
@@ -1465,9 +1471,9 @@ var stageJS;
 
             Texture._bindingTexture = this._glTexture;
 
-            stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MAG_FILTER, stageJS.Context3D.GL.NEAREST);
+            stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MAG_FILTER, stageJS.Context3D.GL.LINEAR);
             if (this._streamingLevels == 0) {
-                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.NEAREST);
+                stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR);
             } else {
                 stageJS.Context3D.GL.texParameteri(stageJS.Context3D.GL.TEXTURE_2D, stageJS.Context3D.GL.TEXTURE_MIN_FILTER, stageJS.Context3D.GL.LINEAR_MIPMAP_LINEAR);
                 stageJS.Context3D.GL.generateMipmap(stageJS.Context3D.GL.TEXTURE_2D);
@@ -1581,7 +1587,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageWidth", {
             get: function () {
-                return this._canvas.clientWidth;
+                return this._canvas.width;
             },
             enumerable: true,
             configurable: true
@@ -1589,7 +1595,7 @@ var stageJS;
 
         Object.defineProperty(Stage3D.prototype, "stageHeight", {
             get: function () {
-                return this._canvas.clientHeight;
+                return this._canvas.height;
             },
             enumerable: true,
             configurable: true

@@ -34,13 +34,23 @@ module BunnyMark
 
         public createRenderLayer(context3D:stageJS.Context3D):GPUSprite.SpriteRenderLayer
         {
-            this._spriteSheet = new GPUSprite.SpriteSheet(64,64);//2的次幂，图片26*37，比32大，所以用64
+            //this._spriteSheet = new GPUSprite.SpriteSheet(64,64);
+
+
+
+            //this._bunnySpriteID = this._spriteSheet.addSprite(bunnyBitmap,bunnyRect,{x:0,y:0});
+
+
+            var bmd:stageJS.BitmapData = new stageJS.BitmapData(64,64,true);//2的次幂，图片26*37，比32大，所以用64
 
             //add bunny image to sprite sheet
-            var bunnyBitmap:HTMLImageElement = ImageLoader.getInstance().get("assets/wabbit_alpha.png");
-            var bunnyRect:{x:number;y:number;width:number;height:number} = {x:0 ,y:0,width:bunnyBitmap.width,height:bunnyBitmap.height};
+            var bunnyImg:HTMLImageElement = ImageLoader.getInstance().get("assets/wabbit_alpha.png");
+            var bunnyRect:{x:number;y:number;width:number;height:number} = {x:0 ,y:0,width:bunnyImg.width,height:bunnyImg.height};
 
-            this._bunnySpriteID = this._spriteSheet.addSprite(bunnyBitmap,bunnyRect,{x:0,y:0});
+            bmd.copyPixels(bunnyImg,bunnyRect,{x:0,y:0});
+
+            this._spriteSheet = new GPUSprite.SpriteSheet(bmd,1,1);
+            this._bunnySpriteID = 0;
 
             this._renderLayer = new GPUSprite.SpriteRenderLayer(context3D,this._spriteSheet);
             return this._renderLayer;

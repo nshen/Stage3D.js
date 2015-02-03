@@ -1,4 +1,7 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="Rectangle.ts"/>
+///<reference path="Sprite.ts"/>
+///<reference path="SpriteRenderLayer.ts"/>
+///<reference path="SpriteSheet.ts"/>
 module GPUSprite
 {
     export class SpriteRenderStage
@@ -9,6 +12,7 @@ module GPUSprite
         private _rect:{x:number;y:number;width:number;height:number;};
         private _layers:SpriteRenderLayer[];
         private _modelViewMatrix:stageJS.geom.Matrix3D;
+
 
 
         public get position():{x:number;y:number;width:number;height:number;}
@@ -25,7 +29,7 @@ module GPUSprite
 
             this._modelViewMatrix = new stageJS.geom.Matrix3D();
             this._modelViewMatrix.appendTranslation( -rect.width/2, -rect.height/2,0);
-            this._modelViewMatrix.appendScale(2.0/rect.width , -2.0/rect.height,1); //y轴向下
+            this._modelViewMatrix.appendScale(2.0/rect.width , -2.0/rect.height,1); //y axis point down
             //this._orth.orthoLH(480,-400,1,1000);
 
         }
@@ -45,9 +49,10 @@ module GPUSprite
             this.position = rect;
         }
 
-        public addLayer(layer:SpriteRenderLayer):void
+        public addLayer(layer:SpriteRenderLayer ,name:string = ""):void
         {
             layer.parent = this;
+            layer.name = name;
             this._layers.push(layer);
         }
 

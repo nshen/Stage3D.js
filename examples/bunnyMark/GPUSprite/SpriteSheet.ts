@@ -1,4 +1,7 @@
-///<reference path="../_definitions.ts"/>
+///<reference path="Rectangle.ts"/>
+///<reference path="Sprite.ts"/>
+///<reference path="SpriteRenderLayer.ts"/>
+///<reference path="SpriteRenderStage.ts"/>
 module GPUSprite
 {
     export class SpriteSheet
@@ -9,11 +12,63 @@ module GPUSprite
         private _uvCoords:number[];
         private _rects:{x:number;y:number;width:number;height:number}[];
 
-        public constructor(width:number , height:number)
+        // because the edge pixels of some sprites are bleeding through,
+        // we zoom in the texture just the slightest bit for terrain tiles
+        public uvPadding:number = 0;
+
+        public constructor(spriteSheetBitmapData:stageJS.BitmapData ,numSpritesW:number = 8 , numSpritesH:number = 8 ,uvPad:number = 0)
         {
-            this._spriteSheet = new stageJS.BitmapData(width,height,true);
+            this._spriteSheet = spriteSheetBitmapData;
             this._uvCoords = [];
             this._rects = [];
+            this.uvPadding = uvPad;
+            this.createUVs(numSpritesW,numSpritesH);
+        }
+
+        public createUVs(numSpritesW:number , numSpritesH:number):void
+        {
+            var destRect : GPUSprite.Rectangle;
+
+            for (var y:number = 0; y < numSpritesH; y++)
+            {
+                for (var x:number = 0; x < numSpritesW; x++)
+                {
+                    this._uvCoords.push(
+                        // bl, tl, tr, br
+                        (x / numSpritesW) + this.uvPadding, ((y+1) / numSpritesH) - this.uvPadding,
+                        (x / numSpritesW) + this.uvPadding, (y / numSpritesH) + this.uvPadding,
+                        ((x+1) / numSpritesW) - this.uvPadding, (y / numSpritesH) + this.uvPadding,
+                        ((x + 1) / numSpritesW) - this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding);
+
+                    destRect = new GPUSprite.Rectangle();
+                    destRect.x = 0;
+                    destRect.y = 0;
+                    destRect.width = this._spriteSheet.width / numSpritesW;
+                    destRect.height = this._spriteSheet.height / numSpritesH;
+                    this._rects.push(destRect);
+                }
+            }
+        }
+
+
+        // when the automated grid isn't what we want
+        // we can define any rectangle and return a new sprite ID
+        public defineSprite(x:number, y:number, w:number, h:number) : number
+        {
+            var destRect:GPUSprite.Rectangle = new GPUSprite.Rectangle();
+            destRect.x = x;
+            destRect.y = y;
+            destRect.width = w;
+            destRect.height = h;
+            this._rects.push(destRect);
+
+            this._uvCoords.push(
+                destRect.x/this._spriteSheet.width, destRect.y/this._spriteSheet.height + destRect.height/this._spriteSheet.height,
+                destRect.x/this._spriteSheet.width, destRect.y/this._spriteSheet.height,
+                destRect.x/this._spriteSheet.width + destRect.width/this._spriteSheet.width, destRect.y/this._spriteSheet.height,
+                destRect.x/this._spriteSheet.width + destRect.width/this._spriteSheet.width, destRect.y/this._spriteSheet.height + destRect.height/this._spriteSheet.height);
+
+            return this._rects.length - 1;
         }
 
         // Very simplistic for now...assume client will manage the packing of the sprite sheet bitmap
@@ -24,18 +79,11 @@ module GPUSprite
         {
             this._spriteSheet.copyPixels(srcBits, srcRect, destPt);
 
-//            var destRect : Rectangle = new Rectangle();
-//            destRect.left = destPt.x;
-//            destRect.top = destPt.y;
-//            destRect.right = destRect.left + srcRect.width;
-//            destRect.bottom = destRect.top + srcRect.height;
-//
-//            _rects.push(destRect);
+
             this._rects.push({x:destPt.x,
                               y:destPt.y,
                               width:srcRect.width,
                               height:srcRect.height});
-
 
             /**
              * 2 3

@@ -2709,7 +2709,6 @@ var shooter;
             lib.ImageLoader.getInstance().add("assets/titlescreen.png");
             lib.ImageLoader.getInstance().add("assets/stars.gif");
             lib.ImageLoader.getInstance().add("assets/terrain.png");
-            lib.ImageLoader.getInstance().add("assets/hud_overlay.png");
 
             lib.ImageLoader.getInstance().downloadAll(function () {
                 if (lib.FileLoader.getInstance().isDone())

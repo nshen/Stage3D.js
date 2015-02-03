@@ -356,7 +356,7 @@ var GPUSprite;
                 this.updateChildVertexData(this._children[i]);
             }
 
-            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.SOURCE_ALPHA, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+            this._context3D.setBlendFactors(stageJS.Context3DBlendFactor.ONE, stageJS.Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
             this._context3D.setProgramConstantsFromMatrix("vc0", this._parent.modelViewMatrix, false);
             this._context3D.setTextureAt("fs0", this._spriteSheet._texture);
 

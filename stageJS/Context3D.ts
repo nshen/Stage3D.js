@@ -10,9 +10,19 @@ module stageJS
         private _clearBit: number;
         private _bendDisabled:boolean = true;
         private _depthDisabled:boolean = true;
+
         constructor()
         {
+            this.setuplimits();
             Context3DBlendFactor.init();
+        }
+
+        private setuplimits():void
+        {
+            var gl:WebGLRenderingContext = Context3D.GL;
+
+            stageJS.Texture.MAX_SIZE = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            //TODO:https://github.com/AnalyticalGraphicsInc/webglreport
         }
 
         public configureBackBuffer(width: number/* int */, height: number/* int */, antiAlias: number/* int */, enableDepthAndStencil:boolean = true): void

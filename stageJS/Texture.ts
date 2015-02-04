@@ -5,6 +5,9 @@ module stageJS
     export class Texture
     {
 
+        //limits
+        public static MAX_SIZE:number = 0;
+
         private _glTexture: WebGLTexture;
         private _streamingLevels: number;
         private _width:number;
@@ -19,6 +22,11 @@ module stageJS
 
         constructor(width:number,height:number,format:string,optimizeForRenderToTexture:boolean,streamingLevels:number)
         {
+            if(width > Texture.MAX_SIZE || height > Texture.MAX_SIZE)
+            {
+                alert("Texture size not support");
+            }
+
             this._glTexture = Context3D.GL.createTexture();
             this._streamingLevels = streamingLevels;
 

@@ -230,7 +230,7 @@ module stageJS
             if(this._depthDisabled)
             {
                 Context3D.GL.enable(Context3D.GL.DEPTH_TEST);
-                this._bendDisabled = false;
+                this._depthDisabled = false;
             }
 
             Context3D.GL.depthMask(depthMask);

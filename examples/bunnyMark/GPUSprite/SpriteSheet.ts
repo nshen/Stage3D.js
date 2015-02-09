@@ -27,27 +27,37 @@ module GPUSprite
 
         public createUVs(numSpritesW:number , numSpritesH:number):void
         {
-            var destRect : GPUSprite.Rectangle;
+            var l:number = 0;
+            var r:number = 0;
+            var t:number = 0;
+            var b:number = 0;
+            var padding:number = this.uvPadding;
 
             for (var y:number = 0; y < numSpritesH; y++)
             {
                 for (var x:number = 0; x < numSpritesW; x++)
                 {
+                    l = (x / numSpritesW) + padding;
+                    r = (x + 1)/ numSpritesW - padding;
+                    t = y / numSpritesH + padding;
+                    b = (y + 1) / numSpritesH - padding
+
                     this._uvCoords.push(
                         // bl, tl, tr, br
-                        (x / numSpritesW) + this.uvPadding, ((y+1) / numSpritesH) - this.uvPadding,
-                        (x / numSpritesW) + this.uvPadding, (y / numSpritesH) + this.uvPadding,
-                        ((x+1) / numSpritesW) - this.uvPadding, (y / numSpritesH) + this.uvPadding,
-                        ((x + 1) / numSpritesW) - this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding);
+                        l, b,
+                        l, t,
+                        r, t,
+                        r, b);
 
-                    destRect = new GPUSprite.Rectangle();
-                    destRect.x = 0;
-                    destRect.y = 0;
-                    destRect.width = this._spriteSheet.width / numSpritesW;
-                    destRect.height = this._spriteSheet.height / numSpritesH;
-                    this._rects.push(destRect);
+                    this._rects.push({
+                        x:0,
+                        y:0,
+                        width:this._spriteSheet.width / numSpritesW,
+                        height:this._spriteSheet.height / numSpritesH
+                        });
                 }
             }
+
         }
 
 

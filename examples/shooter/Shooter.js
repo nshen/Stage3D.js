@@ -30,16 +30,24 @@ var GPUSprite;
             this.createUVs(numSpritesW, numSpritesH);
         }
         SpriteSheet.prototype.createUVs = function (numSpritesW, numSpritesH) {
-            var destRect;
+            var l = 0;
+            var r = 0;
+            var t = 0;
+            var b = 0;
+            var padding = this.uvPadding;
             for (var y = 0; y < numSpritesH; y++) {
                 for (var x = 0; x < numSpritesW; x++) {
-                    this._uvCoords.push((x / numSpritesW) + this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding, (x / numSpritesW) + this.uvPadding, (y / numSpritesH) + this.uvPadding, ((x + 1) / numSpritesW) - this.uvPadding, (y / numSpritesH) + this.uvPadding, ((x + 1) / numSpritesW) - this.uvPadding, ((y + 1) / numSpritesH) - this.uvPadding);
-                    destRect = new GPUSprite.Rectangle();
-                    destRect.x = 0;
-                    destRect.y = 0;
-                    destRect.width = this._spriteSheet.width / numSpritesW;
-                    destRect.height = this._spriteSheet.height / numSpritesH;
-                    this._rects.push(destRect);
+                    l = (x / numSpritesW) + padding;
+                    r = (x + 1) / numSpritesW - padding;
+                    t = y / numSpritesH + padding;
+                    b = (y + 1) / numSpritesH - padding;
+                    this._uvCoords.push(l, b, l, t, r, t, r, b);
+                    this._rects.push({
+                        x: 0,
+                        y: 0,
+                        width: this._spriteSheet.width / numSpritesW,
+                        height: this._spriteSheet.height / numSpritesH
+                    });
                 }
             }
         };

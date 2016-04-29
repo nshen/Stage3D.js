@@ -3,7 +3,7 @@ Stage3D.js
 
 Stage3D API on top of WebGL
 
-Here is a drawTriangle example using TypeScript [(result)](http://www.nshen.net/Stage3D.js/examples/drawTriangle.html) :
+Here is a drawTriangle example using TypeScript [(result)](http://github.nshen.net/Stage3D.js/examples/drawTriangle.html) :
 
 	var canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("my-canvas");
 
@@ -45,15 +45,15 @@ Some examples
 ---
 
 <ul>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/bunnyMark/BunnyMark.html">bunnymark</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/shooter/index.html">a shooter game</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/blend.html">blend test</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/drawSquare.html">drawSquare</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/drawTriangle.html">drawTriangle</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/gouraudShading.html">gouraudShading</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/loadObj.html">load Obj model</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/textureTriangle.html">textureTriangle</a></li>
-<li><a href="http://www.nshen.net/Stage3D.js/examples/renderingModes.html">renderingModes</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/bunnyMark/BunnyMark.html">bunnymark</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/shooter/index.html">a shooter game</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/blend.html">blend test</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/drawSquare.html">drawSquare</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/drawTriangle.html">drawTriangle</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/gouraudShading.html">gouraudShading</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/loadObj.html">load Obj model</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/textureTriangle.html">textureTriangle</a></li>
+<li><a href="http://github.nshen.net/Stage3D.js/examples/renderingModes.html">renderingModes</a></li>
 </ul>
 
 
